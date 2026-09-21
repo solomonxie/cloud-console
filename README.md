@@ -1,38 +1,38 @@
 # Cloud Console
 
-> 🚧 Work in progress — skeleton only, not yet functional.
+> 🚧 Work in progress. S3 browsing works; everything else is scaffolded.
 
-A mobile console for your cloud infrastructure: browse resources across
-AWS, Azure and Google Cloud, look inside storage buckets, and draft
-Terraform changes with AI assistance — all from an iPhone, without needing
-a laptop open.
+A native mobile console for your cloud accounts. Connect with an access
+key, browse and manage resources with whatever permissions that key
+has — no backend server, no IaC, nothing of ours in between.
 
-## Features
+## How it works
 
-- **Resources** — browse EC2 instances, Lambda functions, databases and
-  more, per cloud provider
-- **Buckets** — object storage browser (S3-style)
-- **Terraform** — describe a change in plain language, get an AI-drafted
-  diff, review it, then apply
-- **Git** — connect GitHub repos and manage the access token used to
-  commit Terraform changes
-- **Settings** — AWS credentials, stored in the Keychain
+- **One access key per connection.** Paste in an access key when you
+  add a cloud account; that's the only credential involved. The app
+  never combines keys, never proxies through a server, never does
+  anything the key's own permissions don't already allow.
+- **Direct to the provider's API**, signed natively on-device (AWS
+  SigV4 for AWS — see `Services/AWSSigV4Signer.swift`). No SDK
+  dependency, no third-party service sees your traffic or your key.
+- **Keychain only.** Keys never leave the device except in signed
+  requests to the provider's own endpoints.
 
-## Backend architecture (planned)
+## Providers & resources
 
-The app never runs `terraform` or `git` on-device. Instead it calls an AWS
-Lambda (via API Gateway) that runs `terraform plan`/`apply` and pushes
-commits through the GitHub API. This repo is just the client; a separate
-backend repo will follow once the client shape settles.
+Built incrementally, one resource kind at a time, as needed:
 
-## Related
+| Provider | S3/Buckets | EC2 | Lambda | RDS |
+|---|---|---|---|---|
+| AWS | ✅ | backlog | backlog | backlog |
+| Azure, GCP, Tencent, Alibaba | — | — | — | — |
 
-[cloud-bucket-viewer](https://github.com/solomonxie/cloud-bucket-viewer) is
-a sibling project (a Chrome extension) that already does bucket browsing
-for S3/Azure/GCS/Tencent/Alibaba, with its own request-signing
-implementation. This app's Buckets tab is expected to follow similar
-per-provider signing design, implemented natively in Swift rather than
-shared code.
+S3 is the only implemented resource for now — the rest are backlog,
+picked up one at a time when actually needed, not on a schedule.
+
+Adding a connection for a provider/resource that isn't implemented yet
+just shows "coming soon" — the credential is still saved so there's
+nothing to redo once it lands.
 
 ## Setup
 
