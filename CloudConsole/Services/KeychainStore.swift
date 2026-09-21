@@ -2,8 +2,9 @@ import Security
 import Foundation
 
 enum KeychainStore {
-    static let awsCredentialStorageKey = "aws.credential"
-    static let githubTokenStorageKey = "github.token"
+    static func credentialKey(for connectionID: UUID) -> String {
+        "cloud.credential.\(connectionID.uuidString)"
+    }
 
     static func save(_ value: String, forKey key: String) {
         let data = Data(value.utf8)
