@@ -56,9 +56,28 @@ enum TencentCOSClient {
         signedRequest(method: "DELETE", url: objectURL(bucket: bucket, region: region, key: key), credential: credential)
     }
 
-    static func copyObjectRequest(bucket: String, region: String, sourceKey: String, destKey: String, credential: AWSSigV4Signer.Credential) -> URLRequest {
-        let copySource = "\(bucket).cos.\(region).myqcloud.com/\(pathEncode(sourceKey))"
-        return signedRequest(method: "PUT", url: objectURL(bucket: bucket, region: region, key: destKey), credential: credential, extraHeaders: ["x-cos-copy-source": copySource])
+    /// `destBucket`/`destRegion` may differ from the source — COS's copy header carries the
+    /// full source host, so cross-bucket (and cross-region) copies work the same way.
+    static func copyObjectRequest(sourceBucket: String, sourceRegion: String, sourceKey: String, destBucket: String, destRegion: String, destKey: String, credential: AWSSigV4Signer.Credential) -> URLRequest {
+        let copySource = "\(sourceBucket).cos.\(sourceRegion).myqcloud.com/\(pathEncode(sourceKey))"
+        return signedRequest(method: "PUT", url: objectURL(bucket: destBucket, region: destRegion, key: destKey), credential: credential, extraHeaders: ["x-cos-copy-source": copySource])
+    }
+
+    static func putObjectRequest(bucket: String, region: String, key: String, contentType: String?, credential: AWSSigV4Signer.Credential) -> URLRequest {
+        var extraHeaders: [String: String] = [:]
+        if let contentType { extraHeaders["Content-Type"] = contentType }
+        return signedRequest(method: "PUT", url: objectURL(bucket: bucket, region: region, key: key), credential: credential, extraHeaders: extraHeaders)
+    }
+
+    /// See `S3Client.headObjectETag` — same single-PUT-only MD5 convention, COS being
+    /// S3-API-compatible here.
+    static func headObjectETag(bucket: String, region: String, key: String, credential: AWSSigV4Signer.Credential) async -> String? {
+        let request = signedRequest(method: "HEAD", url: objectURL(bucket: bucket, region: region, key: key), credential: credential)
+        guard let (_, response) = try? await URLSession.shared.data(for: request),
+              let http = response as? HTTPURLResponse,
+              (200...299).contains(http.statusCode),
+              let etag = http.value(forHTTPHeaderField: "ETag") else { return nil }
+        return etag.trimmingCharacters(in: CharacterSet(charactersIn: "\""))
     }
 
     static func batchDeleteRequest(bucket: String, region: String, keys: [String], credential: AWSSigV4Signer.Credential) -> (request: URLRequest, body: Data) {

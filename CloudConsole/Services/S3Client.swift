@@ -93,12 +93,34 @@ enum S3Client {
         signedRequest(method: "DELETE", url: objectURL(bucket: bucket, region: region, key: key), region: region, credential: credential)
     }
 
-    static func copyObjectRequest(bucket: String, region: String, sourceKey: String, destKey: String, credential: AWSSigV4Signer.Credential) -> URLRequest {
-        let copySource = "/\(bucket)/\(pathEncode(sourceKey))"
+    /// `destBucket`/`destRegion` may differ from the source — S3's CopyObject works across
+    /// buckets (even across regions, within the same partition) as long as `x-amz-copy-source`
+    /// names the source and the request itself is signed for the destination's region.
+    static func copyObjectRequest(sourceBucket: String, sourceKey: String, destBucket: String, destRegion: String, destKey: String, credential: AWSSigV4Signer.Credential) -> URLRequest {
+        let copySource = "/\(sourceBucket)/\(pathEncode(sourceKey))"
         return signedRequest(
-            method: "PUT", url: objectURL(bucket: bucket, region: region, key: destKey), region: region, credential: credential,
+            method: "PUT", url: objectURL(bucket: destBucket, region: destRegion, key: destKey), region: destRegion, credential: credential,
             extraHeaders: ["x-amz-copy-source": copySource]
         )
+    }
+
+    static func putObjectRequest(bucket: String, region: String, key: String, contentType: String?, credential: AWSSigV4Signer.Credential, body: Data) -> URLRequest {
+        var extraHeaders: [String: String] = [:]
+        if let contentType { extraHeaders["Content-Type"] = contentType }
+        return signedRequest(method: "PUT", url: objectURL(bucket: bucket, region: region, key: key), region: region, credential: credential, body: body, extraHeaders: extraHeaders)
+    }
+
+    /// The object's ETag (unquoted), or nil if it doesn't exist — nil on any other failure too,
+    /// since "unknown" should never block an upload, only a confirmed content match should.
+    /// For a single-PUT object (never multipart, which is all this app ever writes), S3's ETag
+    /// is just the object's raw MD5 hex, so it doubles as a cheap "is this the same file?" check.
+    static func headObjectETag(bucket: String, region: String, key: String, credential: AWSSigV4Signer.Credential) async -> String? {
+        let request = signedRequest(method: "HEAD", url: objectURL(bucket: bucket, region: region, key: key), region: region, credential: credential)
+        guard let (_, response) = try? await URLSession.shared.data(for: request),
+              let http = response as? HTTPURLResponse,
+              (200...299).contains(http.statusCode),
+              let etag = http.value(forHTTPHeaderField: "ETag") else { return nil }
+        return etag.trimmingCharacters(in: CharacterSet(charactersIn: "\""))
     }
 
     /// Batch-deletes up to 1000 keys in one call — S3's `POST /?delete` API.
