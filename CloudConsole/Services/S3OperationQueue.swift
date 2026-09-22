@@ -1,4 +1,6 @@
 import Foundation
+import UniformTypeIdentifiers
+import CryptoKit
 
 /// Which object-storage API an operation's requests should be built for — the queue's
 /// engine (persistence, background session, retry) is identical either way.
@@ -18,7 +20,7 @@ struct S3OperationItem: Codable, Hashable {
 
 struct S3Operation: Codable, Identifiable, Hashable {
     enum Kind: String, Codable {
-        case delete, copy, move
+        case delete, copy, move, upload
     }
     enum Status: String, Codable {
         case running, completed, failed
@@ -29,6 +31,11 @@ struct S3Operation: Codable, Identifiable, Hashable {
     let service: StorageService
     let bucket: String
     let region: String
+    /// Destination bucket/region for a cross-bucket copy or move — nil means "same as
+    /// `bucket`/`region`". Unused for delete/upload (upload's `bucket`/`region` already *is*
+    /// the target; there's no separate source since it comes from local disk).
+    var destBucket: String?
+    var destRegion: String?
     let kind: Kind
     let label: String
     var items: [S3OperationItem]
@@ -97,20 +104,53 @@ final class S3OperationQueue: NSObject, ObservableObject {
     }
 
     /// `destinationPrefix` is a folder path ("" for bucket root, otherwise ending in "/").
-    func enqueueCopyTo(connectionID: UUID, service: StorageService, bucket: String, region: String, key: String, isFolder: Bool, destinationPrefix: String) {
+    /// `destinationBucket`/`destinationRegion` may be a different bucket than the source.
+    func enqueueCopyTo(connectionID: UUID, service: StorageService, bucket: String, region: String, key: String, isFolder: Bool, destinationBucket: String, destinationRegion: String, destinationPrefix: String) {
         let newKey = destinationPrefix + displayName(key) + (isFolder ? "/" : "")
+        let crossBucket = destinationBucket != bucket
+        let label = "Copy \(displayName(key)) to \(crossBucket ? "\(destinationBucket)/" : "")\(destinationPrefix.isEmpty ? "/" : destinationPrefix)"
         enqueue(kind: .copy, connectionID: connectionID, service: service, bucket: bucket, region: region, key: key, isFolder: isFolder,
-                label: "Copy \(displayName(key)) to \(destinationPrefix.isEmpty ? "/" : destinationPrefix)", newKey: newKey)
+                label: label, newKey: newKey, destBucket: crossBucket ? destinationBucket : nil, destRegion: crossBucket ? destinationRegion : nil)
     }
 
-    func enqueueMoveTo(connectionID: UUID, service: StorageService, bucket: String, region: String, key: String, isFolder: Bool, destinationPrefix: String) {
+    func enqueueMoveTo(connectionID: UUID, service: StorageService, bucket: String, region: String, key: String, isFolder: Bool, destinationBucket: String, destinationRegion: String, destinationPrefix: String) {
         let newKey = destinationPrefix + displayName(key) + (isFolder ? "/" : "")
+        let crossBucket = destinationBucket != bucket
+        let label = "Move \(displayName(key)) to \(crossBucket ? "\(destinationBucket)/" : "")\(destinationPrefix.isEmpty ? "/" : destinationPrefix)"
         enqueue(kind: .move, connectionID: connectionID, service: service, bucket: bucket, region: region, key: key, isFolder: isFolder,
-                label: "Move \(displayName(key)) to \(destinationPrefix.isEmpty ? "/" : destinationPrefix)", newKey: newKey)
+                label: label, newKey: newKey, destBucket: crossBucket ? destinationBucket : nil, destRegion: crossBucket ? destinationRegion : nil)
     }
 
-    private func enqueue(kind: S3Operation.Kind, connectionID: UUID, service: StorageService, bucket: String, region: String, key: String, isFolder: Bool, label: String, newKey: String?) {
-        let operation = S3Operation(id: UUID(), connectionID: connectionID, service: service, bucket: bucket, region: region, kind: kind, label: label, items: [], status: .running, errorMessage: nil, createdAt: Date())
+    /// Uploads local files/photos into `destinationPrefix` of `bucket`. Each file's bytes are
+    /// staged into our own sandbox first so the operation survives a relaunch the same way
+    /// delete/copy/move do — the caller's `Data` (from a security-scoped picker URL, or a
+    /// photo library asset) wouldn't still be readable by then.
+    func enqueueUpload(connectionID: UUID, service: StorageService, bucket: String, region: String, destinationPrefix: String, files: [(fileName: String, data: Data)]) {
+        guard !files.isEmpty else { return }
+        let operationID = UUID()
+        let stagingDir = stagingDirectoryURL(for: operationID)
+        try? FileManager.default.createDirectory(at: stagingDir, withIntermediateDirectories: true)
+        var items: [S3OperationItem] = []
+        for file in files {
+            let fileURL = stagingDir.appendingPathComponent(UUID().uuidString)
+            guard (try? file.data.write(to: fileURL)) != nil else { continue }
+            items.append(S3OperationItem(source: fileURL.path, destination: destinationPrefix + file.fileName))
+        }
+        guard !items.isEmpty else { return }
+        let label = files.count == 1 ? "Upload \(files[0].fileName)" : "Upload \(files.count) files"
+        let operation = S3Operation(
+            id: operationID, connectionID: connectionID, service: service, bucket: bucket, region: region,
+            destBucket: nil, destRegion: nil, kind: .upload,
+            label: label + (destinationPrefix.isEmpty ? "" : " to \(destinationPrefix)"),
+            items: items, status: .running, errorMessage: nil, createdAt: Date()
+        )
+        operations.insert(operation, at: 0)
+        save()
+        processNext()
+    }
+
+    private func enqueue(kind: S3Operation.Kind, connectionID: UUID, service: StorageService, bucket: String, region: String, key: String, isFolder: Bool, label: String, newKey: String?, destBucket: String? = nil, destRegion: String? = nil) {
+        let operation = S3Operation(id: UUID(), connectionID: connectionID, service: service, bucket: bucket, region: region, destBucket: destBucket, destRegion: destRegion, kind: kind, label: label, items: [], status: .running, errorMessage: nil, createdAt: Date())
         operations.insert(operation, at: 0)
         save()
         Task {
@@ -133,6 +173,9 @@ final class S3OperationQueue: NSObject, ObservableObject {
     }
 
     func clearFinished() {
+        for op in operations where op.isFinished && op.kind == .upload {
+            try? FileManager.default.removeItem(at: stagingDirectoryURL(for: op.id))
+        }
         operations.removeAll { $0.isFinished }
         save()
     }
@@ -192,19 +235,68 @@ final class S3OperationQueue: NSObject, ObservableObject {
         case .copy:
             guard let idx = op.items.firstIndex(where: { $0.state == .pending }) else { finish(opIndex); return }
             let item = op.items[idx]
-            let request = copyObjectRequest(op.service, bucket: op.bucket, region: op.region, sourceKey: item.source, destKey: item.destination ?? item.source, credential: credential)
+            let request = copyObjectRequest(op.service, sourceBucket: op.bucket, sourceRegion: op.region, sourceKey: item.source, destBucket: op.destBucket ?? op.bucket, destRegion: op.destRegion ?? op.region, destKey: item.destination ?? item.source, credential: credential)
             submit(request, body: Data(), token: TaskToken(operationID: op.id, indices: [idx], phase: .copy))
         case .move:
             guard let idx = op.items.firstIndex(where: { $0.state == .pending || $0.state == .copied }) else { finish(opIndex); return }
             let item = op.items[idx]
             if item.state == .pending {
-                let request = copyObjectRequest(op.service, bucket: op.bucket, region: op.region, sourceKey: item.source, destKey: item.destination ?? item.source, credential: credential)
+                let request = copyObjectRequest(op.service, sourceBucket: op.bucket, sourceRegion: op.region, sourceKey: item.source, destBucket: op.destBucket ?? op.bucket, destRegion: op.destRegion ?? op.region, destKey: item.destination ?? item.source, credential: credential)
                 submit(request, body: Data(), token: TaskToken(operationID: op.id, indices: [idx], phase: .copy))
             } else {
                 let request = deleteObjectRequest(op.service, bucket: op.bucket, region: op.region, key: item.source, credential: credential)
                 submit(request, body: Data(), token: TaskToken(operationID: op.id, indices: [idx], phase: .delete))
             }
+        case .upload:
+            guard let idx = op.items.firstIndex(where: { $0.state == .pending }) else { finish(opIndex); return }
+            isBusy = true
+            Task { await processUpload(operationID: op.id, itemIndex: idx) }
         }
+    }
+
+    /// Async because it HEADs the destination key first — if it already holds a file with the
+    /// same MD5, the upload is skipped instead of overwriting identical content.
+    private func processUpload(operationID: UUID, itemIndex: Int) async {
+        guard let opIndex = operations.firstIndex(where: { $0.id == operationID }),
+              operations[opIndex].items.indices.contains(itemIndex) else {
+            isBusy = false
+            processNext()
+            return
+        }
+        let op = operations[opIndex]
+        let item = op.items[itemIndex]
+        let token = TaskToken(operationID: op.id, indices: [itemIndex], phase: .upload)
+        guard let data = try? Data(contentsOf: URL(fileURLWithPath: item.source)) else {
+            isBusy = false
+            fail(token: token, message: "Couldn't read the staged file")
+            processNext()
+            return
+        }
+        let destKey = item.destination ?? item.source
+        let credential = HomeStore.signerCredential(forConnectionID: op.connectionID)
+
+        let remoteETag = await headObjectETag(op.service, bucket: op.bucket, region: op.region, key: destKey, credential: credential)
+        if let remoteETag, remoteETag.lowercased() == Self.md5Hex(data) {
+            operations[opIndex].items[itemIndex].state = .done
+            save()
+            isBusy = false
+            processNext()
+            return
+        }
+
+        let request = putObjectRequest(op.service, bucket: op.bucket, region: op.region, key: destKey, contentType: contentType(for: destKey), credential: credential, body: data)
+        submit(request, body: data, token: token)
+    }
+
+    private func headObjectETag(_ service: StorageService, bucket: String, region: String, key: String, credential: AWSSigV4Signer.Credential) async -> String? {
+        switch service {
+        case .s3: await S3Client.headObjectETag(bucket: bucket, region: region, key: key, credential: credential)
+        case .cos: await TencentCOSClient.headObjectETag(bucket: bucket, region: region, key: key, credential: credential)
+        }
+    }
+
+    private static func md5Hex(_ data: Data) -> String {
+        Insecure.MD5.hash(data: data).map { String(format: "%02x", $0) }.joined()
     }
 
     private func deleteObjectRequest(_ service: StorageService, bucket: String, region: String, key: String, credential: AWSSigV4Signer.Credential) -> URLRequest {
@@ -214,11 +306,24 @@ final class S3OperationQueue: NSObject, ObservableObject {
         }
     }
 
-    private func copyObjectRequest(_ service: StorageService, bucket: String, region: String, sourceKey: String, destKey: String, credential: AWSSigV4Signer.Credential) -> URLRequest {
+    private func copyObjectRequest(_ service: StorageService, sourceBucket: String, sourceRegion: String, sourceKey: String, destBucket: String, destRegion: String, destKey: String, credential: AWSSigV4Signer.Credential) -> URLRequest {
         switch service {
-        case .s3: S3Client.copyObjectRequest(bucket: bucket, region: region, sourceKey: sourceKey, destKey: destKey, credential: credential)
-        case .cos: TencentCOSClient.copyObjectRequest(bucket: bucket, region: region, sourceKey: sourceKey, destKey: destKey, credential: credential)
+        case .s3: S3Client.copyObjectRequest(sourceBucket: sourceBucket, sourceKey: sourceKey, destBucket: destBucket, destRegion: destRegion, destKey: destKey, credential: credential)
+        case .cos: TencentCOSClient.copyObjectRequest(sourceBucket: sourceBucket, sourceRegion: sourceRegion, sourceKey: sourceKey, destBucket: destBucket, destRegion: destRegion, destKey: destKey, credential: credential)
         }
+    }
+
+    private func putObjectRequest(_ service: StorageService, bucket: String, region: String, key: String, contentType: String?, credential: AWSSigV4Signer.Credential, body: Data) -> URLRequest {
+        switch service {
+        case .s3: S3Client.putObjectRequest(bucket: bucket, region: region, key: key, contentType: contentType, credential: credential, body: body)
+        case .cos: TencentCOSClient.putObjectRequest(bucket: bucket, region: region, key: key, contentType: contentType, credential: credential)
+        }
+    }
+
+    private func contentType(for fileName: String) -> String? {
+        let ext = (fileName as NSString).pathExtension
+        guard !ext.isEmpty else { return nil }
+        return UTType(filenameExtension: ext)?.preferredMIMEType
     }
 
     private func batchDeleteRequest(_ service: StorageService, bucket: String, region: String, keys: [String], credential: AWSSigV4Signer.Credential) -> (request: URLRequest, body: Data) {
@@ -258,9 +363,21 @@ final class S3OperationQueue: NSObject, ObservableObject {
     }
 
     private func finish(_ opIndex: Int) {
-        operations[opIndex].status = operations[opIndex].items.contains { $0.state == .failed } ? .failed : .completed
+        let op = operations[opIndex]
+        let failed = op.items.contains { $0.state == .failed }
+        operations[opIndex].status = failed ? .failed : .completed
+        // Only clean up on full success — a failed item's staged file is what `retry` re-reads.
+        if !failed, op.kind == .upload {
+            try? FileManager.default.removeItem(at: stagingDirectoryURL(for: op.id))
+        }
         save()
         processNext()
+    }
+
+    private func stagingDirectoryURL(for operationID: UUID) -> URL {
+        FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("s3-uploads", isDirectory: true)
+            .appendingPathComponent(operationID.uuidString, isDirectory: true)
     }
 
     // MARK: Naming helpers
@@ -367,7 +484,7 @@ extension S3OperationQueue: URLSessionDataDelegate {
 /// Encodes which operation/items/phase a background task belongs to, in the task's own
 /// `taskDescription` — the only state that reliably survives a process relaunch.
 private struct TaskToken {
-    enum Phase: String { case copy, delete }
+    enum Phase: String { case copy, delete, upload }
     let operationID: UUID
     let indices: [Int]
     let phase: Phase

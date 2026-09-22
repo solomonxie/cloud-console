@@ -1,4 +1,5 @@
 import SwiftUI
+import PhotosUI
 
 @MainActor
 final class BucketsStore: ObservableObject, ExpandableResourceStore {
@@ -94,6 +95,11 @@ struct BucketObjectsView: View {
     @State private var visibleObjectCount = BucketObjectsView.objectPageSize
     private static let objectPageSize = 100
 
+    @State private var showingPhotoPicker = false
+    @State private var photoPickerItems: [PhotosPickerItem] = []
+    @State private var showingFileImporter = false
+    @State private var uploadErrorMessage: String?
+
     private struct DestinationAction: Identifiable {
         let key: String
         let isFolder: Bool
@@ -165,6 +171,24 @@ struct BucketObjectsView: View {
         .navigationTitle(prefix.isEmpty ? bucketName : name(of: prefix))
         .task { await load() }
         .toolbar {
+            if !isSelecting {
+                ToolbarItem(placement: .primaryAction) {
+                    Menu {
+                        Button {
+                            showingPhotoPicker = true
+                        } label: {
+                            Label("Photos", systemImage: "photo.on.rectangle")
+                        }
+                        Button {
+                            showingFileImporter = true
+                        } label: {
+                            Label("Files", systemImage: "doc")
+                        }
+                    } label: {
+                        Label("Upload", systemImage: "square.and.arrow.up.on.square")
+                    }
+                }
+            }
             if result != nil, !(result?.folders.isEmpty ?? true) || !(result?.objects.isEmpty ?? true) {
                 ToolbarItem(placement: .primaryAction) {
                     Button(isSelecting ? "Cancel" : "Select") {
@@ -173,6 +197,24 @@ struct BucketObjectsView: View {
                     }
                 }
             }
+        }
+        .photosPicker(isPresented: $showingPhotoPicker, selection: $photoPickerItems, matching: .any(of: [.images, .videos]))
+        .onChange(of: photoPickerItems) { _, items in
+            guard !items.isEmpty else { return }
+            Task { await handlePhotoSelection(items) }
+        }
+        .fileImporter(isPresented: $showingFileImporter, allowedContentTypes: [.item], allowsMultipleSelection: true) { result in
+            switch result {
+            case .success(let urls):
+                Task { await handleFileSelection(urls) }
+            case .failure(let error):
+                uploadErrorMessage = error.localizedDescription
+            }
+        }
+        .alert("Upload Failed", isPresented: .constant(uploadErrorMessage != nil), presenting: uploadErrorMessage) { _ in
+            Button("OK") { uploadErrorMessage = nil }
+        } message: { message in
+            Text(message)
         }
         .confirmationDialog(
             "Delete \(pendingDeleteKey.map { name(of: $0) } ?? "")?",
@@ -208,13 +250,13 @@ struct BucketObjectsView: View {
             }
         }
         .sheet(item: $destinationAction) { action in
-            S3DestinationPicker(service: service, bucket: bucketName, region: region, credential: credential, startPrefix: "") { destinationPrefix in
+            S3DestinationPicker(service: service, sourceBucket: bucketName, sourceRegion: region, credential: credential, startPrefix: "") { destBucket, destRegion, destinationPrefix in
                 if action.isMove {
-                    queue.enqueueMoveTo(connectionID: connectionID, service: service, bucket: bucketName, region: region, key: action.key, isFolder: action.isFolder, destinationPrefix: destinationPrefix)
+                    queue.enqueueMoveTo(connectionID: connectionID, service: service, bucket: bucketName, region: region, key: action.key, isFolder: action.isFolder, destinationBucket: destBucket, destinationRegion: destRegion, destinationPrefix: destinationPrefix)
                     result?.folders.removeAll { $0 == action.key }
                     result?.objects.removeAll { $0.key == action.key }
                 } else {
-                    queue.enqueueCopyTo(connectionID: connectionID, service: service, bucket: bucketName, region: region, key: action.key, isFolder: action.isFolder, destinationPrefix: destinationPrefix)
+                    queue.enqueueCopyTo(connectionID: connectionID, service: service, bucket: bucketName, region: region, key: action.key, isFolder: action.isFolder, destinationBucket: destBucket, destinationRegion: destRegion, destinationPrefix: destinationPrefix)
                 }
             }
         }
@@ -231,6 +273,8 @@ struct BucketObjectsView: View {
                         .foregroundStyle(selectedKeys.contains(key) ? Color.accentColor : Color.secondary)
                     label()
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
         } else if isFolder {
@@ -327,6 +371,36 @@ struct BucketObjectsView: View {
         case .s3: S3Client.presignedURL(bucket: bucketName, region: region, key: key, credential: credential)
         case .cos: TencentCOSClient.presignedURL(bucket: bucketName, region: region, key: key, credential: credential)
         }
+    }
+
+    private func handlePhotoSelection(_ items: [PhotosPickerItem]) async {
+        var files: [(fileName: String, data: Data)] = []
+        for (index, item) in items.enumerated() {
+            guard let data = try? await item.loadTransferable(type: Data.self) else { continue }
+            let ext = item.supportedContentTypes.first?.preferredFilenameExtension ?? "jpg"
+            files.append((fileName: "Photo-\(Int(Date().timeIntervalSince1970))-\(index).\(ext)", data: data))
+        }
+        photoPickerItems = []
+        guard !files.isEmpty else {
+            uploadErrorMessage = "Couldn't read the selected photos."
+            return
+        }
+        queue.enqueueUpload(connectionID: connectionID, service: service, bucket: bucketName, region: region, destinationPrefix: prefix, files: files)
+    }
+
+    private func handleFileSelection(_ urls: [URL]) async {
+        var files: [(fileName: String, data: Data)] = []
+        for url in urls {
+            let accessing = url.startAccessingSecurityScopedResource()
+            defer { if accessing { url.stopAccessingSecurityScopedResource() } }
+            guard let data = try? Data(contentsOf: url) else { continue }
+            files.append((fileName: url.lastPathComponent, data: data))
+        }
+        guard !files.isEmpty else {
+            uploadErrorMessage = "Couldn't read the selected files."
+            return
+        }
+        queue.enqueueUpload(connectionID: connectionID, service: service, bucket: bucketName, region: region, destinationPrefix: prefix, files: files)
     }
 
     private func startRename(key: String, isFolder: Bool) {
