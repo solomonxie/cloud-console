@@ -68,6 +68,7 @@ private struct OperationRow: View {
         case .delete: return "trash"
         case .copy: return "doc.on.doc"
         case .move: return "arrow.turn.up.right"
+        case .upload: return "square.and.arrow.up"
         }
     }
 

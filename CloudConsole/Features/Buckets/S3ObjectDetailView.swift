@@ -101,12 +101,12 @@ struct S3ObjectDetailView: View {
             }
         }
         .sheet(item: $destinationAction) { action in
-            S3DestinationPicker(service: service, bucket: bucket, region: region, credential: credential, startPrefix: "") { destinationPrefix in
+            S3DestinationPicker(service: service, sourceBucket: bucket, sourceRegion: region, credential: credential, startPrefix: "") { destBucket, destRegion, destinationPrefix in
                 switch action {
                 case .copy:
-                    queue.enqueueCopyTo(connectionID: connectionID, service: service, bucket: bucket, region: region, key: object.key, isFolder: false, destinationPrefix: destinationPrefix)
+                    queue.enqueueCopyTo(connectionID: connectionID, service: service, bucket: bucket, region: region, key: object.key, isFolder: false, destinationBucket: destBucket, destinationRegion: destRegion, destinationPrefix: destinationPrefix)
                 case .move:
-                    queue.enqueueMoveTo(connectionID: connectionID, service: service, bucket: bucket, region: region, key: object.key, isFolder: false, destinationPrefix: destinationPrefix)
+                    queue.enqueueMoveTo(connectionID: connectionID, service: service, bucket: bucket, region: region, key: object.key, isFolder: false, destinationBucket: destBucket, destinationRegion: destRegion, destinationPrefix: destinationPrefix)
                     onRemoved()
                     dismiss()
                 }
