@@ -15,8 +15,27 @@ final class HomeStore: ObservableObject {
     }
 
     func credential(for connection: CloudConnection) -> StoredCredential? {
-        guard let raw = KeychainStore.load(forKey: KeychainStore.credentialKey(for: connection.id)) else { return nil }
+        Self.credential(forConnectionID: connection.id)
+    }
+
+    /// AWS key-pair credential for a connection, as an `AWSSigV4Signer.Credential`.
+    /// Empty (and non-functional) if the connection has no key-pair credential stored.
+    func signerCredential(for connection: CloudConnection) -> AWSSigV4Signer.Credential {
+        Self.signerCredential(forConnectionID: connection.id)
+    }
+
+    /// Keychain-backed, so it works from anywhere holding just a connection id — e.g.
+    /// the operation queue resuming work after a relaunch, without a `HomeStore` instance.
+    static func credential(forConnectionID id: UUID) -> StoredCredential? {
+        guard let raw = KeychainStore.load(forKey: KeychainStore.credentialKey(for: id)) else { return nil }
         return try? JSONDecoder().decode(StoredCredential.self, from: Data(raw.utf8))
+    }
+
+    static func signerCredential(forConnectionID id: UUID) -> AWSSigV4Signer.Credential {
+        guard case .keyPair(let accessKeyID, let secret) = credential(forConnectionID: id) else {
+            return AWSSigV4Signer.Credential(accessKeyID: "", secretAccessKey: "")
+        }
+        return AWSSigV4Signer.Credential(accessKeyID: accessKeyID, secretAccessKey: secret)
     }
 
     func addConnection(vendor: CloudVendor, name: String, credential: StoredCredential) {

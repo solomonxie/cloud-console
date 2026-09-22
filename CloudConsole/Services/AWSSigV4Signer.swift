@@ -3,7 +3,7 @@ import CryptoKit
 
 /// AWS Signature Version 4 — see docs.aws.amazon.com/general/latest/gr/sigv4-signing-process.html
 enum AWSSigV4Signer {
-    struct Credential {
+    struct Credential: Hashable {
         let accessKeyID: String
         let secretAccessKey: String
         let sessionToken: String?
@@ -15,7 +15,12 @@ enum AWSSigV4Signer {
         }
     }
 
-    /// Returns headers to attach to the request (Authorization, x-amz-date, x-amz-content-sha256, host, [x-amz-security-token]).
+    /// Returns headers to attach to the request (Authorization, x-amz-date, x-amz-content-sha256,
+    /// host, [x-amz-security-token], plus any `extraHeadersToSign`).
+    ///
+    /// Any header the request actually carries — e.g. Content-Type or Content-MD5 on a batch
+    /// delete — must be included here. S3 rejects a request with "There were headers present
+    /// in the request which were not signed" if it sees a header that isn't in SignedHeaders.
     static func headers(
         method: String,
         url: URL,
@@ -23,6 +28,7 @@ enum AWSSigV4Signer {
         service: String,
         credential: Credential,
         payload: Data = Data(),
+        extraHeadersToSign: [String: String] = [:],
         date: Date = Date()
     ) -> [String: String] {
         let amzDate = Self.amzDateFormatter.string(from: date)
@@ -30,11 +36,12 @@ enum AWSSigV4Signer {
         let host = url.host ?? ""
         let payloadHash = sha256Hex(payload)
 
-        var headersToSign = [
-            "host": host,
-            "x-amz-date": amzDate,
-            "x-amz-content-sha256": payloadHash,
-        ]
+        var headersToSign = extraHeadersToSign.reduce(into: [String: String]()) { result, pair in
+            result[pair.key.lowercased()] = pair.value
+        }
+        headersToSign["host"] = host
+        headersToSign["x-amz-date"] = amzDate
+        headersToSign["x-amz-content-sha256"] = payloadHash
         if let token = credential.sessionToken {
             headersToSign["x-amz-security-token"] = token
         }
@@ -71,6 +78,61 @@ enum AWSSigV4Signer {
         var result = headersToSign
         result["Authorization"] = authorization
         return result
+    }
+
+    /// A time-limited URL that needs no Authorization header — the signature lives in its
+    /// query string instead, per SigV4's "presigned URL" variant. Good for sharing a link to
+    /// a private object without changing the bucket's own permissions.
+    static func presignedURL(
+        method: String = "GET",
+        url: URL,
+        region: String,
+        service: String,
+        credential: Credential,
+        expiresIn: Int = 3600,
+        date: Date = Date()
+    ) -> URL {
+        let amzDate = Self.amzDateFormatter.string(from: date)
+        let dateStamp = Self.dateStampFormatter.string(from: date)
+        let credentialScope = "\(dateStamp)/\(region)/\(service)/aws4_request"
+        let host = url.host ?? ""
+
+        var components = URLComponents(url: url, resolvingAgainstBaseURL: false)!
+        var queryItems = components.queryItems ?? []
+        queryItems.append(contentsOf: [
+            URLQueryItem(name: "X-Amz-Algorithm", value: "AWS4-HMAC-SHA256"),
+            URLQueryItem(name: "X-Amz-Credential", value: "\(credential.accessKeyID)/\(credentialScope)"),
+            URLQueryItem(name: "X-Amz-Date", value: amzDate),
+            URLQueryItem(name: "X-Amz-Expires", value: String(expiresIn)),
+            URLQueryItem(name: "X-Amz-SignedHeaders", value: "host"),
+        ])
+        if let token = credential.sessionToken {
+            queryItems.append(URLQueryItem(name: "X-Amz-Security-Token", value: token))
+        }
+        components.queryItems = queryItems
+        let unsignedURL = components.url!
+
+        let canonicalRequest = [
+            method,
+            canonicalPath(unsignedURL),
+            canonicalQueryString(unsignedURL),
+            "host:\(host)\n",
+            "host",
+            "UNSIGNED-PAYLOAD",
+        ].joined(separator: "\n")
+
+        let stringToSign = [
+            "AWS4-HMAC-SHA256",
+            amzDate,
+            credentialScope,
+            sha256Hex(Data(canonicalRequest.utf8)),
+        ].joined(separator: "\n")
+
+        let signingKey = self.signingKey(secret: credential.secretAccessKey, dateStamp: dateStamp, region: region, service: service)
+        let signature = hmacHex(key: signingKey, data: Data(stringToSign.utf8))
+
+        components.queryItems?.append(URLQueryItem(name: "X-Amz-Signature", value: signature))
+        return components.url!
     }
 
     private static func signingKey(secret: String, dateStamp: String, region: String, service: String) -> SymmetricKey {
