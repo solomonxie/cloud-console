@@ -17,8 +17,7 @@ enum STSClient {
         }
         let (data, response) = try await URLSession.shared.data(for: request)
         guard let http = response as? HTTPURLResponse, (200...299).contains(http.statusCode) else {
-            let body = String(data: data, encoding: .utf8) ?? ""
-            throw S3Error.badResponse((response as? HTTPURLResponse)?.statusCode ?? -1, body)
+            throw AWSQueryError.parse(status: (response as? HTTPURLResponse)?.statusCode ?? -1, data: data)
         }
     }
 }
