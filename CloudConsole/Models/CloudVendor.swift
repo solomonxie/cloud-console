@@ -1,6 +1,6 @@
 import Foundation
 
-enum CloudVendor: String, CaseIterable, Identifiable {
+enum CloudVendor: String, CaseIterable, Identifiable, Hashable {
     case aws = "AWS"
     case azure = "Azure"
     case gcp = "Google Cloud"
@@ -27,8 +27,10 @@ enum CloudVendor: String, CaseIterable, Identifiable {
 
     var credentialShape: CredentialShape {
         switch self {
-        case .aws, .tencent, .alibaba:
+        case .aws, .alibaba:
             return .keyPair(idLabel: "Access key ID", secretLabel: "Secret access key")
+        case .tencent:
+            return .keyPair(idLabel: "SecretId", secretLabel: "SecretKey")
         case .azure:
             return .connectionString(label: "Connection string")
         case .gcp:
@@ -57,41 +59,56 @@ enum CloudVendor: String, CaseIterable, Identifiable {
     var resourceKinds: [ResourceKind] {
         switch self {
         case .aws:
-            return [.s3, .ec2, .lambda, .rds]
+            return [.billing, .s3, .iamUsers, .iamRoles, .ec2, .lambda, .rds, .eventBridge, .cloudWatchAlarms]
+        case .tencent:
+            return [.billing, .cos, .camUsers, .camRoles, .cvm, .scf, .cdb, .tencentEventBridge, .monitorAlarms]
         default:
             return []
         }
     }
 }
 
-enum ResourceKind: String, Identifiable {
+enum ResourceKind: String, Identifiable, Hashable {
+    case billing = "Billing"
     case s3 = "S3 Buckets"
+    case iamUsers = "IAM Users"
+    case iamRoles = "IAM Roles"
     case ec2 = "EC2 Instances"
     case lambda = "Lambda Functions"
     case rds = "Databases"
+    case cos = "COS Buckets"
+    case camUsers = "CAM Users"
+    case camRoles = "CAM Roles"
+    case cvm = "CVM Instances"
+    case scf = "Cloud Functions"
+    case cdb = "CDB Databases"
+    case eventBridge = "EventBridge"
+    case cloudWatchAlarms = "CloudWatch Alarms"
+    case tencentEventBridge = "EventBridge (CEB)"
+    case monitorAlarms = "Cloud Monitor Alarms"
 
     var id: String { rawValue }
 
-    var shortLabel: String {
-        switch self {
-        case .s3: return "S3"
-        case .ec2: return "EC2"
-        case .lambda: return "Lambda"
-        case .rds: return "RDS"
-        }
-    }
-
     var icon: String {
         switch self {
-        case .s3: return "archivebox.fill"
-        case .ec2: return "server.rack"
-        case .lambda: return "bolt.fill"
-        case .rds: return "cylinder.split.1x2.fill"
+        case .billing: return "creditcard.fill"
+        case .s3, .cos: return "archivebox.fill"
+        case .iamUsers, .camUsers: return "person.fill"
+        case .iamRoles, .camRoles: return "person.2.badge.key.fill"
+        case .ec2, .cvm: return "server.rack"
+        case .lambda, .scf: return "bolt.fill"
+        case .rds, .cdb: return "cylinder.split.1x2.fill"
+        case .eventBridge, .tencentEventBridge: return "arrow.triangle.branch"
+        case .cloudWatchAlarms, .monitorAlarms: return "waveform.path.ecg"
         }
     }
 
     var isImplemented: Bool {
-        self == .s3
+        switch self {
+        case .eventBridge, .cloudWatchAlarms, .tencentEventBridge, .monitorAlarms: return false
+        case .lambda, .rds, .scf, .cdb: return false
+        default: return true
+        }
     }
 }
 
@@ -107,7 +124,7 @@ enum ConnectionTestStatus {
     case failed(String)
 }
 
-struct CloudConnection: Identifiable, Codable {
+struct CloudConnection: Identifiable, Codable, Hashable {
     let id: UUID
     let vendor: CloudVendor
     var name: String

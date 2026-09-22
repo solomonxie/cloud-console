@@ -164,7 +164,7 @@ struct CredentialFormView: View {
     /// commas/quotes, "export " prefixes, and common id/secret spellings.
     /// Only overwrites a field the pasted block actually named.
     private func parsePaste(_ text: String) {
-        let idKeys: Set<String> = ["accesskeyid", "awsaccesskeyid", "id", "accesskey", "key"]
+        let idKeys: Set<String> = ["accesskeyid", "awsaccesskeyid", "id", "accesskey", "key", "secretid"]
         let secretKeys: Set<String> = ["secretaccesskey", "awssecretaccesskey", "secret", "secretkey"]
 
         for rawLine in text.split(whereSeparator: \.isNewline) {
