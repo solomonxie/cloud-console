@@ -126,7 +126,7 @@ struct HomeView: View {
                         try await EC2Client.listInstances(region: region, credential: credential)
                     },
                     row: { instance in EC2InstanceRow(instance: instance, connection: connection) },
-                    route: { instance, region in .genericDetail(title: instance.instanceId, fields: instance.detailFields + [DetailField(label: "Region", value: region)]) }
+                    route: { instance, region in .ec2Instance(instance: instance, region: region, credential: credential) }
                 )
             case .rds:
                 ResourceListPage(
@@ -178,6 +178,8 @@ struct HomeView: View {
             TencentCAMRoleDetailView(role: role, credential: credential)
         case .genericDetail(let title, let fields):
             KeyValueDetailView(title: title, fields: fields)
+        case .ec2Instance(let instance, let region, let credential):
+            EC2InstanceDetailView(instance: instance, region: region, credential: credential)
         case .lambdaFunction(let function, let region, let credential):
             LambdaFunctionDetailView(function: function, region: region, credential: credential)
         case .operations:

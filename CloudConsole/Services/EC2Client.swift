@@ -9,6 +9,12 @@ struct EC2Instance: Identifiable, Hashable, Codable {
     let launchTime: Date?
 }
 
+struct EC2StatusChecks: Hashable {
+    var system: String?
+    var instance: String?
+    var ebs: String?
+}
+
 /// AWS EC2 — Query API (XML), same shape as IAM's, but region-specific.
 enum EC2Client {
     static func listInstances(region: String = "us-east-1", credential: AWSSigV4Signer.Credential) async throws -> [EC2Instance] {
@@ -30,6 +36,39 @@ enum EC2Client {
             throw AWSQueryError.parse(status: http.statusCode, data: data)
         }
         return parseInstances(data)
+    }
+
+    /// System / instance / attached-EBS status checks (`ok`, `impaired`, `initializing`, …).
+    static func statusChecks(instanceId: String, region: String, credential: AWSSigV4Signer.Credential) async throws -> EC2StatusChecks {
+        if AppData.isDemo { return EC2StatusChecks(system: "ok", instance: "ok", ebs: "ok") }
+        var components = URLComponents(string: "https://ec2.\(region).amazonaws.com/")!
+        components.queryItems = [
+            URLQueryItem(name: "Action", value: "DescribeInstanceStatus"),
+            URLQueryItem(name: "Version", value: "2016-11-15"),
+            URLQueryItem(name: "InstanceId.1", value: instanceId),
+            URLQueryItem(name: "IncludeAllInstances", value: "true"),
+        ]
+        let url = components.url!
+        var urlRequest = URLRequest(url: url)
+        for (key, value) in AWSSigV4Signer.headers(method: "GET", url: url, region: region, service: "ec2", credential: credential) {
+            urlRequest.setValue(value, forHTTPHeaderField: key)
+        }
+        let (data, response) = try await URLSession.shared.data(for: urlRequest)
+        let status = (response as? HTTPURLResponse)?.statusCode ?? -1
+        guard (200...299).contains(status) else { throw AWSQueryError.parse(status: status, data: data) }
+        let parser = XMLPathParser(data: data)
+        var checks = EC2StatusChecks()
+        parser.onEnd = { path, text in
+            guard path.last == "status" else { return }
+            switch path.dropLast().last {
+            case "systemStatus": checks.system = text
+            case "instanceStatus": checks.instance = text
+            case "attachedEbsStatus": checks.ebs = text
+            default: break
+            }
+        }
+        parser.run()
+        return checks
     }
 
     static func listRegions(credential: AWSSigV4Signer.Credential) async throws -> [String] {
