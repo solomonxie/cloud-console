@@ -1,0 +1,14 @@
+[
+ {
+  "id": "6F1C2A8E-3B4D-4E5F-9A10-2B3C4D5E6F70",
+  "vendor": "AWS",
+  "name": "Northwind Production",
+  "addedAt": "@today-142 10:24"
+ },
+ {
+  "id": "8A2D3B9F-4C5E-4F60-8B21-3C4D5E6F7081",
+  "vendor": "Tencent Cloud",
+  "name": "Lanting Studio (Shanghai)",
+  "addedAt": "@today-63 18:05"
+ }
+]

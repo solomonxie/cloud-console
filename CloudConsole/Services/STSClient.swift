@@ -4,6 +4,7 @@ import Foundation
 /// specific resource permission (unlike e.g. S3 ListBuckets).
 enum STSClient {
     static func validate(credential: AWSSigV4Signer.Credential) async throws {
+        if AppData.isDemo { return }
         var components = URLComponents(string: "https://sts.amazonaws.com/")!
         components.queryItems = [
             URLQueryItem(name: "Action", value: "GetCallerIdentity"),

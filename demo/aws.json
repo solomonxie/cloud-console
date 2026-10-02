@@ -1,0 +1,1278 @@
+{
+ "s3-buckets": [
+  {
+   "name": "northwind-web-assets",
+   "creationDate": "@today-612 09:14",
+   "region": "us-east-1"
+  },
+  {
+   "name": "northwind-user-uploads",
+   "creationDate": "@today-540 16:02",
+   "region": "us-west-2"
+  },
+  {
+   "name": "northwind-db-backups",
+   "creationDate": "@today-498 11:45",
+   "region": "us-east-1"
+  },
+  {
+   "name": "northwind-logs-archive",
+   "creationDate": "@today-480 08:30",
+   "region": "us-east-1"
+  },
+  {
+   "name": "northwind-ml-datasets",
+   "creationDate": "@today-190 13:20",
+   "region": "eu-west-1"
+  },
+  {
+   "name": "cf-templates-1x8k2pq7-us-east-1",
+   "creationDate": "@today-610 10:05",
+   "region": "us-east-1"
+  }
+ ],
+ "objects": {
+  "northwind-web-assets": {
+   "": {
+    "folders": [
+     "css/",
+     "fonts/",
+     "img/",
+     "js/"
+    ],
+    "objects": [
+     {
+      "key": "index.html",
+      "size": 18422,
+      "lastModified": "@today-1 17:42"
+     },
+     {
+      "key": "robots.txt",
+      "size": 214,
+      "lastModified": "@today-200 09:00"
+     },
+     {
+      "key": "favicon.ico",
+      "size": 15086,
+      "lastModified": "@today-410 12:12"
+     },
+     {
+      "key": "sitemap.xml",
+      "size": 6930,
+      "lastModified": "@today-1 17:42"
+     }
+    ]
+   },
+   "img/": {
+    "folders": [
+     "img/products/"
+    ],
+    "objects": [
+     {
+      "key": "img/hero-autumn.jpg",
+      "size": 482118,
+      "lastModified": "@today-2 10:31"
+     },
+     {
+      "key": "img/hero-summer.jpg",
+      "size": 455902,
+      "lastModified": "@today-96 14:05"
+     },
+     {
+      "key": "img/logo.svg",
+      "size": 4210,
+      "lastModified": "@today-300 09:48"
+     },
+     {
+      "key": "img/og-card.png",
+      "size": 128544,
+      "lastModified": "@today-30 16:20"
+     }
+    ]
+   },
+   "js/": {
+    "folders": [],
+    "objects": [
+     {
+      "key": "js/app.4f2a91.js",
+      "size": 284330,
+      "lastModified": "@today-1 17:41"
+     },
+     {
+      "key": "js/vendor.c81d07.js",
+      "size": 612008,
+      "lastModified": "@today-12 11:02"
+     }
+    ]
+   },
+   "css/": {
+    "folders": [],
+    "objects": [
+     {
+      "key": "css/app.9e1b3c.css",
+      "size": 48212,
+      "lastModified": "@today-1 17:41"
+     }
+    ]
+   },
+   "fonts/": {
+    "folders": [],
+    "objects": [
+     {
+      "key": "fonts/inter-var.woff2",
+      "size": 325640,
+      "lastModified": "@today-300 09:50"
+     }
+    ]
+   }
+  },
+  "northwind-user-uploads": {
+   "": {
+    "folders": [
+     "avatars/",
+     "invoices/",
+     "tmp/"
+    ],
+    "objects": []
+   },
+   "invoices/": {
+    "folders": [],
+    "objects": [
+     {
+      "key": "invoices/2026/INV-4810.pdf",
+      "size": 89147,
+      "lastModified": "@today-0 9:10",
+      "storageClass": "STANDARD"
+     },
+     {
+      "key": "invoices/2026/INV-4811.pdf",
+      "size": 97464,
+      "lastModified": "@today-3 10:17",
+      "storageClass": "STANDARD"
+     },
+     {
+      "key": "invoices/2026/INV-4812.pdf",
+      "size": 115336,
+      "lastModified": "@today-6 11:24",
+      "storageClass": "STANDARD"
+     },
+     {
+      "key": "invoices/2026/INV-4813.pdf",
+      "size": 91847,
+      "lastModified": "@today-9 12:31",
+      "storageClass": "STANDARD"
+     },
+     {
+      "key": "invoices/2026/INV-4814.pdf",
+      "size": 126305,
+      "lastModified": "@today-12 13:38",
+      "storageClass": "STANDARD"
+     },
+     {
+      "key": "invoices/2026/INV-4815.pdf",
+      "size": 97713,
+      "lastModified": "@today-15 14:45",
+      "storageClass": "STANDARD"
+     },
+     {
+      "key": "invoices/2026/INV-4816.pdf",
+      "size": 129883,
+      "lastModified": "@today-18 15:52",
+      "storageClass": "STANDARD_IA"
+     },
+     {
+      "key": "invoices/2026/INV-4817.pdf",
+      "size": 102421,
+      "lastModified": "@today-21 16:59",
+      "storageClass": "STANDARD_IA"
+     },
+     {
+      "key": "invoices/2026/INV-4818.pdf",
+      "size": 59501,
+      "lastModified": "@today-24 9:16",
+      "storageClass": "STANDARD_IA"
+     },
+     {
+      "key": "invoices/2026/INV-4819.pdf",
+      "size": 112422,
+      "lastModified": "@today-27 10:23",
+      "storageClass": "STANDARD_IA"
+     },
+     {
+      "key": "invoices/2026/INV-4820.pdf",
+      "size": 134017,
+      "lastModified": "@today-30 11:30",
+      "storageClass": "STANDARD_IA"
+     },
+     {
+      "key": "invoices/2026/INV-4821.pdf",
+      "size": 99271,
+      "lastModified": "@today-33 12:37",
+      "storageClass": "STANDARD_IA"
+     },
+     {
+      "key": "invoices/2026/INV-4822.pdf",
+      "size": 60628,
+      "lastModified": "@today-36 13:44",
+      "storageClass": "STANDARD_IA"
+     },
+     {
+      "key": "invoices/2026/INV-4823.pdf",
+      "size": 107350,
+      "lastModified": "@today-39 14:51",
+      "storageClass": "STANDARD_IA"
+     }
+    ]
+   },
+   "avatars/": {
+    "folders": [],
+    "objects": [
+     {
+      "key": "avatars/alice.jpg",
+      "size": 41467,
+      "lastModified": "@today-40 12:00"
+     },
+     {
+      "key": "avatars/ben.jpg",
+      "size": 31874,
+      "lastModified": "@today-12 12:00"
+     },
+     {
+      "key": "avatars/chloe.jpg",
+      "size": 67574,
+      "lastModified": "@today-3 12:00"
+     },
+     {
+      "key": "avatars/dmitri.jpg",
+      "size": 85112,
+      "lastModified": "@today-88 12:00"
+     },
+     {
+      "key": "avatars/emma.jpg",
+      "size": 70257,
+      "lastModified": "@today-1 12:00"
+     },
+     {
+      "key": "avatars/farah.jpg",
+      "size": 70212,
+      "lastModified": "@today-21 12:00"
+     }
+    ]
+   }
+  },
+  "northwind-db-backups": {
+   "": {
+    "folders": [
+     "postgres/",
+     "redis/"
+    ],
+    "objects": [
+     {
+      "key": "README.txt",
+      "size": 1204,
+      "lastModified": "@today-498 11:50"
+     }
+    ]
+   },
+   "postgres/": {
+    "folders": [],
+    "objects": [
+     {
+      "key": "postgres/orders-{today-0}.sql.gz",
+      "size": 1820000000,
+      "lastModified": "@today-0 03:15",
+      "storageClass": "STANDARD"
+     },
+     {
+      "key": "postgres/orders-{today-3}.sql.gz",
+      "size": 1829300000,
+      "lastModified": "@today-3 03:15",
+      "storageClass": "STANDARD"
+     },
+     {
+      "key": "postgres/orders-{today-6}.sql.gz",
+      "size": 1838600000,
+      "lastModified": "@today-6 03:15",
+      "storageClass": "STANDARD"
+     },
+     {
+      "key": "postgres/orders-{today-9}.sql.gz",
+      "size": 1847900000,
+      "lastModified": "@today-9 03:15",
+      "storageClass": "STANDARD_IA"
+     },
+     {
+      "key": "postgres/orders-{today-12}.sql.gz",
+      "size": 1857200000,
+      "lastModified": "@today-12 03:15",
+      "storageClass": "STANDARD_IA"
+     },
+     {
+      "key": "postgres/orders-{today-15}.sql.gz",
+      "size": 1866500000,
+      "lastModified": "@today-15 03:15",
+      "storageClass": "STANDARD_IA"
+     },
+     {
+      "key": "postgres/orders-{today-18}.sql.gz",
+      "size": 1875800000,
+      "lastModified": "@today-18 03:15",
+      "storageClass": "STANDARD_IA"
+     },
+     {
+      "key": "postgres/orders-{today-21}.sql.gz",
+      "size": 1885100000,
+      "lastModified": "@today-21 03:15",
+      "storageClass": "STANDARD_IA"
+     },
+     {
+      "key": "postgres/orders-{today-24}.sql.gz",
+      "size": 1894400000,
+      "lastModified": "@today-24 03:15",
+      "storageClass": "STANDARD_IA"
+     },
+     {
+      "key": "postgres/orders-{today-27}.sql.gz",
+      "size": 1903700000,
+      "lastModified": "@today-27 03:15",
+      "storageClass": "STANDARD_IA"
+     },
+     {
+      "key": "postgres/orders-{today-30}.sql.gz",
+      "size": 1913000000,
+      "lastModified": "@today-30 03:15",
+      "storageClass": "GLACIER"
+     },
+     {
+      "key": "postgres/orders-{today-33}.sql.gz",
+      "size": 1922300000,
+      "lastModified": "@today-33 03:15",
+      "storageClass": "GLACIER"
+     },
+     {
+      "key": "postgres/orders-{today-36}.sql.gz",
+      "size": 1931600000,
+      "lastModified": "@today-36 03:15",
+      "storageClass": "GLACIER"
+     },
+     {
+      "key": "postgres/orders-{today-39}.sql.gz",
+      "size": 1940900000,
+      "lastModified": "@today-39 03:15",
+      "storageClass": "GLACIER"
+     },
+     {
+      "key": "postgres/orders-{today-42}.sql.gz",
+      "size": 1950200000,
+      "lastModified": "@today-42 03:15",
+      "storageClass": "GLACIER"
+     }
+    ]
+   },
+   "redis/": {
+    "folders": [],
+    "objects": [
+     {
+      "key": "redis/dump-weekly.rdb",
+      "size": 412000000,
+      "lastModified": "@today-2 04:00",
+      "storageClass": "STANDARD_IA"
+     }
+    ]
+   }
+  },
+  "northwind-logs-archive": {
+   "": {
+    "folders": [
+     "alb/",
+     "cloudfront/"
+    ],
+    "objects": []
+   },
+   "alb/": {
+    "folders": [],
+    "objects": [
+     {
+      "key": "alb/app-alb-{today-1}.log.gz",
+      "size": 120860165,
+      "lastModified": "@today-1 00:05",
+      "storageClass": "INTELLIGENT_TIERING"
+     },
+     {
+      "key": "alb/app-alb-{today-2}.log.gz",
+      "size": 127442628,
+      "lastModified": "@today-2 00:05",
+      "storageClass": "INTELLIGENT_TIERING"
+     },
+     {
+      "key": "alb/app-alb-{today-3}.log.gz",
+      "size": 98718300,
+      "lastModified": "@today-3 00:05",
+      "storageClass": "INTELLIGENT_TIERING"
+     },
+     {
+      "key": "alb/app-alb-{today-4}.log.gz",
+      "size": 129528642,
+      "lastModified": "@today-4 00:05",
+      "storageClass": "INTELLIGENT_TIERING"
+     },
+     {
+      "key": "alb/app-alb-{today-5}.log.gz",
+      "size": 112849981,
+      "lastModified": "@today-5 00:05",
+      "storageClass": "INTELLIGENT_TIERING"
+     },
+     {
+      "key": "alb/app-alb-{today-6}.log.gz",
+      "size": 81488640,
+      "lastModified": "@today-6 00:05",
+      "storageClass": "INTELLIGENT_TIERING"
+     },
+     {
+      "key": "alb/app-alb-{today-7}.log.gz",
+      "size": 119552418,
+      "lastModified": "@today-7 00:05",
+      "storageClass": "INTELLIGENT_TIERING"
+     },
+     {
+      "key": "alb/app-alb-{today-8}.log.gz",
+      "size": 84065240,
+      "lastModified": "@today-8 00:05",
+      "storageClass": "INTELLIGENT_TIERING"
+     }
+    ]
+   }
+  },
+  "northwind-ml-datasets": {
+   "": {
+    "folders": [
+     "churn-model/"
+    ],
+    "objects": [
+     {
+      "key": "customers-2026Q3.parquet",
+      "size": 2402880000,
+      "lastModified": "@today-5 22:10"
+     },
+     {
+      "key": "events-sample.csv",
+      "size": 18204552,
+      "lastModified": "@today-5 22:12"
+     }
+    ]
+   }
+  }
+ },
+ "iam-users": [
+  {
+   "userName": "alice.chen",
+   "arn": "arn:aws:iam::482913075521:user/alice.chen",
+   "path": "/",
+   "createDate": "@today-602 10:00"
+  },
+  {
+   "userName": "ben.ortiz",
+   "arn": "arn:aws:iam::482913075521:user/ben.ortiz",
+   "path": "/",
+   "createDate": "@today-455 10:00"
+  },
+  {
+   "userName": "ci-deploy",
+   "arn": "arn:aws:iam::482913075521:user/ci-deploy",
+   "path": "/",
+   "createDate": "@today-590 10:00"
+  },
+  {
+   "userName": "grafana-readonly",
+   "arn": "arn:aws:iam::482913075521:user/grafana-readonly",
+   "path": "/",
+   "createDate": "@today-330 10:00"
+  },
+  {
+   "userName": "priya.nair",
+   "arn": "arn:aws:iam::482913075521:user/priya.nair",
+   "path": "/",
+   "createDate": "@today-120 10:00"
+  }
+ ],
+ "iam-roles": [
+  {
+   "roleName": "AWSServiceRoleForECS",
+   "arn": "arn:aws:iam::482913075521:role/aws-service-role/ecs.amazonaws.com/AWSServiceRoleForECS",
+   "path": "/aws-service-role/ecs.amazonaws.com/",
+   "createDate": "@today-580 12:00"
+  },
+  {
+   "roleName": "AWSServiceRoleForRDS",
+   "arn": "arn:aws:iam::482913075521:role/aws-service-role/rds.amazonaws.com/AWSServiceRoleForRDS",
+   "path": "/aws-service-role/rds.amazonaws.com/",
+   "createDate": "@today-560 12:00"
+  },
+  {
+   "roleName": "app-server-ec2",
+   "arn": "arn:aws:iam::482913075521:role/app-server-ec2",
+   "path": "/",
+   "createDate": "@today-575 15:40"
+  },
+  {
+   "roleName": "github-actions-deploy",
+   "arn": "arn:aws:iam::482913075521:role/github-actions-deploy",
+   "path": "/",
+   "createDate": "@today-260 09:12"
+  },
+  {
+   "roleName": "image-resize-lambda",
+   "arn": "arn:aws:iam::482913075521:role/image-resize-lambda",
+   "path": "/",
+   "createDate": "@today-188 17:03"
+  }
+ ],
+ "policies": {
+  "alice.chen": {
+   "attached": [
+    [
+     "AdministratorAccess",
+     "arn:aws:iam::aws:policy/AdministratorAccess"
+    ]
+   ],
+   "inline": []
+  },
+  "ben.ortiz": {
+   "attached": [
+    [
+     "PowerUserAccess",
+     "arn:aws:iam::aws:policy/PowerUserAccess"
+    ]
+   ],
+   "inline": [
+    "deny-billing"
+   ]
+  },
+  "ci-deploy": {
+   "attached": [
+    [
+     "AmazonS3FullAccess",
+     "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+    ]
+   ],
+   "inline": [
+    "invalidate-cloudfront"
+   ]
+  },
+  "grafana-readonly": {
+   "attached": [
+    [
+     "CloudWatchReadOnlyAccess",
+     "arn:aws:iam::aws:policy/CloudWatchReadOnlyAccess"
+    ]
+   ],
+   "inline": []
+  },
+  "priya.nair": {
+   "attached": [
+    [
+     "ReadOnlyAccess",
+     "arn:aws:iam::aws:policy/ReadOnlyAccess"
+    ],
+    [
+     "IAMUserChangePassword",
+     "arn:aws:iam::aws:policy/IAMUserChangePassword"
+    ]
+   ],
+   "inline": []
+  },
+  "app-server-ec2": {
+   "attached": [
+    [
+     "AmazonSSMManagedInstanceCore",
+     "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+    ]
+   ],
+   "inline": [
+    "read-user-uploads"
+   ]
+  },
+  "github-actions-deploy": {
+   "attached": [],
+   "inline": [
+    "deploy-web-assets"
+   ]
+  },
+  "image-resize-lambda": {
+   "attached": [
+    [
+     "AWSLambdaBasicExecutionRole",
+     "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+    ]
+   ],
+   "inline": [
+    "read-write-uploads"
+   ]
+  }
+ },
+ "documents": {
+  "default": {
+   "Version": "2012-10-17",
+   "Statement": [
+    {
+     "Effect": "Allow",
+     "Action": [
+      "s3:GetObject",
+      "s3:ListBucket"
+     ],
+     "Resource": [
+      "arn:aws:s3:::northwind-user-uploads",
+      "arn:aws:s3:::northwind-user-uploads/*"
+     ]
+    }
+   ]
+  },
+  "AdministratorAccess": {
+   "Version": "2012-10-17",
+   "Statement": [
+    {
+     "Effect": "Allow",
+     "Action": "*",
+     "Resource": "*"
+    }
+   ]
+  },
+  "deny-billing": {
+   "Version": "2012-10-17",
+   "Statement": [
+    {
+     "Effect": "Deny",
+     "Action": [
+      "aws-portal:*",
+      "ce:*",
+      "budgets:*"
+     ],
+     "Resource": "*"
+    }
+   ]
+  },
+  "invalidate-cloudfront": {
+   "Version": "2012-10-17",
+   "Statement": [
+    {
+     "Effect": "Allow",
+     "Action": "cloudfront:CreateInvalidation",
+     "Resource": "arn:aws:cloudfront::482913075521:distribution/E2QX7M1KQ4ZP8T"
+    }
+   ]
+  },
+  "deploy-web-assets": {
+   "Version": "2012-10-17",
+   "Statement": [
+    {
+     "Effect": "Allow",
+     "Action": [
+      "s3:PutObject",
+      "s3:DeleteObject",
+      "s3:ListBucket"
+     ],
+     "Resource": [
+      "arn:aws:s3:::northwind-web-assets",
+      "arn:aws:s3:::northwind-web-assets/*"
+     ]
+    }
+   ]
+  }
+ },
+ "ec2-instances": [
+  {
+   "instanceId": "i-0a3f9c27d1e84b512",
+   "instanceType": "m6i.large",
+   "state": "running",
+   "name": "web-1",
+   "launchTime": "@today-41 08:12"
+  },
+  {
+   "instanceId": "i-0b71e4d9a26c3f088",
+   "instanceType": "m6i.large",
+   "state": "running",
+   "name": "web-2",
+   "launchTime": "@today-41 08:14"
+  },
+  {
+   "instanceId": "i-04c2a8f61be9d7735",
+   "instanceType": "c6i.xlarge",
+   "state": "running",
+   "name": "queue-worker",
+   "launchTime": "@today-17 22:40"
+  },
+  {
+   "instanceId": "i-09e5d3b27fa41c6d0",
+   "instanceType": "t3.small",
+   "state": "running",
+   "name": "staging-api",
+   "launchTime": "@today-3 11:05"
+  },
+  {
+   "instanceId": "i-0f18b6c94d2e7a351",
+   "instanceType": "t3.micro",
+   "state": "stopped",
+   "name": "bastion",
+   "launchTime": "@today-130 09:30"
+  },
+  {
+   "instanceId": "i-02d7f1a0c58e93b64",
+   "instanceType": "g5.xlarge",
+   "state": "stopped",
+   "name": "ml-training",
+   "launchTime": "@today-6 19:55"
+  }
+ ],
+ "rds-instances": [
+  {
+   "identifier": "orders-prod",
+   "engine": "postgres",
+   "status": "available",
+   "instanceClass": "db.r6g.large",
+   "endpointAddress": "orders-prod.c8x1k2m3n4p5.us-east-1.rds.amazonaws.com"
+  }
+ ],
+ "lambda-functions": [
+  {
+   "name": "image-resize",
+   "runtime": "nodejs20.x",
+   "memorySize": 1024,
+   "lastModified": "@iso today-9 15:22"
+  }
+ ],
+ "billing-mtd": {
+  "periodStart": "@ymd month",
+  "periodEnd": "@ymd today",
+  "total": 534.0,
+  "unit": "USD",
+  "byService": [
+   {
+    "serviceName": "Amazon Elastic Compute Cloud - Compute",
+    "amount": 216.25
+   },
+   {
+    "serviceName": "Amazon Relational Database Service",
+    "amount": 149.25
+   },
+   {
+    "serviceName": "Amazon Simple Storage Service",
+    "amount": 71.58
+   },
+   {
+    "serviceName": "Amazon CloudFront",
+    "amount": 50.41
+   },
+   {
+    "serviceName": "Amazon Elastic Load Balancing",
+    "amount": 21.21
+   },
+   {
+    "serviceName": "AWS Lambda",
+    "amount": 12.52
+   },
+   {
+    "serviceName": "Amazon CloudWatch",
+    "amount": 9.59
+   },
+   {
+    "serviceName": "AWS Key Management Service",
+    "amount": 3.19
+   }
+  ],
+  "isEstimated": true
+ },
+ "billing-history": [
+  {
+   "periodStart": "@ymd month",
+   "periodEnd": "@ymd today",
+   "total": 534.0,
+   "unit": "USD",
+   "byService": [
+    {
+     "serviceName": "Amazon Elastic Compute Cloud - Compute",
+     "amount": 216.25
+    },
+    {
+     "serviceName": "Amazon Relational Database Service",
+     "amount": 149.25
+    },
+    {
+     "serviceName": "Amazon Simple Storage Service",
+     "amount": 71.58
+    },
+    {
+     "serviceName": "Amazon CloudFront",
+     "amount": 50.41
+    },
+    {
+     "serviceName": "Amazon Elastic Load Balancing",
+     "amount": 21.21
+    },
+    {
+     "serviceName": "AWS Lambda",
+     "amount": 12.52
+    },
+    {
+     "serviceName": "Amazon CloudWatch",
+     "amount": 9.59
+    },
+    {
+     "serviceName": "AWS Key Management Service",
+     "amount": 3.19
+    }
+   ],
+   "isEstimated": true
+  },
+  {
+   "periodStart": "@ymd month-1",
+   "periodEnd": "@ymd month",
+   "total": 1193.85,
+   "unit": "USD",
+   "byService": [
+    {
+     "serviceName": "Amazon Elastic Compute Cloud - Compute",
+     "amount": 470.64
+    },
+    {
+     "serviceName": "Amazon Relational Database Service",
+     "amount": 320.98
+    },
+    {
+     "serviceName": "Amazon Simple Storage Service",
+     "amount": 176.89
+    },
+    {
+     "serviceName": "Amazon CloudFront",
+     "amount": 113.06
+    },
+    {
+     "serviceName": "Amazon Elastic Load Balancing",
+     "amount": 53.09
+    },
+    {
+     "serviceName": "AWS Lambda",
+     "amount": 29.58
+    },
+    {
+     "serviceName": "Amazon CloudWatch",
+     "amount": 22.4
+    },
+    {
+     "serviceName": "AWS Key Management Service",
+     "amount": 7.21
+    }
+   ],
+   "isEstimated": false
+  },
+  {
+   "periodStart": "@ymd month-2",
+   "periodEnd": "@ymd month-1",
+   "total": 1256.02,
+   "unit": "USD",
+   "byService": [
+    {
+     "serviceName": "Amazon Elastic Compute Cloud - Compute",
+     "amount": 502.44
+    },
+    {
+     "serviceName": "Amazon Relational Database Service",
+     "amount": 376.93
+    },
+    {
+     "serviceName": "Amazon Simple Storage Service",
+     "amount": 163.26
+    },
+    {
+     "serviceName": "Amazon CloudFront",
+     "amount": 109.51
+    },
+    {
+     "serviceName": "Amazon Elastic Load Balancing",
+     "amount": 46.55
+    },
+    {
+     "serviceName": "AWS Lambda",
+     "amount": 28.22
+    },
+    {
+     "serviceName": "Amazon CloudWatch",
+     "amount": 21.91
+    },
+    {
+     "serviceName": "AWS Key Management Service",
+     "amount": 7.2
+    }
+   ],
+   "isEstimated": false
+  },
+  {
+   "periodStart": "@ymd month-3",
+   "periodEnd": "@ymd month-2",
+   "total": 1198.67,
+   "unit": "USD",
+   "byService": [
+    {
+     "serviceName": "Amazon Elastic Compute Cloud - Compute",
+     "amount": 491.39
+    },
+    {
+     "serviceName": "Amazon Relational Database Service",
+     "amount": 347.16
+    },
+    {
+     "serviceName": "Amazon Simple Storage Service",
+     "amount": 146.51
+    },
+    {
+     "serviceName": "Amazon CloudFront",
+     "amount": 112.25
+    },
+    {
+     "serviceName": "Amazon Elastic Load Balancing",
+     "amount": 48.88
+    },
+    {
+     "serviceName": "AWS Lambda",
+     "amount": 24.17
+    },
+    {
+     "serviceName": "Amazon CloudWatch",
+     "amount": 21.03
+    },
+    {
+     "serviceName": "AWS Key Management Service",
+     "amount": 7.28
+    }
+   ],
+   "isEstimated": false
+  },
+  {
+   "periodStart": "@ymd month-4",
+   "periodEnd": "@ymd month-3",
+   "total": 1149.53,
+   "unit": "USD",
+   "byService": [
+    {
+     "serviceName": "Amazon Elastic Compute Cloud - Compute",
+     "amount": 455.86
+    },
+    {
+     "serviceName": "Amazon Relational Database Service",
+     "amount": 305.37
+    },
+    {
+     "serviceName": "Amazon Simple Storage Service",
+     "amount": 167.33
+    },
+    {
+     "serviceName": "Amazon CloudFront",
+     "amount": 119.12
+    },
+    {
+     "serviceName": "Amazon Elastic Load Balancing",
+     "amount": 49.6
+    },
+    {
+     "serviceName": "AWS Lambda",
+     "amount": 24.41
+    },
+    {
+     "serviceName": "Amazon CloudWatch",
+     "amount": 21.35
+    },
+    {
+     "serviceName": "AWS Key Management Service",
+     "amount": 6.49
+    }
+   ],
+   "isEstimated": false
+  },
+  {
+   "periodStart": "@ymd month-5",
+   "periodEnd": "@ymd month-4",
+   "total": 1172.31,
+   "unit": "USD",
+   "byService": [
+    {
+     "serviceName": "Amazon Elastic Compute Cloud - Compute",
+     "amount": 441.91
+    },
+    {
+     "serviceName": "Amazon Relational Database Service",
+     "amount": 343.55
+    },
+    {
+     "serviceName": "Amazon Simple Storage Service",
+     "amount": 168.33
+    },
+    {
+     "serviceName": "Amazon CloudFront",
+     "amount": 116.37
+    },
+    {
+     "serviceName": "Amazon Elastic Load Balancing",
+     "amount": 48.42
+    },
+    {
+     "serviceName": "AWS Lambda",
+     "amount": 26.13
+    },
+    {
+     "serviceName": "Amazon CloudWatch",
+     "amount": 20.44
+    },
+    {
+     "serviceName": "AWS Key Management Service",
+     "amount": 7.16
+    }
+   ],
+   "isEstimated": false
+  },
+  {
+   "periodStart": "@ymd month-6",
+   "periodEnd": "@ymd month-5",
+   "total": 1122.85,
+   "unit": "USD",
+   "byService": [
+    {
+     "serviceName": "Amazon Elastic Compute Cloud - Compute",
+     "amount": 438.72
+    },
+    {
+     "serviceName": "Amazon Relational Database Service",
+     "amount": 316.79
+    },
+    {
+     "serviceName": "Amazon Simple Storage Service",
+     "amount": 152.79
+    },
+    {
+     "serviceName": "Amazon CloudFront",
+     "amount": 111.96
+    },
+    {
+     "serviceName": "Amazon Elastic Load Balancing",
+     "amount": 48.14
+    },
+    {
+     "serviceName": "AWS Lambda",
+     "amount": 25.6
+    },
+    {
+     "serviceName": "Amazon CloudWatch",
+     "amount": 21.79
+    },
+    {
+     "serviceName": "AWS Key Management Service",
+     "amount": 7.06
+    }
+   ],
+   "isEstimated": false
+  },
+  {
+   "periodStart": "@ymd month-7",
+   "periodEnd": "@ymd month-6",
+   "total": 1087.9,
+   "unit": "USD",
+   "byService": [
+    {
+     "serviceName": "Amazon Elastic Compute Cloud - Compute",
+     "amount": 427.98
+    },
+    {
+     "serviceName": "Amazon Relational Database Service",
+     "amount": 299.58
+    },
+    {
+     "serviceName": "Amazon Simple Storage Service",
+     "amount": 146.5
+    },
+    {
+     "serviceName": "Amazon CloudFront",
+     "amount": 115.01
+    },
+    {
+     "serviceName": "Amazon Elastic Load Balancing",
+     "amount": 46.78
+    },
+    {
+     "serviceName": "AWS Lambda",
+     "amount": 25.06
+    },
+    {
+     "serviceName": "Amazon CloudWatch",
+     "amount": 20.32
+    },
+    {
+     "serviceName": "AWS Key Management Service",
+     "amount": 6.67
+    }
+   ],
+   "isEstimated": false
+  },
+  {
+   "periodStart": "@ymd month-8",
+   "periodEnd": "@ymd month-7",
+   "total": 1128.66,
+   "unit": "USD",
+   "byService": [
+    {
+     "serviceName": "Amazon Elastic Compute Cloud - Compute",
+     "amount": 451.08
+    },
+    {
+     "serviceName": "Amazon Relational Database Service",
+     "amount": 321.43
+    },
+    {
+     "serviceName": "Amazon Simple Storage Service",
+     "amount": 151.2
+    },
+    {
+     "serviceName": "Amazon CloudFront",
+     "amount": 108.84
+    },
+    {
+     "serviceName": "Amazon Elastic Load Balancing",
+     "amount": 45.79
+    },
+    {
+     "serviceName": "AWS Lambda",
+     "amount": 23.71
+    },
+    {
+     "serviceName": "Amazon CloudWatch",
+     "amount": 19.82
+    },
+    {
+     "serviceName": "AWS Key Management Service",
+     "amount": 6.79
+    }
+   ],
+   "isEstimated": false
+  },
+  {
+   "periodStart": "@ymd month-9",
+   "periodEnd": "@ymd month-8",
+   "total": 1081.6,
+   "unit": "USD",
+   "byService": [
+    {
+     "serviceName": "Amazon Elastic Compute Cloud - Compute",
+     "amount": 445.81
+    },
+    {
+     "serviceName": "Amazon Relational Database Service",
+     "amount": 306.68
+    },
+    {
+     "serviceName": "Amazon Simple Storage Service",
+     "amount": 133.94
+    },
+    {
+     "serviceName": "Amazon CloudFront",
+     "amount": 104.58
+    },
+    {
+     "serviceName": "Amazon Elastic Load Balancing",
+     "amount": 41.66
+    },
+    {
+     "serviceName": "AWS Lambda",
+     "amount": 24.1
+    },
+    {
+     "serviceName": "Amazon CloudWatch",
+     "amount": 18.21
+    },
+    {
+     "serviceName": "AWS Key Management Service",
+     "amount": 6.62
+    }
+   ],
+   "isEstimated": false
+  },
+  {
+   "periodStart": "@ymd month-10",
+   "periodEnd": "@ymd month-9",
+   "total": 1058.12,
+   "unit": "USD",
+   "byService": [
+    {
+     "serviceName": "Amazon Elastic Compute Cloud - Compute",
+     "amount": 444.12
+    },
+    {
+     "serviceName": "Amazon Relational Database Service",
+     "amount": 284.78
+    },
+    {
+     "serviceName": "Amazon Simple Storage Service",
+     "amount": 145.46
+    },
+    {
+     "serviceName": "Amazon CloudFront",
+     "amount": 95.91
+    },
+    {
+     "serviceName": "Amazon Elastic Load Balancing",
+     "amount": 38.94
+    },
+    {
+     "serviceName": "AWS Lambda",
+     "amount": 23.28
+    },
+    {
+     "serviceName": "Amazon CloudWatch",
+     "amount": 19.28
+    },
+    {
+     "serviceName": "AWS Key Management Service",
+     "amount": 6.35
+    }
+   ],
+   "isEstimated": false
+  },
+  {
+   "periodStart": "@ymd month-11",
+   "periodEnd": "@ymd month-10",
+   "total": 997.91,
+   "unit": "USD",
+   "byService": [
+    {
+     "serviceName": "Amazon Elastic Compute Cloud - Compute",
+     "amount": 406.22
+    },
+    {
+     "serviceName": "Amazon Relational Database Service",
+     "amount": 274.66
+    },
+    {
+     "serviceName": "Amazon Simple Storage Service",
+     "amount": 137.55
+    },
+    {
+     "serviceName": "Amazon CloudFront",
+     "amount": 96.28
+    },
+    {
+     "serviceName": "Amazon Elastic Load Balancing",
+     "amount": 37.28
+    },
+    {
+     "serviceName": "AWS Lambda",
+     "amount": 20.77
+    },
+    {
+     "serviceName": "Amazon CloudWatch",
+     "amount": 19.5
+    },
+    {
+     "serviceName": "AWS Key Management Service",
+     "amount": 5.65
+    }
+   ],
+   "isEstimated": false
+  }
+ ]
+}

@@ -7,6 +7,8 @@ struct SettingsCard: View {
     @ObservedObject private var operationQueue = S3OperationQueue.shared
     @State private var showingPasscodeSetup = false
     @State private var showingDisablePasscodeConfirm = false
+    @AppStorage(AppData.demoKey) private var demoOn = false
+    @AppStorage(AppData.demoGenerationKey) private var demoGeneration = 0
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -21,6 +23,12 @@ struct SettingsCard: View {
             }
             Divider().padding(.leading, 68)
             queueRow
+            Divider().padding(.leading, 68)
+            demoRow
+            if demoOn {
+                Divider().padding(.leading, 68)
+                resetDemoRow
+            }
         }
         .background(
             RoundedRectangle(cornerRadius: 22, style: .continuous)
@@ -105,6 +113,39 @@ struct SettingsCard: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+    }
+
+    /// Sample connections for screenshots; real connections, keys and cache are left alone.
+    private var demoRow: some View {
+        HStack(spacing: 14) {
+            VendorBadge(systemImage: "sparkles.rectangle.stack", color: .purple, size: 34)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Demo mode").fontWeight(.medium)
+                Text("Sample accounts, nothing sent to any cloud").font(.caption).foregroundStyle(.secondary)
+            }
+            Spacer()
+            Toggle("", isOn: $demoOn).labelsHidden()
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+    }
+
+    private var resetDemoRow: some View {
+        Button {
+            HomeStore.resetDemo()
+            demoGeneration += 1
+        } label: {
+            HStack(spacing: 14) {
+                VendorBadge(systemImage: "arrow.counterclockwise", color: .purple, size: 34)
+                Text("Reset demo data").fontWeight(.medium).foregroundStyle(.primary)
+                Spacer()
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .sensoryFeedback(.success, trigger: demoGeneration)
     }
 
     private func hintRow(_ hint: String) -> some View {

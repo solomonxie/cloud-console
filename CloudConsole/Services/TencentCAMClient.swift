@@ -52,6 +52,7 @@ enum TencentCAMClient {
 
     /// `userArn` is the synthesized `uin/<n>` identifier `listUsers` put in `IAMUser.arn`.
     static func listAttachedUserPolicyNames(userArn: String, credential: AWSSigV4Signer.Credential) async throws -> [String] {
+        if AppData.isDemo { return DemoCloud.camPolicyNames(arn: userArn, credential) }
         struct Response: Decodable {
             struct Body: Decodable {
                 struct Policy: Decodable { let PolicyName: String }
@@ -67,6 +68,7 @@ enum TencentCAMClient {
 
     /// `roleArn` is the synthesized `role/<id>` identifier `listRoles` put in `IAMRole.arn`.
     static func listAttachedRolePolicyNames(roleArn: String, credential: AWSSigV4Signer.Credential) async throws -> [String] {
+        if AppData.isDemo { return DemoCloud.camPolicyNames(arn: roleArn, credential) }
         struct Response: Decodable {
             struct Body: Decodable {
                 struct Policy: Decodable { let PolicyName: String }

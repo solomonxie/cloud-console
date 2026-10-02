@@ -61,6 +61,7 @@ actor ResourceCache {
 /// Fetches through the shared cache: returns a cached hit under `ttl` unless `forceRefresh`,
 /// otherwise calls `fetch` and caches the result.
 func cached<T: Codable>(key: String, ttl: TimeInterval, forceRefresh: Bool = false, fetch: () async throws -> T) async throws -> T {
+    if AppData.isDemo { return try DemoCloud.value(T.self, cacheKey: key) }
     if !forceRefresh, let hit = await ResourceCache.shared.get(T.self, key: key, ttl: ttl) {
         return hit
     }

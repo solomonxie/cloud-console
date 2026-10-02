@@ -1,0 +1,732 @@
+{
+ "cos-buckets": [
+  {
+   "name": "lanting-static-1310245871",
+   "creationDate": "@today-380 10:20",
+   "region": "ap-shanghai"
+  },
+  {
+   "name": "lanting-media-1310245871",
+   "creationDate": "@today-372 14:48",
+   "region": "ap-shanghai"
+  },
+  {
+   "name": "lanting-backup-1310245871",
+   "creationDate": "@today-300 09:00",
+   "region": "ap-guangzhou"
+  }
+ ],
+ "objects": {
+  "lanting-static-1310245871": {
+   "": {
+    "folders": [
+     "assets/"
+    ],
+    "objects": [
+     {
+      "key": "index.html",
+      "size": 12840,
+      "lastModified": "@today-1 20:15"
+     },
+     {
+      "key": "manifest.json",
+      "size": 902,
+      "lastModified": "@today-1 20:15"
+     }
+    ]
+   },
+   "assets/": {
+    "folders": [],
+    "objects": [
+     {
+      "key": "assets/main.73b2c1.js",
+      "size": 402118,
+      "lastModified": "@today-1 20:14"
+     },
+     {
+      "key": "assets/banner-mid-autumn.webp",
+      "size": 211430,
+      "lastModified": "@today-4 09:30"
+     }
+    ]
+   }
+  },
+  "lanting-media-1310245871": {
+   "": {
+    "folders": [
+     "videos/",
+     "covers/"
+    ],
+    "objects": []
+   },
+   "videos/": {
+    "folders": [],
+    "objects": [
+     {
+      "key": "videos/episode-01.mp4",
+      "size": 509722978,
+      "lastModified": "@today-7 18:00"
+     },
+     {
+      "key": "videos/episode-02.mp4",
+      "size": 564492031,
+      "lastModified": "@today-14 18:00"
+     },
+     {
+      "key": "videos/episode-03.mp4",
+      "size": 702002364,
+      "lastModified": "@today-21 18:00"
+     },
+     {
+      "key": "videos/episode-04.mp4",
+      "size": 636673907,
+      "lastModified": "@today-28 18:00"
+     },
+     {
+      "key": "videos/episode-05.mp4",
+      "size": 401308474,
+      "lastModified": "@today-35 18:00",
+      "storageClass": "STANDARD_IA"
+     },
+     {
+      "key": "videos/episode-06.mp4",
+      "size": 824261165,
+      "lastModified": "@today-42 18:00",
+      "storageClass": "STANDARD_IA"
+     },
+     {
+      "key": "videos/episode-07.mp4",
+      "size": 437173121,
+      "lastModified": "@today-49 18:00",
+      "storageClass": "STANDARD_IA"
+     },
+     {
+      "key": "videos/episode-08.mp4",
+      "size": 501963446,
+      "lastModified": "@today-56 18:00",
+      "storageClass": "STANDARD_IA"
+     }
+    ]
+   }
+  },
+  "lanting-backup-1310245871": {
+   "": {
+    "folders": [],
+    "objects": [
+     {
+      "key": "mysql-{today-0}.tar.gz",
+      "size": 960000000,
+      "lastModified": "@today-0 02:30",
+      "storageClass": "STANDARD_IA"
+     },
+     {
+      "key": "mysql-{today-4}.tar.gz",
+      "size": 969600000,
+      "lastModified": "@today-4 02:30",
+      "storageClass": "STANDARD_IA"
+     },
+     {
+      "key": "mysql-{today-8}.tar.gz",
+      "size": 979200000,
+      "lastModified": "@today-8 02:30",
+      "storageClass": "STANDARD_IA"
+     },
+     {
+      "key": "mysql-{today-12}.tar.gz",
+      "size": 988800000,
+      "lastModified": "@today-12 02:30",
+      "storageClass": "STANDARD_IA"
+     },
+     {
+      "key": "mysql-{today-16}.tar.gz",
+      "size": 998400000,
+      "lastModified": "@today-16 02:30",
+      "storageClass": "ARCHIVE"
+     },
+     {
+      "key": "mysql-{today-20}.tar.gz",
+      "size": 1008000000,
+      "lastModified": "@today-20 02:30",
+      "storageClass": "ARCHIVE"
+     },
+     {
+      "key": "mysql-{today-24}.tar.gz",
+      "size": 1017600000,
+      "lastModified": "@today-24 02:30",
+      "storageClass": "ARCHIVE"
+     }
+    ]
+   }
+  }
+ },
+ "cam-users": [
+  {
+   "userName": "zhang.wei",
+   "arn": "uin/10003812000",
+   "path": "/",
+   "createDate": "@today-380 10:00"
+  },
+  {
+   "userName": "li.na",
+   "arn": "uin/10003812037",
+   "path": "/",
+   "createDate": "@today-300 10:00"
+  },
+  {
+   "userName": "ops-bot",
+   "arn": "uin/10003812074",
+   "path": "/",
+   "createDate": "@today-260 10:00"
+  },
+  {
+   "userName": "wang.fang",
+   "arn": "uin/10003812111",
+   "path": "/",
+   "createDate": "@today-45 10:00"
+  }
+ ],
+ "cam-roles": [
+  {
+   "roleName": "CVM_QcsRole",
+   "arn": "role/4611686018427400001",
+   "path": "/",
+   "createDate": "@today-370 12:00"
+  },
+  {
+   "roleName": "SCF_QcsRole",
+   "arn": "role/4611686018427400002",
+   "path": "/",
+   "createDate": "@today-300 12:00"
+  },
+  {
+   "roleName": "ci-release",
+   "arn": "role/4611686018427400017",
+   "path": "/",
+   "createDate": "@today-120 16:30"
+  }
+ ],
+ "policies": {
+  "zhang.wei": {
+   "attached": [
+    [
+     "AdministratorAccess",
+     ""
+    ]
+   ]
+  },
+  "li.na": {
+   "attached": [
+    [
+     "QcloudCVMFullAccess",
+     ""
+    ],
+    [
+     "QcloudCOSReadOnlyAccess",
+     ""
+    ]
+   ]
+  },
+  "ops-bot": {
+   "attached": [
+    [
+     "QcloudCOSDataFullControl",
+     ""
+    ],
+    [
+     "QcloudCDNFullAccess",
+     ""
+    ]
+   ]
+  },
+  "wang.fang": {
+   "attached": [
+    [
+     "ReadOnlyAccess",
+     ""
+    ]
+   ]
+  },
+  "CVM_QcsRole": {
+   "attached": [
+    [
+     "QcloudAccessForCVMRole",
+     ""
+    ]
+   ]
+  },
+  "SCF_QcsRole": {
+   "attached": [
+    [
+     "QcloudAccessForScfRole",
+     ""
+    ]
+   ]
+  },
+  "ci-release": {
+   "attached": [
+    [
+     "QcloudCOSDataFullControl",
+     ""
+    ]
+   ]
+  }
+ },
+ "cvm-instances": [
+  {
+   "instanceId": "ins-8x2kq4mz",
+   "instanceName": "web-shanghai-1",
+   "instanceType": "S5.LARGE8",
+   "state": "RUNNING"
+  },
+  {
+   "instanceId": "ins-3jd9fw1c",
+   "instanceName": "web-shanghai-2",
+   "instanceType": "S5.LARGE8",
+   "state": "RUNNING"
+  },
+  {
+   "instanceId": "ins-q7m2v8tn",
+   "instanceName": "transcode-worker",
+   "instanceType": "C6.2XLARGE16",
+   "state": "RUNNING"
+  },
+  {
+   "instanceId": "ins-a1b4c9de",
+   "instanceName": "jump-host",
+   "instanceType": "SA2.SMALL1",
+   "state": "STOPPED"
+  }
+ ],
+ "billing-mtd": {
+  "periodStart": "@ymd month",
+  "periodEnd": "@ymd today",
+  "total": 1898.95,
+  "unit": "CNY",
+  "byService": [
+   {
+    "serviceName": "云服务器 CVM",
+    "amount": 879.66
+   },
+   {
+    "serviceName": "云数据库 MySQL",
+    "amount": 457.58
+   },
+   {
+    "serviceName": "内容分发网络 CDN",
+    "amount": 251.13
+   },
+   {
+    "serviceName": "对象存储 COS",
+    "amount": 173.05
+   },
+   {
+    "serviceName": "负载均衡 CLB",
+    "amount": 109.41
+   },
+   {
+    "serviceName": "云函数 SCF",
+    "amount": 28.12
+   }
+  ],
+  "isEstimated": true,
+  "balance": 12846.35
+ },
+ "billing-history": [
+  {
+   "periodStart": "@ymd month",
+   "periodEnd": "@ymd today",
+   "total": 1898.95,
+   "unit": "CNY",
+   "byService": [
+    {
+     "serviceName": "云服务器 CVM",
+     "amount": 879.66
+    },
+    {
+     "serviceName": "云数据库 MySQL",
+     "amount": 457.58
+    },
+    {
+     "serviceName": "内容分发网络 CDN",
+     "amount": 251.13
+    },
+    {
+     "serviceName": "对象存储 COS",
+     "amount": 173.05
+    },
+    {
+     "serviceName": "负载均衡 CLB",
+     "amount": 109.41
+    },
+    {
+     "serviceName": "云函数 SCF",
+     "amount": 28.12
+    }
+   ],
+   "isEstimated": true
+  },
+  {
+   "periodStart": "@ymd month-1",
+   "periodEnd": "@ymd month",
+   "total": 4668.43,
+   "unit": "CNY",
+   "byService": [
+    {
+     "serviceName": "云服务器 CVM",
+     "amount": 2188.02
+    },
+    {
+     "serviceName": "云数据库 MySQL",
+     "amount": 1197.56
+    },
+    {
+     "serviceName": "内容分发网络 CDN",
+     "amount": 561.97
+    },
+    {
+     "serviceName": "对象存储 COS",
+     "amount": 413.07
+    },
+    {
+     "serviceName": "负载均衡 CLB",
+     "amount": 239.32
+    },
+    {
+     "serviceName": "云函数 SCF",
+     "amount": 68.49
+    }
+   ],
+   "isEstimated": false
+  },
+  {
+   "periodStart": "@ymd month-2",
+   "periodEnd": "@ymd month-1",
+   "total": 4276.58,
+   "unit": "CNY",
+   "byService": [
+    {
+     "serviceName": "云服务器 CVM",
+     "amount": 1861.07
+    },
+    {
+     "serviceName": "云数据库 MySQL",
+     "amount": 1093.95
+    },
+    {
+     "serviceName": "内容分发网络 CDN",
+     "amount": 605.02
+    },
+    {
+     "serviceName": "对象存储 COS",
+     "amount": 388.73
+    },
+    {
+     "serviceName": "负载均衡 CLB",
+     "amount": 253.21
+    },
+    {
+     "serviceName": "云函数 SCF",
+     "amount": 74.6
+    }
+   ],
+   "isEstimated": false
+  },
+  {
+   "periodStart": "@ymd month-3",
+   "periodEnd": "@ymd month-2",
+   "total": 4240.16,
+   "unit": "CNY",
+   "byService": [
+    {
+     "serviceName": "云服务器 CVM",
+     "amount": 1901.51
+    },
+    {
+     "serviceName": "云数据库 MySQL",
+     "amount": 1100.69
+    },
+    {
+     "serviceName": "内容分发网络 CDN",
+     "amount": 552.98
+    },
+    {
+     "serviceName": "对象存储 COS",
+     "amount": 361.38
+    },
+    {
+     "serviceName": "负载均衡 CLB",
+     "amount": 257.09
+    },
+    {
+     "serviceName": "云函数 SCF",
+     "amount": 66.51
+    }
+   ],
+   "isEstimated": false
+  },
+  {
+   "periodStart": "@ymd month-4",
+   "periodEnd": "@ymd month-3",
+   "total": 4279.42,
+   "unit": "CNY",
+   "byService": [
+    {
+     "serviceName": "云服务器 CVM",
+     "amount": 1951.16
+    },
+    {
+     "serviceName": "云数据库 MySQL",
+     "amount": 1097.63
+    },
+    {
+     "serviceName": "内容分发网络 CDN",
+     "amount": 573.85
+    },
+    {
+     "serviceName": "对象存储 COS",
+     "amount": 352.19
+    },
+    {
+     "serviceName": "负载均衡 CLB",
+     "amount": 241.88
+    },
+    {
+     "serviceName": "云函数 SCF",
+     "amount": 62.71
+    }
+   ],
+   "isEstimated": false
+  },
+  {
+   "periodStart": "@ymd month-5",
+   "periodEnd": "@ymd month-4",
+   "total": 4103.25,
+   "unit": "CNY",
+   "byService": [
+    {
+     "serviceName": "云服务器 CVM",
+     "amount": 1957.71
+    },
+    {
+     "serviceName": "云数据库 MySQL",
+     "amount": 951.08
+    },
+    {
+     "serviceName": "内容分发网络 CDN",
+     "amount": 545.81
+    },
+    {
+     "serviceName": "对象存储 COS",
+     "amount": 352.04
+    },
+    {
+     "serviceName": "负载均衡 CLB",
+     "amount": 233.2
+    },
+    {
+     "serviceName": "云函数 SCF",
+     "amount": 63.41
+    }
+   ],
+   "isEstimated": false
+  },
+  {
+   "periodStart": "@ymd month-6",
+   "periodEnd": "@ymd month-5",
+   "total": 4085.22,
+   "unit": "CNY",
+   "byService": [
+    {
+     "serviceName": "云服务器 CVM",
+     "amount": 1745.88
+    },
+    {
+     "serviceName": "云数据库 MySQL",
+     "amount": 1108.76
+    },
+    {
+     "serviceName": "内容分发网络 CDN",
+     "amount": 575.12
+    },
+    {
+     "serviceName": "对象存储 COS",
+     "amount": 340.0
+    },
+    {
+     "serviceName": "负载均衡 CLB",
+     "amount": 249.55
+    },
+    {
+     "serviceName": "云函数 SCF",
+     "amount": 65.91
+    }
+   ],
+   "isEstimated": false
+  },
+  {
+   "periodStart": "@ymd month-7",
+   "periodEnd": "@ymd month-6",
+   "total": 4099.94,
+   "unit": "CNY",
+   "byService": [
+    {
+     "serviceName": "云服务器 CVM",
+     "amount": 1992.84
+    },
+    {
+     "serviceName": "云数据库 MySQL",
+     "amount": 948.09
+    },
+    {
+     "serviceName": "内容分发网络 CDN",
+     "amount": 512.7
+    },
+    {
+     "serviceName": "对象存储 COS",
+     "amount": 358.04
+    },
+    {
+     "serviceName": "负载均衡 CLB",
+     "amount": 223.49
+    },
+    {
+     "serviceName": "云函数 SCF",
+     "amount": 64.78
+    }
+   ],
+   "isEstimated": false
+  },
+  {
+   "periodStart": "@ymd month-8",
+   "periodEnd": "@ymd month-7",
+   "total": 3952.36,
+   "unit": "CNY",
+   "byService": [
+    {
+     "serviceName": "云服务器 CVM",
+     "amount": 1847.91
+    },
+    {
+     "serviceName": "云数据库 MySQL",
+     "amount": 924.58
+    },
+    {
+     "serviceName": "内容分发网络 CDN",
+     "amount": 559.6
+    },
+    {
+     "serviceName": "对象存储 COS",
+     "amount": 340.57
+    },
+    {
+     "serviceName": "负载均衡 CLB",
+     "amount": 215.65
+    },
+    {
+     "serviceName": "云函数 SCF",
+     "amount": 64.05
+    }
+   ],
+   "isEstimated": false
+  },
+  {
+   "periodStart": "@ymd month-9",
+   "periodEnd": "@ymd month-8",
+   "total": 3949.98,
+   "unit": "CNY",
+   "byService": [
+    {
+     "serviceName": "云服务器 CVM",
+     "amount": 1863.78
+    },
+    {
+     "serviceName": "云数据库 MySQL",
+     "amount": 933.02
+    },
+    {
+     "serviceName": "内容分发网络 CDN",
+     "amount": 536.65
+    },
+    {
+     "serviceName": "对象存储 COS",
+     "amount": 336.25
+    },
+    {
+     "serviceName": "负载均衡 CLB",
+     "amount": 220.08
+    },
+    {
+     "serviceName": "云函数 SCF",
+     "amount": 60.2
+    }
+   ],
+   "isEstimated": false
+  },
+  {
+   "periodStart": "@ymd month-10",
+   "periodEnd": "@ymd month-9",
+   "total": 3783.72,
+   "unit": "CNY",
+   "byService": [
+    {
+     "serviceName": "云服务器 CVM",
+     "amount": 1740.32
+    },
+    {
+     "serviceName": "云数据库 MySQL",
+     "amount": 965.59
+    },
+    {
+     "serviceName": "内容分发网络 CDN",
+     "amount": 505.71
+    },
+    {
+     "serviceName": "对象存储 COS",
+     "amount": 298.67
+    },
+    {
+     "serviceName": "负载均衡 CLB",
+     "amount": 219.38
+    },
+    {
+     "serviceName": "云函数 SCF",
+     "amount": 54.05
+    }
+   ],
+   "isEstimated": false
+  },
+  {
+   "periodStart": "@ymd month-11",
+   "periodEnd": "@ymd month-10",
+   "total": 3626.21,
+   "unit": "CNY",
+   "byService": [
+    {
+     "serviceName": "云服务器 CVM",
+     "amount": 1607.76
+    },
+    {
+     "serviceName": "云数据库 MySQL",
+     "amount": 933.52
+    },
+    {
+     "serviceName": "内容分发网络 CDN",
+     "amount": 487.46
+    },
+    {
+     "serviceName": "对象存储 COS",
+     "amount": 329.97
+    },
+    {
+     "serviceName": "负载均衡 CLB",
+     "amount": 206.41
+    },
+    {
+     "serviceName": "云函数 SCF",
+     "amount": 61.09
+    }
+   ],
+   "isEstimated": false
+  }
+ ]
+}
