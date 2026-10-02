@@ -165,6 +165,7 @@ enum TencentCOSClient {
         var currentKey: String?
         var currentSize: String?
         var currentModified: String?
+        var currentStorageClass: String?
         parser.onEnd = { path, text in
             switch path.last {
             case "Prefix" where path.dropLast().last == "CommonPrefixes":
@@ -175,13 +176,16 @@ enum TencentCOSClient {
                 currentSize = text
             case "LastModified" where path.dropLast().last == "Contents":
                 currentModified = text
+            case "StorageClass" where path.dropLast().last == "Contents":
+                currentStorageClass = text
             case "Contents":
                 if let key = currentKey, !key.hasSuffix("/") {
-                    objects.append(S3Object(key: key, size: Int(currentSize ?? "") ?? 0, lastModified: currentModified.flatMap(AWSDate.iso8601)))
+                    objects.append(S3Object(key: key, size: Int(currentSize ?? "") ?? 0, lastModified: currentModified.flatMap(AWSDate.iso8601), storageClass: currentStorageClass))
                 }
                 currentKey = nil
                 currentSize = nil
                 currentModified = nil
+                currentStorageClass = nil
             default:
                 break
             }
