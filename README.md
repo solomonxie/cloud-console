@@ -24,11 +24,12 @@ Built incrementally, one resource kind at a time, as needed:
 
 | Provider | S3/Buckets | EC2 | Lambda | RDS |
 |---|---|---|---|---|
-| AWS | ✅ | backlog | backlog | backlog |
+| AWS | ✅ | backlog | ✅ | backlog |
 | Azure, GCP, Tencent, Alibaba | — | — | — | — |
 
-S3 is the only implemented resource for now — the rest are backlog,
-picked up one at a time when actually needed, not on a schedule.
+Lambda: list, run with a JSON input (synchronous, confirmed first) → response. Runtime logs
+stream live from `/aws/lambda/<function>` for the current run only, window capped at the function timeout (key needs `logs:FilterLogEvents`).
+EC2 and Lambda scan every enabled region (`ec2:DescribeRegions`, else the default 17) one at a time — us-east-1, us-west-1, Canada first — each shown as it finishes, grouped and folded by region with counts; empty regions hidden.
 
 Adding a connection for a provider/resource that isn't implemented yet
 just shows "coming soon" — the credential is still saved so there's

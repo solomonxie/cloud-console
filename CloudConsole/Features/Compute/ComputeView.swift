@@ -1,35 +1,6 @@
 import SwiftUI
 
 @MainActor
-final class EC2InstancesStore: ObservableObject, ExpandableResourceStore {
-    @Published var items: [EC2Instance] = []
-    @Published var isLoading = true
-    @Published var errorMessage: String?
-    @Published var visibleCount = 20
-
-    private let credential: AWSSigV4Signer.Credential
-    private let cacheKey: String
-
-    init(credential: AWSSigV4Signer.Credential) {
-        self.credential = credential
-        self.cacheKey = "ec2-instances:\(credential.accessKeyID)"
-    }
-
-    func load(forceRefresh: Bool = false) async {
-        isLoading = true
-        errorMessage = nil
-        do {
-            items = try await cached(key: cacheKey, ttl: defaultResourceTTL, forceRefresh: forceRefresh) {
-                try await EC2Client.listInstances(credential: credential)
-            }
-        } catch {
-            errorMessage = error.localizedDescription
-        }
-        isLoading = false
-    }
-}
-
-@MainActor
 final class RDSInstancesStore: ObservableObject, ExpandableResourceStore {
     @Published var items: [RDSInstance] = []
     @Published var isLoading = true
@@ -50,35 +21,6 @@ final class RDSInstancesStore: ObservableObject, ExpandableResourceStore {
         do {
             items = try await cached(key: cacheKey, ttl: defaultResourceTTL, forceRefresh: forceRefresh) {
                 try await RDSClient.listInstances(credential: credential)
-            }
-        } catch {
-            errorMessage = error.localizedDescription
-        }
-        isLoading = false
-    }
-}
-
-@MainActor
-final class LambdaFunctionsStore: ObservableObject, ExpandableResourceStore {
-    @Published var items: [LambdaFunctionSummary] = []
-    @Published var isLoading = true
-    @Published var errorMessage: String?
-    @Published var visibleCount = 20
-
-    private let credential: AWSSigV4Signer.Credential
-    private let cacheKey: String
-
-    init(credential: AWSSigV4Signer.Credential) {
-        self.credential = credential
-        self.cacheKey = "lambda-functions:\(credential.accessKeyID)"
-    }
-
-    func load(forceRefresh: Bool = false) async {
-        isLoading = true
-        errorMessage = nil
-        do {
-            items = try await cached(key: cacheKey, ttl: defaultResourceTTL, forceRefresh: forceRefresh) {
-                try await LambdaClient.listFunctions(credential: credential)
             }
         } catch {
             errorMessage = error.localizedDescription
@@ -131,7 +73,7 @@ struct LambdaFunctionRow: View {
         HStack(spacing: 12) {
             VendorBadge(systemImage: "bolt.fill", color: connection.vendor.accentColor)
             VStack(alignment: .leading, spacing: 2) {
-                Text(function.name).lineLimit(1)
+                Text(function.name)
                 if let runtime = function.runtime {
                     Text(runtime)
                         .font(.caption)
@@ -171,9 +113,14 @@ extension LambdaFunctionSummary {
     var detailFields: [DetailField] {
         [
             DetailField(label: "Function", value: name),
+            DetailField(label: "Description", value: description?.isEmpty == false ? description! : "—"),
             DetailField(label: "Runtime", value: runtime ?? "—"),
+            DetailField(label: "Handler", value: handler ?? "—"),
             DetailField(label: "Memory", value: memorySize.map { "\($0) MB" } ?? "—"),
+            DetailField(label: "Timeout", value: timeout.map { "\($0) s" } ?? "—"),
+            DetailField(label: "Code size", value: codeSize.map { ByteCountFormatter.string(fromByteCount: Int64($0), countStyle: .file) } ?? "—"),
             DetailField(label: "Last modified", value: lastModified ?? "—"),
+            DetailField(label: "ARN", value: arn ?? "—"),
         ]
     }
 }

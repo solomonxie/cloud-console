@@ -679,50 +679,56 @@
    ]
   }
  },
- "ec2-instances": [
-  {
-   "instanceId": "i-0a3f9c27d1e84b512",
-   "instanceType": "m6i.large",
-   "state": "running",
-   "name": "web-1",
-   "launchTime": "@today-41 08:12"
-  },
-  {
-   "instanceId": "i-0b71e4d9a26c3f088",
-   "instanceType": "m6i.large",
-   "state": "running",
-   "name": "web-2",
-   "launchTime": "@today-41 08:14"
-  },
-  {
-   "instanceId": "i-04c2a8f61be9d7735",
-   "instanceType": "c6i.xlarge",
-   "state": "running",
-   "name": "queue-worker",
-   "launchTime": "@today-17 22:40"
-  },
-  {
-   "instanceId": "i-09e5d3b27fa41c6d0",
-   "instanceType": "t3.small",
-   "state": "running",
-   "name": "staging-api",
-   "launchTime": "@today-3 11:05"
-  },
-  {
-   "instanceId": "i-0f18b6c94d2e7a351",
-   "instanceType": "t3.micro",
-   "state": "stopped",
-   "name": "bastion",
-   "launchTime": "@today-130 09:30"
-  },
-  {
-   "instanceId": "i-02d7f1a0c58e93b64",
-   "instanceType": "g5.xlarge",
-   "state": "stopped",
-   "name": "ml-training",
-   "launchTime": "@today-6 19:55"
-  }
- ],
+ "ec2-instances": {
+  "us-east-1": [
+   {
+    "instanceId": "i-0a3f9c27d1e84b512",
+    "instanceType": "m6i.large",
+    "state": "running",
+    "name": "web-1",
+    "launchTime": "@today-41 08:12"
+   },
+   {
+    "instanceId": "i-0b71e4d9a26c3f088",
+    "instanceType": "m6i.large",
+    "state": "running",
+    "name": "web-2",
+    "launchTime": "@today-41 08:14"
+   },
+   {
+    "instanceId": "i-04c2a8f61be9d7735",
+    "instanceType": "c6i.xlarge",
+    "state": "running",
+    "name": "queue-worker",
+    "launchTime": "@today-17 22:40"
+   }
+  ],
+  "ca-central-1": [
+   {
+    "instanceId": "i-09e5d3b27fa41c6d0",
+    "instanceType": "t3.small",
+    "state": "running",
+    "name": "staging-api",
+    "launchTime": "@today-3 11:05"
+   },
+   {
+    "instanceId": "i-0f18b6c94d2e7a351",
+    "instanceType": "t3.micro",
+    "state": "stopped",
+    "name": "bastion",
+    "launchTime": "@today-130 09:30"
+   }
+  ],
+  "eu-west-1": [
+   {
+    "instanceId": "i-02d7f1a0c58e93b64",
+    "instanceType": "g5.xlarge",
+    "state": "stopped",
+    "name": "ml-training",
+    "launchTime": "@today-6 19:55"
+   }
+  ]
+ },
  "rds-instances": [
   {
    "identifier": "orders-prod",
@@ -732,14 +738,42 @@
    "endpointAddress": "orders-prod.c8x1k2m3n4p5.us-east-1.rds.amazonaws.com"
   }
  ],
- "lambda-functions": [
-  {
-   "name": "image-resize",
-   "runtime": "nodejs20.x",
-   "memorySize": 1024,
-   "lastModified": "@iso today-9 15:22"
-  }
- ],
+ "lambda-functions": {
+  "us-east-1": [
+   {
+    "name": "image-resize",
+    "runtime": "nodejs20.x",
+    "memorySize": 1024,
+    "lastModified": "@iso today-9 15:22",
+    "handler": "index.handler",
+    "timeout": 30,
+    "codeSize": 482113,
+    "description": "Resizes uploads into thumbnails"
+   },
+   {
+    "name": "order-webhook",
+    "runtime": "python3.12",
+    "memorySize": 256,
+    "lastModified": "@iso today-2 10:41",
+    "handler": "app.lambda_handler",
+    "timeout": 10,
+    "codeSize": 12840,
+    "description": "Stripe order webhook"
+   }
+  ],
+  "us-west-1": [
+   {
+    "name": "nightly-report",
+    "runtime": "python3.12",
+    "memorySize": 512,
+    "lastModified": "@iso today-31 08:03",
+    "handler": "report.main",
+    "timeout": 300,
+    "codeSize": 95211,
+    "description": "Emails the daily sales report"
+   }
+  ]
+ },
  "billing-mtd": {
   "periodStart": "@ymd month",
   "periodEnd": "@ymd today",

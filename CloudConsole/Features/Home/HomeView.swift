@@ -120,10 +120,13 @@ struct HomeView: View {
                     route: { role in .camRole(role: role, credential: credential) }
                 )
             case .ec2:
-                ResourceListPage(
-                    kind: kind, store: EC2InstancesStore(credential: credential),
+                RegionalResourceListPage(
+                    kind: kind,
+                    store: RegionalResourceStore(cacheKind: "ec2-instances", credential: credential) { region in
+                        try await EC2Client.listInstances(region: region, credential: credential)
+                    },
                     row: { instance in EC2InstanceRow(instance: instance, connection: connection) },
-                    route: { instance in .genericDetail(title: instance.instanceId, fields: instance.detailFields) }
+                    route: { instance, region in .genericDetail(title: instance.instanceId, fields: instance.detailFields + [DetailField(label: "Region", value: region)]) }
                 )
             case .rds:
                 ResourceListPage(
@@ -132,10 +135,13 @@ struct HomeView: View {
                     route: { instance in .genericDetail(title: instance.identifier, fields: instance.detailFields) }
                 )
             case .lambda:
-                ResourceListPage(
-                    kind: kind, store: LambdaFunctionsStore(credential: credential),
+                RegionalResourceListPage(
+                    kind: kind,
+                    store: RegionalResourceStore(cacheKind: "lambda-functions", credential: credential) { region in
+                        try await LambdaClient.listFunctions(region: region, credential: credential)
+                    },
                     row: { function in LambdaFunctionRow(function: function, connection: connection) },
-                    route: { function in .genericDetail(title: function.name, fields: function.detailFields) }
+                    route: { function, region in .lambdaFunction(function: function, region: region, credential: credential) }
                 )
             case .cvm:
                 ResourceListPage(
@@ -172,6 +178,8 @@ struct HomeView: View {
             TencentCAMRoleDetailView(role: role, credential: credential)
         case .genericDetail(let title, let fields):
             KeyValueDetailView(title: title, fields: fields)
+        case .lambdaFunction(let function, let region, let credential):
+            LambdaFunctionDetailView(function: function, region: region, credential: credential)
         case .operations:
             S3OperationsView(queue: operationQueue)
         }

@@ -41,11 +41,15 @@ enum DemoCloud {
         (try? decode([CloudConnection].self, load("connections") as Any)) ?? []
     }
 
-    /// A list page's value by its cache key, `<kind>:<fixture>`.
+    /// A list page's value by its cache key, `<kind>[@<region>]:<fixture>`. Regional kinds
+    /// are `{region: [...]}` in the fixture; a region not listed is empty.
     static func value<T: Decodable>(_ type: T.Type, cacheKey: String) throws -> T {
         let parts = cacheKey.split(separator: ":", maxSplits: 1).map(String.init)
-        guard parts.count == 2, let json = fixture(parts[1])[parts[0]] else { throw Unavailable() }
-        return try decode(T.self, json)
+        guard parts.count == 2 else { throw Unavailable() }
+        let kind = parts[0].split(separator: "@", maxSplits: 1).map(String.init)
+        guard let json = fixture(parts[1])[kind[0]] else { throw Unavailable() }
+        guard kind.count == 2 else { return try decode(T.self, json) }
+        return try decode(T.self, (json as? [String: Any])?[kind[1]] ?? [Any]())
     }
 
     static func buckets(_ credential: AWSSigV4Signer.Credential) -> [S3Bucket] {
@@ -92,6 +96,23 @@ enum DemoCloud {
         guard let document = documents[name] ?? documents["default"],
               let data = try? JSONSerialization.data(withJSONObject: document, options: [.prettyPrinted, .sortedKeys]) else { return "{}" }
         return String(decoding: data, as: UTF8.self)
+    }
+
+    /// Echoes the input back; nothing is invoked.
+    static func invoke(function: String, payload: Data) -> LambdaInvocation {
+        let requestID = UUID().uuidString.lowercased()
+        let input = String(decoding: payload, as: UTF8.self)
+        return LambdaInvocation(
+            isError: false,
+            status: "Succeeded · 200",
+            response: #"{"statusCode":200,"body":"Demo run of \#(function) — nothing was invoked.","input":\#(input)}"#,
+            log: """
+            START RequestId: \(requestID) Version: $LATEST
+            INFO\tevent received \(input)
+            END RequestId: \(requestID)
+            REPORT RequestId: \(requestID)\tDuration: 42.17 ms\tBilled Duration: 43 ms\tMemory Size: 1024 MB\tMax Memory Used: 88 MB
+            """
+        )
     }
 
     // MARK: Loading

@@ -9,8 +9,7 @@ struct EC2Instance: Identifiable, Hashable, Codable {
     let launchTime: Date?
 }
 
-/// AWS EC2 — Query API (XML), same shape as IAM's, but region-specific. The app has no
-/// region picker yet, so this only sees `region`'s instances (default us-east-1).
+/// AWS EC2 — Query API (XML), same shape as IAM's, but region-specific.
 enum EC2Client {
     static func listInstances(region: String = "us-east-1", credential: AWSSigV4Signer.Credential) async throws -> [EC2Instance] {
         var components = URLComponents(string: "https://ec2.\(region).amazonaws.com/")!
@@ -31,6 +30,29 @@ enum EC2Client {
             throw AWSQueryError.parse(status: http.statusCode, data: data)
         }
         return parseInstances(data)
+    }
+
+    static func listRegions(credential: AWSSigV4Signer.Credential) async throws -> [String] {
+        var components = URLComponents(string: "https://ec2.us-east-1.amazonaws.com/")!
+        components.queryItems = [
+            URLQueryItem(name: "Action", value: "DescribeRegions"),
+            URLQueryItem(name: "Version", value: "2016-11-15"),
+        ]
+        let url = components.url!
+        var urlRequest = URLRequest(url: url)
+        for (key, value) in AWSSigV4Signer.headers(method: "GET", url: url, region: "us-east-1", service: "ec2", credential: credential) {
+            urlRequest.setValue(value, forHTTPHeaderField: key)
+        }
+        let (data, response) = try await URLSession.shared.data(for: urlRequest)
+        let status = (response as? HTTPURLResponse)?.statusCode ?? -1
+        guard (200...299).contains(status) else { throw AWSQueryError.parse(status: status, data: data) }
+        let parser = XMLPathParser(data: data)
+        var regions: [String] = []
+        parser.onEnd = { path, text in
+            if path.last == "regionName" { regions.append(text) }
+        }
+        parser.run()
+        return regions
     }
 
     private static func parseInstances(_ data: Data) -> [EC2Instance] {
