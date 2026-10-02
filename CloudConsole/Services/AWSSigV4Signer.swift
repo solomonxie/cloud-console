@@ -155,7 +155,9 @@ enum AWSSigV4Signer {
     }
 
     private static func canonicalPath(_ url: URL) -> String {
-        let path = url.path.isEmpty ? "/" : url.path
+        // URL.path drops a trailing slash (Lambda's `/functions/`, S3 folder keys); URLComponents keeps it.
+        let componentsPath = URLComponents(url: url, resolvingAgainstBaseURL: false)?.path ?? url.path
+        let path = componentsPath.isEmpty ? "/" : componentsPath
         let segments = path.split(separator: "/", omittingEmptySubsequences: false)
         let encoded = segments.map { uriEncode(String($0), encodeSlash: true) }
         return encoded.joined(separator: "/")
