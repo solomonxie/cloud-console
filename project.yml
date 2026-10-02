@@ -11,12 +11,25 @@ targets:
       - path: CloudConsole
         excludes:
           - "**/README.md"
+          - "Info.plist"
+      # Preset data for demo mode (Settings card).
+      - path: demo
+        type: folder
+        buildPhase: resources
+    info:
+      path: CloudConsole/Info.plist
+      properties:
+        AppStoreRegion: $(STORE)
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
     configFiles:
       Debug: Config/Local.xcconfig
       Release: Config/Local.xcconfig
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.example.cloudconsole
+        # App Store region (us = Canada/US, cn); `make device STORE=cn`.
+        STORE: us
         MARKETING_VERSION: "0.1.0"
         CURRENT_PROJECT_VERSION: "1"
         SWIFT_VERSION: "5.0"

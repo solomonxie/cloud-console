@@ -126,7 +126,7 @@ final class S3OperationQueue: NSObject, ObservableObject {
     /// delete/copy/move do — the caller's `Data` (from a security-scoped picker URL, or a
     /// photo library asset) wouldn't still be readable by then.
     func enqueueUpload(connectionID: UUID, service: StorageService, bucket: String, region: String, destinationPrefix: String, files: [(fileName: String, data: Data)]) {
-        guard !files.isEmpty else { return }
+        guard !files.isEmpty, !AppData.isDemo else { return }
         let operationID = UUID()
         let stagingDir = stagingDirectoryURL(for: operationID)
         try? FileManager.default.createDirectory(at: stagingDir, withIntermediateDirectories: true)
@@ -150,6 +150,8 @@ final class S3OperationQueue: NSObject, ObservableObject {
     }
 
     private func enqueue(kind: S3Operation.Kind, connectionID: UUID, service: StorageService, bucket: String, region: String, key: String, isFolder: Bool, label: String, newKey: String?, destBucket: String? = nil, destRegion: String? = nil) {
+        // Demo resources don't exist; nothing is ever sent.
+        guard !AppData.isDemo else { return }
         let operation = S3Operation(id: UUID(), connectionID: connectionID, service: service, bucket: bucket, region: region, destBucket: destBucket, destRegion: destRegion, kind: kind, label: label, items: [], status: .running, errorMessage: nil, createdAt: Date())
         operations.insert(operation, at: 0)
         save()

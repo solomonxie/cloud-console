@@ -41,3 +41,17 @@ Requires [XcodeGen](https://github.com/yonaskolb/XcodeGen).
 ```
 xcodegen generate && open CloudConsole.xcodeproj
 ```
+
+## Install
+
+```
+make device            # STORE=us (Canada/US) by default
+make device STORE=cn   # App Store region → Info.plist AppStoreRegion, read via storeRegion()
+make sim
+```
+
+## Demo
+
+- Settings card → Demo mode: switches instantly to sample connections (an AWS and a Tencent account) with buckets, objects, IAM/CAM users and roles with policies, EC2/CVM instances, and a year of billing. Reset demo data restores the preset.
+- Separate store: own connection list, no Keychain, no resource cache, no network. Uploads/copies/moves/deletes are not sent.
+- Preset data: `demo/connections.json`, `demo/aws.json`, `demo/tencent.json`, keyed by resource kind. Dates relative: `"@today-3 10:00"`, `"@ymd month-2"`, `"@iso today-9 15:22"`, `{today-3}` inside names.

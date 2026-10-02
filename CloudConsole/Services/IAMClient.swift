@@ -47,6 +47,7 @@ enum IAMClient {
     }
 
     static func listAttachedUserPolicies(userName: String, credential: AWSSigV4Signer.Credential) async throws -> [IAMPolicyAttachment] {
+        if AppData.isDemo { return DemoCloud.attachedPolicies(userName, credential) }
         let data = try await request(action: "ListAttachedUserPolicies", parameters: ["UserName": userName], credential: credential)
         return parseMembers(data, container: "AttachedPolicies") { fields in
             guard let name = fields["PolicyName"], let arn = fields["PolicyArn"] else { return nil }
@@ -55,11 +56,13 @@ enum IAMClient {
     }
 
     static func listUserPolicyNames(userName: String, credential: AWSSigV4Signer.Credential) async throws -> [String] {
+        if AppData.isDemo { return DemoCloud.inlinePolicyNames(userName, credential) }
         let data = try await request(action: "ListUserPolicies", parameters: ["UserName": userName], credential: credential)
         return parseSimpleList(data, container: "PolicyNames")
     }
 
     static func listAttachedRolePolicies(roleName: String, credential: AWSSigV4Signer.Credential) async throws -> [IAMPolicyAttachment] {
+        if AppData.isDemo { return DemoCloud.attachedPolicies(roleName, credential) }
         let data = try await request(action: "ListAttachedRolePolicies", parameters: ["RoleName": roleName], credential: credential)
         return parseMembers(data, container: "AttachedPolicies") { fields in
             guard let name = fields["PolicyName"], let arn = fields["PolicyArn"] else { return nil }
@@ -68,16 +71,19 @@ enum IAMClient {
     }
 
     static func listRolePolicyNames(roleName: String, credential: AWSSigV4Signer.Credential) async throws -> [String] {
+        if AppData.isDemo { return DemoCloud.inlinePolicyNames(roleName, credential) }
         let data = try await request(action: "ListRolePolicies", parameters: ["RoleName": roleName], credential: credential)
         return parseSimpleList(data, container: "PolicyNames")
     }
 
     static func inlineUserPolicyDocument(userName: String, policyName: String, credential: AWSSigV4Signer.Credential) async throws -> String {
+        if AppData.isDemo { return DemoCloud.policyDocument(policyName, credential) }
         let data = try await request(action: "GetUserPolicy", parameters: ["UserName": userName, "PolicyName": policyName], credential: credential)
         return decodedDocument(parseField(data, tag: "PolicyDocument"))
     }
 
     static func inlineRolePolicyDocument(roleName: String, policyName: String, credential: AWSSigV4Signer.Credential) async throws -> String {
+        if AppData.isDemo { return DemoCloud.policyDocument(policyName, credential) }
         let data = try await request(action: "GetRolePolicy", parameters: ["RoleName": roleName, "PolicyName": policyName], credential: credential)
         return decodedDocument(parseField(data, tag: "PolicyDocument"))
     }
@@ -85,6 +91,7 @@ enum IAMClient {
     /// Managed policies store their document on a version, not the policy itself —
     /// look up the default version, then fetch that version's document.
     static func attachedPolicyDocument(policyArn: String, credential: AWSSigV4Signer.Credential) async throws -> String {
+        if AppData.isDemo { return DemoCloud.policyDocument(policyArn, credential) }
         let policyData = try await request(action: "GetPolicy", parameters: ["PolicyArn": policyArn], credential: credential)
         guard let versionId = parseField(policyData, tag: "DefaultVersionId") else {
             throw AWSQueryError.badResponse(-1, "No default version for \(policyArn)")

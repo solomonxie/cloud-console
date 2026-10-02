@@ -7,12 +7,14 @@ import CryptoKit
 /// with nothing S3-specific about them.
 enum TencentCOSClient {
     static func listBuckets(credential: AWSSigV4Signer.Credential) async throws -> [S3Bucket] {
+        if AppData.isDemo { return DemoCloud.buckets(credential) }
         let url = URL(string: "https://service.cos.myqcloud.com/")!
         let data = try await request(method: "GET", url: url, credential: credential)
         return parseListAllMyBuckets(data)
     }
 
     static func listObjects(bucket: String, region: String, prefix: String, credential: AWSSigV4Signer.Credential) async throws -> S3ListResult {
+        if AppData.isDemo { return DemoCloud.objects(bucket: bucket, prefix: prefix, credential) }
         var components = URLComponents(string: "https://\(bucket).cos.\(region).myqcloud.com/")!
         components.queryItems = [
             URLQueryItem(name: "list-type", value: "2"),
@@ -47,7 +49,8 @@ enum TencentCOSClient {
     }
 
     static func downloadObject(bucket: String, region: String, key: String, credential: AWSSigV4Signer.Credential) async throws -> Data {
-        try await request(method: "GET", url: objectURL(bucket: bucket, region: region, key: key), credential: credential)
+        if AppData.isDemo { return DemoCloud.download(key: key) }
+        return try await request(method: "GET", url: objectURL(bucket: bucket, region: region, key: key), credential: credential)
     }
 
     // MARK: Write operations — request builders only, executed via the shared background queue.

@@ -44,6 +44,7 @@ struct S3ListResult: Codable {
 /// Minimal native S3 client — no AWS SDK, just SigV4-signed REST calls.
 enum S3Client {
     static func listBuckets(credential: AWSSigV4Signer.Credential) async throws -> [S3Bucket] {
+        if AppData.isDemo { return DemoCloud.buckets(credential) }
         let url = URL(string: "https://s3.amazonaws.com/")!
         let data = try await request(method: "GET", url: url, region: "us-east-1", credential: credential)
         return parseListAllMyBuckets(data)
@@ -52,6 +53,7 @@ enum S3Client {
     /// Unauthenticated HEAD, reading the `x-amz-bucket-region` response header — works even
     /// when the key has no `s3:GetBucketLocation` permission, unlike a signed GetBucketLocation call.
     static func bucketRegion(name: String) async throws -> String {
+        if AppData.isDemo { return DemoCloud.region(bucket: name) }
         let url = URL(string: "https://\(name).s3.amazonaws.com/")!
         var request = URLRequest(url: url)
         request.httpMethod = "HEAD"
@@ -64,6 +66,7 @@ enum S3Client {
     }
 
     static func listObjects(bucket: String, region: String, prefix: String, credential: AWSSigV4Signer.Credential) async throws -> S3ListResult {
+        if AppData.isDemo { return DemoCloud.objects(bucket: bucket, prefix: prefix, credential) }
         var components = URLComponents(string: "https://\(bucket).s3.\(region).amazonaws.com/")!
         components.queryItems = [
             URLQueryItem(name: "list-type", value: "2"),
@@ -104,7 +107,8 @@ enum S3Client {
     /// Downloads an object's bytes for local preview (QuickLook). Fine for the sizes a
     /// person would actually want to preview in-app; not meant for bulk transfer.
     static func downloadObject(bucket: String, region: String, key: String, credential: AWSSigV4Signer.Credential) async throws -> Data {
-        try await request(method: "GET", url: objectURL(bucket: bucket, region: region, key: key), region: region, credential: credential)
+        if AppData.isDemo { return DemoCloud.download(key: key) }
+        return try await request(method: "GET", url: objectURL(bucket: bucket, region: region, key: key), region: region, credential: credential)
     }
 
     // MARK: Write operations — request builders only. Execution is via a background

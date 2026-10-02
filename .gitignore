@@ -5,3 +5,4 @@ DerivedData/
 .build/
 Config/Local.xcconfig
 .env
+build/
