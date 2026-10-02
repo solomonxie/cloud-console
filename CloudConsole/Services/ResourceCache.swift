@@ -69,3 +69,9 @@ func cached<T: Codable>(key: String, ttl: TimeInterval, forceRefresh: Bool = fal
     await ResourceCache.shared.set(value, key: key)
     return value
 }
+
+/// Last cached value regardless of age — shown while a fresh fetch runs.
+func staleValue<T: Codable>(_ type: T.Type, key: String) async -> T? {
+    if AppData.isDemo { return try? DemoCloud.value(T.self, cacheKey: key) }
+    return await ResourceCache.shared.get(T.self, key: key, ttl: .infinity)
+}

@@ -106,7 +106,7 @@ enum ResourceKind: String, Identifiable, Hashable {
     var isImplemented: Bool {
         switch self {
         case .eventBridge, .cloudWatchAlarms, .tencentEventBridge, .monitorAlarms: return false
-        case .lambda, .rds, .scf, .cdb: return false
+        case .rds, .scf, .cdb: return false
         default: return true
         }
     }

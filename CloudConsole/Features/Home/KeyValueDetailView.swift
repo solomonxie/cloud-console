@@ -9,12 +9,29 @@ struct KeyValueDetailView: View {
         List {
             Section("Details") {
                 ForEach(fields, id: \.label) { field in
-                    LabeledContent(field.label, value: field.value)
-                        .lineLimit(1)
-                        .truncationMode(.middle)
+                    DetailRow(field: field)
                 }
             }
         }
         .navigationTitle(title)
+    }
+}
+
+/// One line, middle-truncated; tap to show the full value.
+struct DetailRow: View {
+    let field: DetailField
+    var alwaysWrap = false
+    @State private var expanded = false
+
+    var body: some View {
+        LabeledContent(field.label) {
+            Text(field.value)
+                .lineLimit(alwaysWrap || expanded ? nil : 1)
+                .truncationMode(.middle)
+                .multilineTextAlignment(.trailing)
+                .textSelection(.enabled)
+        }
+        .contentShape(Rectangle())
+        .onTapGesture { expanded.toggle() }
     }
 }
