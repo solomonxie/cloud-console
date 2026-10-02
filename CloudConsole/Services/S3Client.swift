@@ -13,6 +13,27 @@ struct S3Object: Identifiable, Codable {
     let key: String
     let size: Int
     let lastModified: Date?
+    var storageClass: String?
+
+    /// S3 and COS both use raw enum names (`STANDARD_IA`, `DEEP_ARCHIVE`, …); absent means STANDARD.
+    var storageClassLabel: String {
+        switch storageClass ?? "STANDARD" {
+        case "STANDARD": "Standard"
+        case "STANDARD_IA": "Standard-IA"
+        case "ONEZONE_IA": "One Zone-IA"
+        case "INTELLIGENT_TIERING": "Intelligent Tiering"
+        case "ARCHIVE": "Archive"
+        case "DEEP_ARCHIVE": "Deep Archive"
+        case "GLACIER": "Glacier Flexible"
+        case "GLACIER_IR": "Glacier Instant"
+        case "REDUCED_REDUNDANCY": "Reduced Redundancy"
+        case "EXPRESS_ONEZONE": "Express One Zone"
+        case "MAZ_STANDARD": "Standard (MAZ)"
+        case "MAZ_STANDARD_IA": "Standard-IA (MAZ)"
+        case "MAZ_INTELLIGENT_TIERING": "Intelligent Tiering (MAZ)"
+        case let other: other.replacingOccurrences(of: "_", with: " ").capitalized
+        }
+    }
 }
 
 struct S3ListResult: Codable {
@@ -211,6 +232,7 @@ enum S3Client {
         var currentKey: String?
         var currentSize: String?
         var currentModified: String?
+        var currentStorageClass: String?
         parser.onEnd = { path, text in
             switch path.last {
             case "Prefix" where path.dropLast().last == "CommonPrefixes":
@@ -221,13 +243,16 @@ enum S3Client {
                 currentSize = text
             case "LastModified" where path.dropLast().last == "Contents":
                 currentModified = text
+            case "StorageClass" where path.dropLast().last == "Contents":
+                currentStorageClass = text
             case "Contents":
                 if let key = currentKey, !key.hasSuffix("/") {
-                    objects.append(S3Object(key: key, size: Int(currentSize ?? "") ?? 0, lastModified: currentModified.flatMap(AWSDate.iso8601)))
+                    objects.append(S3Object(key: key, size: Int(currentSize ?? "") ?? 0, lastModified: currentModified.flatMap(AWSDate.iso8601), storageClass: currentStorageClass))
                 }
                 currentKey = nil
                 currentSize = nil
                 currentModified = nil
+                currentStorageClass = nil
             default:
                 break
             }
