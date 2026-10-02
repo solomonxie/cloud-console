@@ -115,6 +115,19 @@ enum DemoCloud {
         )
     }
 
+    /// Smooth made-up series, steady per metric id.
+    static func metrics(_ ids: [String], from: Date, to: Date, period: Int) -> [String: [MetricPoint]] {
+        let base: [String: Double] = ["cpu": 23, "mem": 61, "disk": 47, "netIn": 180_000, "netOut": 95_000, "diskRead": 40_000, "diskWrite": 120_000]
+        var out: [String: [MetricPoint]] = [:]
+        for (seed, id) in ids.enumerated() {
+            guard let level = base[id] else { continue }
+            out[id] = stride(from: from.timeIntervalSince1970, through: to.timeIntervalSince1970, by: Double(period)).enumerated().map { i, t in
+                MetricPoint(time: Date(timeIntervalSince1970: t), value: level * (1 + 0.35 * sin(Double(i) / 3 + Double(seed)) + 0.1 * cos(Double(i) * 1.7)))
+            }
+        }
+        return out
+    }
+
     // MARK: Loading
 
     private static func policies(_ principal: String, _ credential: AWSSigV4Signer.Credential) -> [String: Any] {

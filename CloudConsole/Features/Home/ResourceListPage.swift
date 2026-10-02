@@ -14,6 +14,7 @@ enum HomeRoute: Hashable {
     /// A read-only key/value detail page — used by the newer, simpler resource kinds
     /// (EC2/RDS, CVM/SCF/CDB) instead of a bespoke detail view each.
     case genericDetail(title: String, fields: [DetailField])
+    case ec2Instance(instance: EC2Instance, region: String, credential: AWSSigV4Signer.Credential)
     case lambdaFunction(function: LambdaFunctionSummary, region: String, credential: AWSSigV4Signer.Credential)
     case operations
 }
