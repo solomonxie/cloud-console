@@ -6,7 +6,7 @@ struct AddCloudView: View {
 
     var body: some View {
         NavigationStack {
-            List(CloudVendor.allCases) { vendor in
+            List(CloudVendor.available) { vendor in
                 NavigationLink {
                     CredentialFormView(store: store, vendor: vendor) {
                         dismiss()
@@ -16,6 +16,11 @@ struct AddCloudView: View {
                 }
             }
             .navigationTitle("Add connection")
+            #if SCREENSHOTS
+            .navigationDestination(isPresented: .constant(Screenshots.is("add"))) {
+                CredentialFormView(store: store, vendor: .aws) { dismiss() }
+            }
+            #endif
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
@@ -226,8 +231,12 @@ struct CredentialFormView: View {
     /// rather than a specific resource call (e.g. S3 ListBuckets) so a key scoped to only
     /// EC2/Lambda/etc. still passes — it doesn't assume S3 access.
     private func test() async throws {
-        guard vendor == .aws, case .keyPair(let id, let secret) = credential else { return }
+        guard case .keyPair(let id, let secret) = credential else { return }
         let sigCredential = AWSSigV4Signer.Credential(accessKeyID: id, secretAccessKey: secret)
-        try await STSClient.validate(credential: sigCredential)
+        switch vendor {
+        case .aws: try await STSClient.validate(credential: sigCredential)
+        case .tencent: try await TencentSTSClient.validate(credential: sigCredential)
+        default: return
+        }
     }
 }

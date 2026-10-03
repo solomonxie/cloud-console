@@ -4,9 +4,10 @@ struct HomeView: View {
     @StateObject private var store = HomeStore()
     @StateObject private var operationQueue = S3OperationQueue.shared
     @State private var showingAddCloud = false
+    @State private var path: [HomeRoute] = []
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             mainScroll
                 .navigationTitle("Cloud Console")
             .navigationDestination(for: HomeRoute.self) { route in
@@ -25,16 +26,22 @@ struct HomeView: View {
                 AddCloudView(store: store)
             }
         }
+        #if SCREENSHOTS
+        .onAppear {
+            path = Screenshots.path(store.connections)
+            showingAddCloud = Screenshots.is("add")
+        }
+        #endif
     }
 
     private var mainScroll: some View {
         ScrollView {
             LazyVStack(spacing: 20) {
-                if store.connections.isEmpty {
+                if visibleConnections.isEmpty {
                     emptyState
                         .frame(minHeight: 280)
                 } else {
-                    ForEach(store.connections) { connection in
+                    ForEach(visibleConnections) { connection in
                         ConnectionCard(store: store, connection: connection)
                     }
                 }
@@ -42,7 +49,14 @@ struct HomeView: View {
             }
             .padding(16)
         }
+        #if SCREENSHOTS
+        .defaultScrollAnchor(Screenshots.is("settings") ? .bottom : .top)
+        #endif
         .background(Color(.systemGroupedBackground))
+    }
+
+    private var visibleConnections: [CloudConnection] {
+        store.connections.filter(\.vendor.isAvailable)
     }
 
     private var emptyState: some View {
@@ -162,8 +176,7 @@ struct HomeView: View {
                     route: { function in .genericDetail(title: function.functionName, fields: function.detailFields) }
                 )
             case .eventBridge, .cloudWatchAlarms, .tencentEventBridge, .monitorAlarms:
-                // Not implemented yet — ServiceRow gates these behind "Coming soon" and
-                // never constructs a NavigationLink to this route, so this is unreachable.
+                // Not implemented — filtered out of `resourceKinds`, so unreachable.
                 EmptyView()
             }
         case .bucketObjects(let connectionID, let service, let bucketName, let region, let prefix, let credential):
@@ -241,44 +254,28 @@ private struct ConnectionCard: View {
     }
 }
 
-/// One service under a connection. Implemented kinds push to their resource list;
-/// others show "coming soon".
+/// One service under a connection; pushes to its resource list.
 private struct ServiceRow: View {
     let connection: CloudConnection
     let kind: ResourceKind
 
     var body: some View {
-        if !kind.isImplemented {
+        NavigationLink(value: HomeRoute.service(connection: connection, kind: kind)) {
             HStack(spacing: 14) {
-                VendorBadge(systemImage: kind.icon, color: .gray, size: 34)
+                VendorBadge(systemImage: kind.icon, color: connection.vendor.accentColor, size: 34)
                 Text(kind.rawValue)
                     .fontWeight(.medium)
+                    .foregroundStyle(.primary)
                 Spacer()
-                Text("Coming soon")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                Image(systemName: "chevron.right")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.tertiary)
             }
-            .opacity(0.45)
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
-        } else {
-            NavigationLink(value: HomeRoute.service(connection: connection, kind: kind)) {
-                HStack(spacing: 14) {
-                    VendorBadge(systemImage: kind.icon, color: connection.vendor.accentColor, size: 34)
-                    Text(kind.rawValue)
-                        .fontWeight(.medium)
-                        .foregroundStyle(.primary)
-                    Spacer()
-                    Image(systemName: "chevron.right")
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(.tertiary)
-                }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 12)
-                .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
+            .contentShape(Rectangle())
         }
+        .buttonStyle(.plain)
     }
 }
 
