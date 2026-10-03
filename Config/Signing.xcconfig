@@ -1,0 +1,2 @@
+// Tracked. Pulls the Team ID from the gitignored Local.xcconfig, if present.
+#include? "Local.xcconfig"

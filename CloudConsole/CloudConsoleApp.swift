@@ -18,6 +18,10 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
 struct CloudConsoleApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
+    #if SCREENSHOTS
+    init() { Screenshots.prepare() }
+    #endif
+
     var body: some Scene {
         WindowGroup {
             ContentView()

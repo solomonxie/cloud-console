@@ -84,10 +84,16 @@ struct LambdaFunctionDetailView: View {
                     Label(result.status, systemImage: result.isError ? "xmark.octagon.fill" : "checkmark.circle.fill")
                         .foregroundStyle(result.isError ? .red : .green)
                     CodeBlock(text: prettyJSON(result.response))
+                        #if SCREENSHOTS
+                        .id(Screenshots.endID)
+                        #endif
                 }
             }
         }
         .navigationTitle(function.name)
+        #if SCREENSHOTS
+        .modifier(Screenshots.ScrollToEnd(active: Screenshots.is("lambda-run")))
+        #endif
         .scrollDismissesKeyboard(.interactively)
         .toolbar {
             ToolbarItemGroup(placement: .keyboard) {
@@ -96,6 +102,9 @@ struct LambdaFunctionDetailView: View {
                     .fontWeight(.semibold)
             }
         }
+        #if SCREENSHOTS
+        .task { if Screenshots.is("lambda-run"), result == nil { await run() } }
+        #endif
         .confirmationDialog("Run \(function.name)?", isPresented: $confirmingRun, titleVisibility: .visible) {
             Button("Run") { Task { await run() } }
         } message: {
