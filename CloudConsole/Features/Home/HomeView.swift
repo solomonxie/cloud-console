@@ -175,7 +175,22 @@ struct HomeView: View {
                     row: { function in TencentSCFRow(function: function, connection: connection) },
                     route: { function in .genericDetail(title: function.functionName, fields: function.detailFields) }
                 )
-            case .eventBridge, .cloudWatchAlarms, .tencentEventBridge, .monitorAlarms:
+            case .eventBridge:
+                RegionalResourceListPage(
+                    kind: kind,
+                    store: RegionalResourceStore(cacheKind: "eventbridge", credential: credential) { region in
+                        try await EventBridgeClient.listItems(region: region, credential: credential)
+                    },
+                    row: { item in EventBridgeRow(item: item, connection: connection) },
+                    route: { item, _ in .eventBridge(item: item, vendor: connection.vendor, credential: credential) }
+                )
+            case .tencentEventBridge:
+                ResourceListPage(
+                    kind: kind, store: TencentEventBridgeStore(credential: credential),
+                    row: { item in EventBridgeRow(item: item, connection: connection, showRegion: true) },
+                    route: { item in .eventBridge(item: item, vendor: connection.vendor, credential: credential) }
+                )
+            case .cloudWatchAlarms, .monitorAlarms:
                 // Not implemented — filtered out of `resourceKinds`, so unreachable.
                 EmptyView()
             }
@@ -195,6 +210,8 @@ struct HomeView: View {
             EC2InstanceDetailView(instance: instance, region: region, credential: credential)
         case .lambdaFunction(let function, let region, let credential):
             LambdaFunctionDetailView(function: function, region: region, credential: credential)
+        case .eventBridge(let item, let vendor, let credential):
+            EventBridgeDetailView(item: item, vendor: vendor, credential: credential)
         case .operations:
             S3OperationsView(queue: operationQueue)
         }
