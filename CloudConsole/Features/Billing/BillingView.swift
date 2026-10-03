@@ -40,13 +40,14 @@ final class BillingHistoryStore: ObservableObject {
         self.fetchHistory = load
     }
 
-    /// Past months are closed books — their totals don't change, so once fetched they're
-    /// cached indefinitely (pull-to-refresh still forces a refetch if you ever want one).
+    /// The range includes the in-progress month and late charges land after a month closes,
+    /// so entries expire on the normal TTL; the month in the key drops stale pre-rollover data.
     func load(forceRefresh: Bool = false) async {
         isLoading = true
         errorMessage = nil
         do {
-            bills = try await cached(key: cacheKey, ttl: .infinity, forceRefresh: forceRefresh, fetch: fetchHistory)
+            let month = Date().formatted(.iso8601.year().month())
+            bills = try await cached(key: "\(cacheKey):\(month)", ttl: defaultResourceTTL, forceRefresh: forceRefresh, fetch: fetchHistory)
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -187,5 +188,5 @@ private func monthLabel(_ periodStart: String) -> String {
     formatter.timeZone = TimeZone(identifier: "UTC")
     formatter.locale = Locale(identifier: "en_US_POSIX")
     guard let date = formatter.date(from: periodStart) else { return periodStart }
-    return date.formatted(.dateTime.month(.wide).year())
+    return date.formatted(Date.FormatStyle(timeZone: TimeZone(identifier: "UTC")!).month(.wide).year())
 }
