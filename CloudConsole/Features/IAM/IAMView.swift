@@ -240,7 +240,7 @@ private struct PolicySections: View {
 
 /// A policy row that stays collapsed until tapped, then fetches and shows its JSON
 /// document — avoids firing a GetPolicy/GetPolicyVersion round trip per policy up front.
-private struct PolicyDisclosureRow: View {
+struct PolicyDisclosureRow: View {
     let title: String
     let subtitle: String?
     let loadDocument: () async throws -> String
@@ -276,6 +276,9 @@ private struct PolicyDisclosureRow: View {
                 }
             }
         }
+        #if SCREENSHOTS
+        .onAppear { if Screenshots.is("iam") { expanded = true } }
+        #endif
         .onChange(of: expanded) { _, isExpanded in
             guard isExpanded, document == nil, !isLoading else { return }
             isLoading = true

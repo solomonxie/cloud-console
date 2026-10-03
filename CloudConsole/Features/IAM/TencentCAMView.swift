@@ -60,13 +60,13 @@ final class TencentCAMRolesStore: ObservableObject, ExpandableResourceStore {
 
 @MainActor
 private final class AttachedPolicyNamesStore: ObservableObject {
-    @Published var names: [String] = []
+    @Published var names: [CAMPolicy] = []
     @Published var isLoading = true
     @Published var errorMessage: String?
 
-    private let fetch: () async throws -> [String]
+    private let fetch: () async throws -> [CAMPolicy]
 
-    init(fetch: @escaping () async throws -> [String]) {
+    init(fetch: @escaping () async throws -> [CAMPolicy]) {
         self.fetch = fetch
     }
 
@@ -82,8 +82,6 @@ private final class AttachedPolicyNamesStore: ObservableObject {
     }
 }
 
-/// CAM's user detail — simpler than the AWS IAM version: just attached policy names, no
-/// document fetching (Tencent's policy-document API surface is the least-verified part here).
 struct TencentCAMUserDetailView: View {
     let user: IAMUser
     let credential: AWSSigV4Signer.Credential
@@ -93,7 +91,7 @@ struct TencentCAMUserDetailView: View {
         self.user = user
         self.credential = credential
         _policies = StateObject(wrappedValue: AttachedPolicyNamesStore {
-            try await TencentCAMClient.listAttachedUserPolicyNames(userArn: user.arn, credential: credential)
+            try await TencentCAMClient.listAttachedUserPolicies(userArn: user.arn, credential: credential)
         })
     }
 
@@ -114,7 +112,11 @@ struct TencentCAMUserDetailView: View {
                 } else if policies.names.isEmpty {
                     Text("No attached policies").font(.caption).foregroundStyle(.secondary)
                 } else {
-                    ForEach(policies.names, id: \.self) { Text($0) }
+                    ForEach(policies.names) { policy in
+                        PolicyDisclosureRow(title: policy.name, subtitle: nil) {
+                            try await TencentCAMClient.policyDocument(policy: policy, credential: credential)
+                        }
+                    }
                 }
             }
         }
@@ -132,7 +134,7 @@ struct TencentCAMRoleDetailView: View {
         self.role = role
         self.credential = credential
         _policies = StateObject(wrappedValue: AttachedPolicyNamesStore {
-            try await TencentCAMClient.listAttachedRolePolicyNames(roleArn: role.arn, credential: credential)
+            try await TencentCAMClient.listAttachedRolePolicies(roleArn: role.arn, credential: credential)
         })
     }
 
@@ -153,7 +155,11 @@ struct TencentCAMRoleDetailView: View {
                 } else if policies.names.isEmpty {
                     Text("No attached policies").font(.caption).foregroundStyle(.secondary)
                 } else {
-                    ForEach(policies.names, id: \.self) { Text($0) }
+                    ForEach(policies.names) { policy in
+                        PolicyDisclosureRow(title: policy.name, subtitle: nil) {
+                            try await TencentCAMClient.policyDocument(policy: policy, credential: credential)
+                        }
+                    }
                 }
             }
         }
