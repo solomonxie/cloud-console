@@ -42,7 +42,9 @@ enum CloudVendor: String, CaseIterable, Identifiable, Hashable {
         switch self {
         case .aws:
             return "An IAM user access key. This app only ever does what that key's own permissions allow — give it read-only, or read/write on just what you want browsable here."
-        case .tencent, .alibaba:
+        case .tencent:
+            return "A CAM sub-user API key (SecretId and SecretKey). This app only ever does what that key's own policies allow — give it read-only, or access to just what you want browsable here."
+        case .alibaba:
             return "A scoped access key for this account."
         case .azure:
             return "A storage account connection string, or a scoped SAS if you'd rather it expire."
@@ -52,11 +54,20 @@ enum CloudVendor: String, CaseIterable, Identifiable, Hashable {
     }
 
     var learnMoreURL: URL {
-        URL(string: "https://github.com/solomonxie/cloud-console/blob/master/docs/design/uiux/add-cloud.md")!
+        let anchor = self == .tencent ? "#tencent-cloud" : "#aws"
+        return URL(string: "https://github.com/solomonxie/cloud-console/blob/master/docs/access-keys.md\(anchor)")!
     }
 
-    /// Resource kinds shown in a connection's browser, in build order.
-    var resourceKinds: [ResourceKind] {
+    /// Vendors with at least one implemented resource kind — the only ones shown in the UI.
+    static var available: [CloudVendor] { allCases.filter(\.isAvailable) }
+
+    var isAvailable: Bool { !resourceKinds.isEmpty }
+
+    /// Resource kinds shown in a connection's browser. Unimplemented ones stay hidden (App Review 2.1/2.2).
+    var resourceKinds: [ResourceKind] { plannedResourceKinds.filter(\.isImplemented) }
+
+    /// Every kind, implemented or not, in build order.
+    var plannedResourceKinds: [ResourceKind] {
         switch self {
         case .aws:
             return [.billing, .s3, .iamUsers, .iamRoles, .ec2, .lambda, .rds, .eventBridge, .cloudWatchAlarms]
