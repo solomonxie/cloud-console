@@ -20,17 +20,20 @@ targets:
       path: CloudConsole/Info.plist
       properties:
         AppStoreRegion: $(STORE)
+        ITSAppUsesNonExemptEncryption: false
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
     configFiles:
-      Debug: Config/Local.xcconfig
-      Release: Config/Local.xcconfig
+      Debug: Config/Signing.xcconfig
+      Release: Config/Signing.xcconfig
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.example.cloudconsole
         # App Store region (us = Canada/US, cn); `make device STORE=cn`.
         STORE: us
-        MARKETING_VERSION: "0.1.0"
+        MARKETING_VERSION: "1.0"
         CURRENT_PROJECT_VERSION: "1"
         SWIFT_VERSION: "5.0"
         CODE_SIGN_STYLE: Automatic

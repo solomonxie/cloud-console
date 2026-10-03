@@ -102,6 +102,9 @@ struct EC2InstanceDetailView: View {
                 }
                 .listRowBackground(Color.clear)
                 .listRowInsets(EdgeInsets())
+                #if SCREENSHOTS
+                .id(Screenshots.endID)
+                #endif
             } header: {
                 Text("Health · last 3 h")
             } footer: {
@@ -117,6 +120,9 @@ struct EC2InstanceDetailView: View {
             }
         }
         .navigationTitle(instance.name?.isEmpty == false ? instance.name! : instance.instanceId)
+        #if SCREENSHOTS
+        .modifier(Screenshots.ScrollToEnd(active: Screenshots.is("ec2-health")))
+        #endif
         .refreshable { await health.load() }
         .task {
             while !Task.isCancelled {
