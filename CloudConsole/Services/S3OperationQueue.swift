@@ -55,6 +55,8 @@ struct S3Operation: Codable, Identifiable, Hashable {
 @MainActor
 final class S3OperationQueue: NSObject, ObservableObject {
     static let shared = S3OperationQueue()
+    /// Must stay stable across builds: iOS resumes pending uploads by this id.
+    static let backgroundSessionIdentifier = (Bundle.main.bundleIdentifier ?? "com.example.cloudconsole") + ".s3ops"
 
     @Published private(set) var operations: [S3Operation] = []
 
@@ -64,7 +66,7 @@ final class S3OperationQueue: NSObject, ObservableObject {
     private var responseDataByTaskID: [Int: Data] = [:]
 
     private lazy var session: URLSession = {
-        let config = URLSessionConfiguration.background(withIdentifier: "com.example.cloudconsole.s3ops")
+        let config = URLSessionConfiguration.background(withIdentifier: Self.backgroundSessionIdentifier)
         config.sessionSendsLaunchEvents = true
         config.isDiscretionary = false
         return URLSession(configuration: config, delegate: self, delegateQueue: .main)
