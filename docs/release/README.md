@@ -1,6 +1,6 @@
 # App Store Release
 
-Bundle ID `com.example.cloudconsole` · iOS 17.0+ · iPhone only, portrait.
+Bundle ID `com.example.cloudconsole` (yours: `APP_BUNDLE_ID` in `Config/Local.xcconfig`) · iOS 17.0+ · iPhone only, portrait.
 
 - [`listing.md`](listing.md) — step-by-step plan and every App Store Connect field, ready to paste
 - [`privacy-policy.md`](privacy-policy.md) — the policy; its GitHub URL is the Privacy Policy URL

@@ -1,10 +1,10 @@
 # STORE: App Store region baked into Info.plist (us = Canada/US, cn). Default us.
-# Device signing: DEVELOPMENT_TEAM in Config/Local.xcconfig (copy the .example); DEVICE_UDID defaults to the first connected iPhone.
+# Device signing: DEVELOPMENT_TEAM + APP_BUNDLE_ID in Config/Local.xcconfig (copy the .example); DEVICE_UDID defaults to the first connected iPhone.
 STORE   ?= us
 SCHEME  := CloudConsole
 DERIVED := build/install
 APP     := CloudConsole.app
-APP_ID  := com.example.cloudconsole
+APP_ID  := $(shell sed -n 's/^APP_BUNDLE_ID *= *//p' Config/Local.xcconfig)
 SIM     ?= iPhone 18 Pro
 DEVICE_UDID ?= $(shell xcrun devicectl list devices 2>/dev/null | awk '/physical/ && /connected/ {print $$3; exit}')
 

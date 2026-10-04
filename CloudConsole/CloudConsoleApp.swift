@@ -4,7 +4,7 @@ import SwiftUI
 /// operation queue — SwiftUI's `App` protocol has no hook for this itself.
 final class AppDelegate: NSObject, UIApplicationDelegate {
     func application(_ application: UIApplication, handleEventsForBackgroundURLSession identifier: String, completionHandler: @escaping () -> Void) {
-        guard identifier == "com.example.cloudconsole.s3ops" else {
+        guard identifier == S3OperationQueue.backgroundSessionIdentifier else {
             completionHandler()
             return
         }
