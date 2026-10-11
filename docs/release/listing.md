@@ -1,7 +1,7 @@
-# Publishing Cloud Console — step by step
+# Publishing Cloud Consoles — step by step
 
 Every field below is ready to paste. `TODO` = only you can supply it.
-App Store Connect paths start at **Apps → Cloud Console → Distribution →**.
+App Store Connect paths start at **Apps → Cloud Consoles → Distribution →**.
 
 | | |
 |---|---|
@@ -65,7 +65,7 @@ No capabilities needed (no iCloud, no push, no App Groups). Face ID needs only `
 | Field | Value |
 |---|---|
 | Platforms | iOS |
-| Name | `Cloud Console` |
+| Name | `Cloud Consoles` |
 | Primary Language | English (U.S.) |
 | Bundle ID | `com.example.cloudconsole` (dropdown) |
 | SKU | `cloudconsole-ios` |
@@ -231,7 +231,7 @@ Browse buckets, check servers, run functions and watch the bill — with your ow
 Description:
 
 ```
-Cloud Console is a native iPhone console for the cloud accounts you already have. Add an access key, and browse and manage resources with exactly the permissions that key has — nothing more.
+Cloud Consoles is a native iPhone console for the cloud accounts you already have. Add an access key, and browse and manage resources with exactly the permissions that key has — nothing more.
 
 No backend. No sign-up. Requests go straight from your iPhone to the provider.
 
@@ -259,7 +259,7 @@ PRIVATE BY DESIGN
 DEMO MODE
 Turn on Demo mode in Settings to explore every screen with sample accounts. Nothing is sent anywhere.
 
-Cloud Console is an independent app, not affiliated with or endorsed by Amazon Web Services or Tencent Cloud.
+Cloud Consoles is an independent app, not affiliated with or endorsed by Amazon Web Services or Tencent Cloud.
 ```
 
 Keywords (97/100 — "cloud" and "console" are omitted, the name already indexes them; no provider brand names, guideline 2.3.7):
@@ -276,7 +276,7 @@ No login of our own. The app needs the user's own cloud access key for real use,
 Home → scroll to the Settings card at the bottom → turn on "Demo mode". Two sample connections appear (an AWS account and a Tencent Cloud account) and every screen works with preset data, with no network and no account needed. "Reset demo data" restores the preset. Turning Demo mode off returns to the real (empty) connection list; nothing is mixed.
 
 PURPOSE AND AUDIENCE
-Cloud Console is a native mobile console for developers, sysadmins and small teams who run their own cloud accounts. It lets them check costs, browse storage, look at servers and permissions, and run a serverless function from their iPhone, without opening a desktop browser. It replaces the provider's web console for quick, on-the-go tasks.
+Cloud Consoles is a native mobile console for developers, sysadmins and small teams who run their own cloud accounts. It lets them check costs, browse storage, look at servers and permissions, and run a serverless function from their iPhone, without opening a desktop browser. It replaces the provider's web console for quick, on-the-go tasks.
 
 HOW TO USE THE MAIN FEATURES (in Demo mode)
 - Home: one card per connection; each row is a service.
@@ -301,7 +301,7 @@ REGIONAL DIFFERENCES
 None. The app behaves the same everywhere and is English only. It is not offered on the China mainland storefront in this version.
 
 REGULATION
-Cloud Console is a client for the user's own cloud accounts. It does not host content, move money, or provide cloud services itself; billing figures are read from the provider. It is not affiliated with Amazon or Tencent. No third-party protected material is included.
+Cloud Consoles is a client for the user's own cloud accounts. It does not host content, move money, or provide cloud services itself; billing figures are read from the provider. It is not affiliated with Amazon or Tencent. No third-party protected material is included.
 
 Keys are stored in the iOS Keychain; settings and cached listings stay on the device.
 ```
@@ -312,7 +312,7 @@ What's New: not shown for a first version. From 1.1 on, write it here.
 
 | Field | Value |
 |---|---|
-| Name | `Cloud Console` (13/30) |
+| Name | `Cloud Consoles - Major clouds` (13/30) |
 | Subtitle | `Buckets, servers & billing` (26/30) |
 | Category — Primary | Developer Tools |
 | Category — Secondary | Utilities |
@@ -321,7 +321,7 @@ What's New: not shown for a first version. From 1.1 on, write it here.
 | License Agreement | Apple standard EULA (default) |
 | Privacy Policy URL | `https://github.com/solomonxie/cloud-console/blob/master/docs/release/privacy-policy.md` |
 
-If `Cloud Console` is taken, in order of preference:
+If `Cloud Consoles` is taken, in order of preference:
 `Cloud Console: Pocket Admin` (27), `Pocket Cloud Console` (20), `Cloud Console: Ops on iPhone` (28).
 Don't put "AWS", another app's name, or price wording ("free", "no ads", "no subscription") in the name, subtitle, promotional text or keywords — guideline 2.3.7 / 5.2.1. The description may say it.
 
