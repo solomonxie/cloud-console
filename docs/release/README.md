@@ -4,7 +4,7 @@ Bundle ID `com.example.cloudconsole` (yours: `APP_BUNDLE_ID` in `Config/Local.xc
 
 - [`listing.md`](listing.md) — step-by-step plan and every App Store Connect field, ready to paste
 - [`privacy-policy.md`](privacy-policy.md) — the policy; its GitHub URL is the Privacy Policy URL
-- `screenshots/6.9`, `screenshots/6.5` — upload-ready, 10 shots captured 2026-10-02 (Simulator, Demo mode, no real account data).
+- `screenshots/` — upload-ready, 10 shots captured 2026-10-02 (Simulator, Demo mode, no real account data).
   Upload order and recapture steps: [`listing.md`](listing.md#screenshots).
 
 Before the first build: `cp Config/Local.xcconfig.example Config/Local.xcconfig` and put your

@@ -158,11 +158,11 @@ Hello, thank you for the review. Answers below, and the same text is now in the 
 ## Screenshots
 
 Apple requires one set: **iPhone 6.9" Display**, exactly `1320 × 2868`. App Store Connect scales
-it down for every smaller phone. The 6.5" slot (`1284 × 2778`) is optional and generated anyway.
+it down for every smaller phone.
 
 **Ready** — captured 2026-10-02 on the iOS Simulator (iPhone 18 Pro, iOS 27) in Demo mode:
 fictional sample accounts only, no real account IDs, bucket names, IPs or bills.
-Files: `docs/release/screenshots/6.9/*.jpg` (and `6.5`), JPEG, no alpha.
+Files: `docs/release/screenshots/*.jpg` JPEG, no alpha.
 Upload in filename order (the first two are what people actually see):
 
 1. `01-home` — Home: AWS and Tencent Cloud connection cards

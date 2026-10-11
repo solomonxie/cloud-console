@@ -8,10 +8,10 @@ has — no backend server, no IaC, nothing of ours in between.
 
 | | | |
 |---|---|---|
-| **Home**<br><img src="docs/release/screenshots/6.9/01-home.jpg" width="250"> | **Billing**<br><img src="docs/release/screenshots/6.9/02-billing.jpg" width="250"> | **S3 bucket**<br><img src="docs/release/screenshots/6.9/03-s3.jpg" width="250"> |
-| **EC2 by region**<br><img src="docs/release/screenshots/6.9/04-ec2.jpg" width="250"> | **Instance health**<br><img src="docs/release/screenshots/6.9/05-ec2-health.jpg" width="250"> | **Lambda**<br><img src="docs/release/screenshots/6.9/06-lambda.jpg" width="250"> |
-| **Run + live logs**<br><img src="docs/release/screenshots/6.9/07-lambda-run.jpg" width="250"> | **IAM policy**<br><img src="docs/release/screenshots/6.9/08-iam.jpg" width="250"> | **Add connection**<br><img src="docs/release/screenshots/6.9/09-add.jpg" width="250"> |
-| **Settings**<br><img src="docs/release/screenshots/6.9/10-settings.jpg" width="250"> |  |  |
+| **Home**<br><img src="docs/release/screenshots/01-home.jpg" width="250"> | **Billing**<br><img src="docs/release/screenshots/02-billing.jpg" width="250"> | **S3 bucket**<br><img src="docs/release/screenshots/03-s3.jpg" width="250"> |
+| **EC2 by region**<br><img src="docs/release/screenshots/04-ec2.jpg" width="250"> | **Instance health**<br><img src="docs/release/screenshots/05-ec2-health.jpg" width="250"> | **Lambda**<br><img src="docs/release/screenshots/06-lambda.jpg" width="250"> |
+| **Run + live logs**<br><img src="docs/release/screenshots/07-lambda-run.jpg" width="250"> | **IAM policy**<br><img src="docs/release/screenshots/08-iam.jpg" width="250"> | **Add connection**<br><img src="docs/release/screenshots/09-add.jpg" width="250"> |
+| **Settings**<br><img src="docs/release/screenshots/10-settings.jpg" width="250"> |  |  |
 
 ## How it works
 
