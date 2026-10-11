@@ -17,6 +17,7 @@ enum HomeRoute: Hashable {
     case ec2Instance(instance: EC2Instance, region: String, credential: AWSSigV4Signer.Credential)
     case lambdaFunction(function: LambdaFunctionSummary, region: String, credential: AWSSigV4Signer.Credential)
     case eventBridge(item: EventBridgeItem, vendor: CloudVendor, credential: AWSSigV4Signer.Credential)
+    case ssmParameter(parameter: SSMParameter, credential: AWSSigV4Signer.Credential)
     case operations
 }
 

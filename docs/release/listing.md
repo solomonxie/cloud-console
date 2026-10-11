@@ -178,7 +178,7 @@ Upload in filename order (the first two are what people actually see):
 
 Recapture: a `SCREENSHOTS` build (never in `make release`) takes `-screen <name>`, turns on
 Demo mode, resets demo data and bypasses the app lock. Names: `home billing s3 ec2 ec2-health
-lambda lambda-run iam add settings` (`CloudConsole/Screenshots.swift`).
+lambda lambda-run parameters parameter iam add settings` (`CloudConsole/Screenshots.swift`).
 
 ```
 U=<simulator udid>

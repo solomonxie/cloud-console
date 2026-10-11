@@ -29,16 +29,16 @@ has — no backend server, no IaC, nothing of ours in between.
 
 Built incrementally, one resource kind at a time. Only implemented ones show in the app.
 
-| Provider | Billing | Storage | Users & roles | Compute | Functions |
-|---|---|---|---|---|---|
-| AWS | Cost Explorer | S3 (browse, preview, share, upload, copy/move/rename/delete) | IAM + policies | EC2 + status checks, metrics | Lambda: list, run, live logs |
-| Tencent Cloud | bill summary, balance | COS | CAM + policies | CVM | — |
+| Provider | Billing | Storage | Users & roles | Compute | Functions | Events | Config |
+|---|---|---|---|---|---|---|---|
+| AWS | Cost Explorer | S3 (browse, preview, share, upload, copy/move/rename/delete) | IAM + policies | EC2 + status checks, metrics | Lambda: list, run, live logs | EventBridge rules, buses, schedules | SSM Parameter Store (SecureString revealed on tap) |
+| Tencent Cloud | bill summary, balance | COS | CAM + policies | CVM | — | EventBridge (CEB) | — |
 
-Not yet: RDS, EventBridge, alarms, Tencent SCF/CDB; Azure, Google Cloud, Alibaba.
+Not yet: RDS, alarms, Tencent SCF/CDB; Azure, Google Cloud, Alibaba.
 
 Lambda: run with a JSON input (synchronous, confirmed first) → response. Runtime logs
 stream live from `/aws/lambda/<function>` for the current run only, window capped at the function timeout (key needs `logs:FilterLogEvents`).
-EC2 and Lambda scan every enabled region (`ec2:DescribeRegions`, else the default 17) one at a time — us-east-1, us-west-1, Canada first — each shown as it finishes, grouped and folded by region with counts; empty regions hidden.
+EC2, Lambda, EventBridge and Parameter Store scan every enabled region (`ec2:DescribeRegions`, else the default 17) one at a time — us-east-1, us-west-1, Canada first — each shown as it finishes, grouped and folded by region with counts; empty regions hidden.
 
 Creating a least-privilege key: [docs/access-keys.md](docs/access-keys.md).
 

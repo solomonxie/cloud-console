@@ -21,6 +21,7 @@ Actions the app calls, by screen:
 | IAM users / roles | `iam:ListUsers`, `iam:ListRoles`, `iam:ListAttachedUserPolicies`, `iam:ListUserPolicies`, `iam:GetUserPolicy`, `iam:ListAttachedRolePolicies`, `iam:ListRolePolicies`, `iam:GetRolePolicy`, `iam:GetPolicy`, `iam:GetPolicyVersion` |
 | EC2 | `ec2:DescribeRegions`, `ec2:DescribeInstances`, `ec2:DescribeInstanceStatus`, `cloudwatch:GetMetricData` |
 | Lambda (list / run + logs) | `lambda:ListFunctions` / `lambda:InvokeFunction`, `logs:FilterLogEvents` |
+| Parameter Store (list / view value) | `ssm:DescribeParameters` / `ssm:GetParameter`, plus `kms:Decrypt` on the key for SecureString |
 
 The key is checked on add with STS `GetCallerIdentity`, which needs no permission.
 

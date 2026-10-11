@@ -1308,5 +1308,89 @@
    ],
    "isEstimated": false
   }
- ]
+ ],
+ "ssm-parameters": {
+  "us-east-1": [
+   {
+    "name": "/northwind/prod/api/base-url",
+    "region": "us-east-1",
+    "type": "String",
+    "tier": "Standard",
+    "version": 3,
+    "lastModified": "@today-12 14:05",
+    "lastModifiedUser": "arn:aws:iam::123456789012:user/ben.ortiz",
+    "dataType": "text",
+    "description": "Public API endpoint",
+    "value": "https://api.northwind.example.com/v2"
+   },
+   {
+    "name": "/northwind/prod/db/password",
+    "region": "us-east-1",
+    "type": "SecureString",
+    "tier": "Standard",
+    "version": 7,
+    "lastModified": "@today-4 09:31",
+    "lastModifiedUser": "arn:aws:iam::123456789012:user/ben.ortiz",
+    "dataType": "text",
+    "keyID": "alias/aws/ssm",
+    "description": "Orders DB master password",
+    "value": "s3cr3t-Demo-Only!"
+   },
+   {
+    "name": "/northwind/prod/db/host",
+    "region": "us-east-1",
+    "type": "String",
+    "tier": "Standard",
+    "version": 2,
+    "lastModified": "@today-40 16:20",
+    "dataType": "text",
+    "value": "orders-prod.cluster-c8xk2.us-east-1.rds.amazonaws.com"
+   },
+   {
+    "name": "/northwind/prod/feature-flags",
+    "region": "us-east-1",
+    "type": "StringList",
+    "tier": "Standard",
+    "version": 12,
+    "lastModified": "@today-1 11:02",
+    "dataType": "text",
+    "description": "Enabled storefront features",
+    "value": "new-checkout,gift-cards,express-shipping"
+   },
+   {
+    "name": "/northwind/prod/stripe/secret-key",
+    "region": "us-east-1",
+    "type": "SecureString",
+    "tier": "Standard",
+    "version": 4,
+    "lastModified": "@today-63 10:45",
+    "dataType": "text",
+    "keyID": "alias/northwind-secrets",
+    "value": "sk_live_demo_000000000000"
+   }
+  ],
+  "us-west-1": [
+   {
+    "name": "/northwind/staging/api/base-url",
+    "region": "us-west-1",
+    "type": "String",
+    "tier": "Standard",
+    "version": 1,
+    "lastModified": "@today-90 13:00",
+    "dataType": "text",
+    "value": "https://staging-api.northwind.example.com/v2"
+   },
+   {
+    "name": "/northwind/staging/db/password",
+    "region": "us-west-1",
+    "type": "SecureString",
+    "tier": "Standard",
+    "version": 2,
+    "lastModified": "@today-28 17:44",
+    "dataType": "text",
+    "keyID": "alias/aws/ssm",
+    "value": "staging-Demo-Only"
+   }
+  ]
+ }
 }

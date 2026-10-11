@@ -115,6 +115,11 @@ enum DemoCloud {
         )
     }
 
+    static func parameterValue(_ name: String, _ credential: AWSSigV4Signer.Credential) -> String {
+        let regions = (fixture(credential.accessKeyID)["ssm-parameters"] as? [String: [[String: Any]]]) ?? [:]
+        return regions.values.joined().first { $0["name"] as? String == name }?["value"] as? String ?? ""
+    }
+
     /// Smooth made-up series, steady per metric id.
     static func metrics(_ ids: [String], from: Date, to: Date, period: Int) -> [String: [MetricPoint]] {
         let base: [String: Double] = ["cpu": 23, "mem": 61, "disk": 47, "netIn": 180_000, "netOut": 95_000, "diskRead": 40_000, "diskWrite": 120_000]

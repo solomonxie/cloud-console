@@ -70,7 +70,7 @@ enum CloudVendor: String, CaseIterable, Identifiable, Hashable {
     var plannedResourceKinds: [ResourceKind] {
         switch self {
         case .aws:
-            return [.billing, .s3, .iamUsers, .iamRoles, .ec2, .lambda, .rds, .eventBridge, .cloudWatchAlarms]
+            return [.billing, .s3, .iamUsers, .iamRoles, .ec2, .lambda, .rds, .eventBridge, .parameterStore, .cloudWatchAlarms]
         case .tencent:
             return [.billing, .cos, .camUsers, .camRoles, .cvm, .scf, .cdb, .tencentEventBridge, .monitorAlarms]
         default:
@@ -94,6 +94,7 @@ enum ResourceKind: String, Identifiable, Hashable {
     case scf = "Cloud Functions"
     case cdb = "CDB Databases"
     case eventBridge = "EventBridge"
+    case parameterStore = "Parameter Store"
     case cloudWatchAlarms = "CloudWatch Alarms"
     case tencentEventBridge = "EventBridge (CEB)"
     case monitorAlarms = "Cloud Monitor Alarms"
@@ -110,6 +111,7 @@ enum ResourceKind: String, Identifiable, Hashable {
         case .lambda, .scf: return "bolt.fill"
         case .rds, .cdb: return "cylinder.split.1x2.fill"
         case .eventBridge, .tencentEventBridge: return "arrow.triangle.branch"
+        case .parameterStore: return "slider.horizontal.3"
         case .cloudWatchAlarms, .monitorAlarms: return "waveform.path.ecg"
         }
     }

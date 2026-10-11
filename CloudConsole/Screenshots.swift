@@ -55,6 +55,11 @@ enum Screenshots {
         case "lambda-run":
             guard let function = list([LambdaFunctionSummary].self, "lambda-functions@us-east-1")?.first else { return [] }
             return [.service(connection: aws, kind: .lambda), .lambdaFunction(function: function, region: "us-east-1", credential: credential)]
+        case "parameters":
+            return [.service(connection: aws, kind: .parameterStore)]
+        case "parameter":
+            guard let parameter = list([SSMParameter].self, "ssm-parameters@us-east-1")?.first(where: { $0.name == "/northwind/prod/feature-flags" }) else { return [] }
+            return [.service(connection: aws, kind: .parameterStore), .ssmParameter(parameter: parameter, credential: credential)]
         case "iam":
             guard let user = list([IAMUser].self, "iam-users")?.first(where: { $0.userName == "ben.ortiz" }) else { return [] }
             return [.service(connection: aws, kind: .iamUsers), .iamUser(user: user, credential: credential)]

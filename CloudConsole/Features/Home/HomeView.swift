@@ -190,6 +190,15 @@ struct HomeView: View {
                     row: { item in EventBridgeRow(item: item, connection: connection, showRegion: true) },
                     route: { item in .eventBridge(item: item, vendor: connection.vendor, credential: credential) }
                 )
+            case .parameterStore:
+                RegionalResourceListPage(
+                    kind: kind,
+                    store: RegionalResourceStore(cacheKind: "ssm-parameters", credential: credential) { region in
+                        try await ParameterStoreClient.listParameters(region: region, credential: credential)
+                    },
+                    row: { parameter in SSMParameterRow(parameter: parameter, connection: connection) },
+                    route: { parameter, _ in .ssmParameter(parameter: parameter, credential: credential) }
+                )
             case .cloudWatchAlarms, .monitorAlarms:
                 // Not implemented — filtered out of `resourceKinds`, so unreachable.
                 EmptyView()
@@ -212,6 +221,8 @@ struct HomeView: View {
             LambdaFunctionDetailView(function: function, region: region, credential: credential)
         case .eventBridge(let item, let vendor, let credential):
             EventBridgeDetailView(item: item, vendor: vendor, credential: credential)
+        case .ssmParameter(let parameter, let credential):
+            SSMParameterDetailView(parameter: parameter, credential: credential)
         case .operations:
             S3OperationsView(queue: operationQueue)
         }
