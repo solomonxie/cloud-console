@@ -728,5 +728,425 @@
    ],
    "isEstimated": false
   }
+ ],
+ "tencent-eventbridge": [
+  {
+   "kind": "Event bus",
+   "name": "default",
+   "container": "",
+   "region": "ap-shanghai",
+   "summary": "云服务事件默认总线",
+   "ref": "eb-6m3kq2xz",
+   "detail": {
+    "fields": [
+     [
+      "Name",
+      "default"
+     ],
+     [
+      "ID",
+      "eb-6m3kq2xz"
+     ],
+     [
+      "Description",
+      "云服务事件默认总线"
+     ],
+     [
+      "Type",
+      "Cloud"
+     ],
+     [
+      "Created",
+      "{today-380} 10:22:41"
+     ],
+     [
+      "Modified",
+      "{today-380} 10:22:41"
+     ],
+     [
+      "Region",
+      "ap-shanghai"
+     ]
+    ],
+    "documents": []
+   }
+  },
+  {
+   "kind": "Rule",
+   "name": "cvm-abnormal-alert",
+   "container": "eb-6m3kq2xz",
+   "region": "ap-shanghai",
+   "state": "ENABLED",
+   "summary": "CVM 异常事件告警",
+   "ref": "rule-4kz8w1pa",
+   "detail": {
+    "fields": [
+     [
+      "Name",
+      "cvm-abnormal-alert"
+     ],
+     [
+      "ID",
+      "rule-4kz8w1pa"
+     ],
+     [
+      "Event bus",
+      "eb-6m3kq2xz"
+     ],
+     [
+      "State",
+      "ENABLED"
+     ],
+     [
+      "Status",
+      "ACTIVE"
+     ],
+     [
+      "Description",
+      "CVM 异常事件告警"
+     ],
+     [
+      "Created",
+      "{today-200} 15:03:12"
+     ],
+     [
+      "Modified",
+      "{today-21} 09:47:30"
+     ],
+     [
+      "Region",
+      "ap-shanghai"
+     ]
+    ],
+    "documents": [
+     [
+      "Event pattern",
+      "{\n  \"source\": \"cvm.cloud.tencent\",\n  \"type\": [\n    \"cvm:ErrorEvent:GuestReboot\",\n    \"cvm:ErrorEvent:PingUnreachable\"\n  ]\n}"
+     ],
+     [
+      "Target · target-9q2c7x1d",
+      "{\n  \"TargetDescription\": {\n    \"ResourceDescription\": \"qcs::cls:ap-shanghai:uin/100031245871:topic/5b1f3e2a-ops-events\"\n  },\n  \"TargetId\": \"target-9q2c7x1d\",\n  \"Type\": \"cls\"\n}"
+     ]
+    ]
+   }
+  },
+  {
+   "kind": "Rule",
+   "name": "cos-upload-transcode",
+   "container": "eb-6m3kq2xz",
+   "region": "ap-shanghai",
+   "state": "ENABLED",
+   "summary": "Transcode videos uploaded to the media bucket",
+   "ref": "rule-7hd2m9qe",
+   "detail": {
+    "fields": [
+     [
+      "Name",
+      "cos-upload-transcode"
+     ],
+     [
+      "ID",
+      "rule-7hd2m9qe"
+     ],
+     [
+      "Event bus",
+      "eb-6m3kq2xz"
+     ],
+     [
+      "State",
+      "ENABLED"
+     ],
+     [
+      "Status",
+      "ACTIVE"
+     ],
+     [
+      "Description",
+      "Transcode videos uploaded to the media bucket"
+     ],
+     [
+      "Created",
+      "{today-150} 11:18:05"
+     ],
+     [
+      "Modified",
+      "{today-9} 17:02:44"
+     ],
+     [
+      "Region",
+      "ap-shanghai"
+     ]
+    ],
+    "documents": [
+     [
+      "Event pattern",
+      "{\n  \"data\": {\n    \"bucket\": [\n      \"lanting-media-1310245871\"\n    ]\n  },\n  \"region\": [\n    \"ap-shanghai\"\n  ],\n  \"source\": \"cos.cloud.tencent\",\n  \"type\": [\n    \"cos:created:object\"\n  ]\n}"
+     ],
+     [
+      "Target · target-3m8s0v6b",
+      "{\n  \"TargetDescription\": {\n    \"ResourceDescription\": \"qcs::scf:ap-shanghai:uin/100031245871:namespace/default/function/video-transcode/$DEFAULT\"\n  },\n  \"TargetId\": \"target-3m8s0v6b\",\n  \"Type\": \"scf\"\n}"
+     ]
+    ]
+   }
+  },
+  {
+   "kind": "Event bus",
+   "name": "lanting-orders",
+   "container": "",
+   "region": "ap-shanghai",
+   "summary": "订单事件总线",
+   "ref": "eb-2p9tq7lc",
+   "detail": {
+    "fields": [
+     [
+      "Name",
+      "lanting-orders"
+     ],
+     [
+      "ID",
+      "eb-2p9tq7lc"
+     ],
+     [
+      "Description",
+      "订单事件总线"
+     ],
+     [
+      "Type",
+      "Custom"
+     ],
+     [
+      "Created",
+      "{today-120} 14:30:00"
+     ],
+     [
+      "Modified",
+      "{today-33} 10:15:27"
+     ],
+     [
+      "Region",
+      "ap-shanghai"
+     ]
+    ],
+    "documents": []
+   }
+  },
+  {
+   "kind": "Rule",
+   "name": "order-paid-notify",
+   "container": "eb-2p9tq7lc",
+   "region": "ap-shanghai",
+   "state": "ENABLED",
+   "summary": "支付成功后通知仓库",
+   "ref": "rule-1xw5n3ry",
+   "detail": {
+    "fields": [
+     [
+      "Name",
+      "order-paid-notify"
+     ],
+     [
+      "ID",
+      "rule-1xw5n3ry"
+     ],
+     [
+      "Event bus",
+      "eb-2p9tq7lc"
+     ],
+     [
+      "State",
+      "ENABLED"
+     ],
+     [
+      "Status",
+      "ACTIVE"
+     ],
+     [
+      "Description",
+      "支付成功后通知仓库"
+     ],
+     [
+      "Created",
+      "{today-118} 09:41:55"
+     ],
+     [
+      "Modified",
+      "{today-5} 20:11:03"
+     ],
+     [
+      "Region",
+      "ap-shanghai"
+     ]
+    ],
+    "documents": [
+     [
+      "Event pattern",
+      "{\n  \"source\": \"lanting.orders\",\n  \"type\": [\n    \"order:paid\"\n  ]\n}"
+     ],
+     [
+      "Target · target-8c4k2j7p",
+      "{\n  \"TargetDescription\": {\n    \"ResourceDescription\": \"qcs::scf:ap-shanghai:uin/100031245871:namespace/default/function/order-notify/$DEFAULT\"\n  },\n  \"TargetId\": \"target-8c4k2j7p\",\n  \"Type\": \"scf\"\n}"
+     ]
+    ]
+   }
+  },
+  {
+   "kind": "Rule",
+   "name": "order-refund-audit",
+   "container": "eb-2p9tq7lc",
+   "region": "ap-shanghai",
+   "state": "DISABLED",
+   "summary": "Refund audit (paused)",
+   "ref": "rule-5gq0z8tm",
+   "detail": {
+    "fields": [
+     [
+      "Name",
+      "order-refund-audit"
+     ],
+     [
+      "ID",
+      "rule-5gq0z8tm"
+     ],
+     [
+      "Event bus",
+      "eb-2p9tq7lc"
+     ],
+     [
+      "State",
+      "DISABLED"
+     ],
+     [
+      "Status",
+      "ACTIVE"
+     ],
+     [
+      "Description",
+      "Refund audit (paused)"
+     ],
+     [
+      "Created",
+      "{today-95} 16:20:33"
+     ],
+     [
+      "Modified",
+      "{today-60} 08:55:12"
+     ],
+     [
+      "Region",
+      "ap-shanghai"
+     ]
+    ],
+    "documents": [
+     [
+      "Event pattern",
+      "{\n  \"source\": \"lanting.orders\",\n  \"type\": [\n    \"order:refunded\"\n  ]\n}"
+     ],
+     [
+      "Target · target-2v7r9h4n",
+      "{\n  \"TargetDescription\": {\n    \"ResourceDescription\": \"qcs::ckafka:ap-shanghai:uin/100031245871:ckafkaId/ckafka-8m2qz1x4/topic/refund-audit\"\n  },\n  \"TargetId\": \"target-2v7r9h4n\",\n  \"Type\": \"ckafka\"\n}"
+     ]
+    ]
+   }
+  },
+  {
+   "kind": "Event bus",
+   "name": "default",
+   "container": "",
+   "region": "ap-guangzhou",
+   "summary": "云服务事件默认总线",
+   "ref": "eb-9r4bz1kw",
+   "detail": {
+    "fields": [
+     [
+      "Name",
+      "default"
+     ],
+     [
+      "ID",
+      "eb-9r4bz1kw"
+     ],
+     [
+      "Description",
+      "云服务事件默认总线"
+     ],
+     [
+      "Type",
+      "Cloud"
+     ],
+     [
+      "Created",
+      "{today-380} 10:22:41"
+     ],
+     [
+      "Modified",
+      "{today-380} 10:22:41"
+     ],
+     [
+      "Region",
+      "ap-guangzhou"
+     ]
+    ],
+    "documents": []
+   }
+  },
+  {
+   "kind": "Rule",
+   "name": "cdb-backup-failed",
+   "container": "eb-9r4bz1kw",
+   "region": "ap-guangzhou",
+   "state": "ENABLED",
+   "summary": "MySQL backup failure alert",
+   "ref": "rule-8n2fk6vd",
+   "detail": {
+    "fields": [
+     [
+      "Name",
+      "cdb-backup-failed"
+     ],
+     [
+      "ID",
+      "rule-8n2fk6vd"
+     ],
+     [
+      "Event bus",
+      "eb-9r4bz1kw"
+     ],
+     [
+      "State",
+      "ENABLED"
+     ],
+     [
+      "Status",
+      "ACTIVE"
+     ],
+     [
+      "Description",
+      "MySQL backup failure alert"
+     ],
+     [
+      "Created",
+      "{today-240} 13:05:48"
+     ],
+     [
+      "Modified",
+      "{today-45} 11:30:09"
+     ],
+     [
+      "Region",
+      "ap-guangzhou"
+     ]
+    ],
+    "documents": [
+     [
+      "Event pattern",
+      "{\n  \"source\": \"cdb.cloud.tencent\",\n  \"type\": [\n    \"cdb:ErrorEvent:BackupFailed\"\n  ]\n}"
+     ],
+     [
+      "Target · target-6w1m3z8q",
+      "{\n  \"TargetDescription\": {\n    \"ResourceDescription\": \"qcs::eb-amp:ap-guangzhou:uin/100031245871:policy/ops-oncall\"\n  },\n  \"TargetId\": \"target-6w1m3z8q\",\n  \"Type\": \"amp\"\n}"
+     ]
+    ]
+   }
+  }
  ]
 }

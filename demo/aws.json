@@ -1392,5 +1392,529 @@
     "value": "staging-Demo-Only"
    }
   ]
+ },
+ "eventbridge": {
+  "us-east-1": [
+   {
+    "kind": "Event bus",
+    "name": "default",
+    "container": "",
+    "region": "us-east-1",
+    "ref": "arn:aws:events:us-east-1:123456789012:event-bus/default",
+    "detail": {
+     "fields": [
+      [
+       "Name",
+       "default"
+      ],
+      [
+       "ARN",
+       "arn:aws:events:us-east-1:123456789012:event-bus/default"
+      ],
+      [
+       "Region",
+       "us-east-1"
+      ]
+     ],
+     "documents": []
+    }
+   },
+   {
+    "kind": "Rule",
+    "name": "s3-upload-thumbnail",
+    "container": "default",
+    "region": "us-east-1",
+    "state": "ENABLED",
+    "summary": "Event pattern",
+    "ref": "arn:aws:events:us-east-1:123456789012:rule/s3-upload-thumbnail",
+    "detail": {
+     "fields": [
+      [
+       "Name",
+       "s3-upload-thumbnail"
+      ],
+      [
+       "Event bus",
+       "default"
+      ],
+      [
+       "State",
+       "ENABLED"
+      ],
+      [
+       "Description",
+       "Resize images dropped into the uploads bucket"
+      ],
+      [
+       "ARN",
+       "arn:aws:events:us-east-1:123456789012:rule/s3-upload-thumbnail"
+      ],
+      [
+       "Region",
+       "us-east-1"
+      ]
+     ],
+     "documents": [
+      [
+       "Event pattern",
+       "{\n  \"detail\": {\n    \"bucket\": {\n      \"name\": [\n        \"northwind-user-uploads\"\n      ]\n    },\n    \"object\": {\n      \"key\": [\n        {\n          \"suffix\": \".jpg\"\n        },\n        {\n          \"suffix\": \".png\"\n        }\n      ]\n    }\n  },\n  \"detail-type\": [\n    \"Object Created\"\n  ],\n  \"source\": [\n    \"aws.s3\"\n  ]\n}"
+      ],
+      [
+       "Target · image-resize",
+       "{\n  \"Arn\": \"arn:aws:lambda:us-east-1:123456789012:function:image-resize\",\n  \"Id\": \"image-resize\"\n}"
+      ]
+     ]
+    }
+   },
+   {
+    "kind": "Rule",
+    "name": "ec2-state-change-alert",
+    "container": "default",
+    "region": "us-east-1",
+    "state": "ENABLED",
+    "summary": "Event pattern",
+    "ref": "arn:aws:events:us-east-1:123456789012:rule/ec2-state-change-alert",
+    "detail": {
+     "fields": [
+      [
+       "Name",
+       "ec2-state-change-alert"
+      ],
+      [
+       "Event bus",
+       "default"
+      ],
+      [
+       "State",
+       "ENABLED"
+      ],
+      [
+       "Description",
+       "Notify ops when a production instance stops"
+      ],
+      [
+       "ARN",
+       "arn:aws:events:us-east-1:123456789012:rule/ec2-state-change-alert"
+      ],
+      [
+       "Region",
+       "us-east-1"
+      ]
+     ],
+     "documents": [
+      [
+       "Event pattern",
+       "{\n  \"detail\": {\n    \"state\": [\n      \"stopped\",\n      \"terminated\"\n    ]\n  },\n  \"detail-type\": [\n    \"EC2 Instance State-change Notification\"\n  ],\n  \"source\": [\n    \"aws.ec2\"\n  ]\n}"
+      ],
+      [
+       "Target · ops-alerts",
+       "{\n  \"Arn\": \"arn:aws:sns:us-east-1:123456789012:northwind-ops-alerts\",\n  \"Id\": \"ops-alerts\"\n}"
+      ]
+     ]
+    }
+   },
+   {
+    "kind": "Rule",
+    "name": "rds-snapshot-weekly",
+    "container": "default",
+    "region": "us-east-1",
+    "state": "DISABLED",
+    "summary": "cron(0 3 ? * SUN *)",
+    "ref": "arn:aws:events:us-east-1:123456789012:rule/rds-snapshot-weekly",
+    "detail": {
+     "fields": [
+      [
+       "Name",
+       "rds-snapshot-weekly"
+      ],
+      [
+       "Event bus",
+       "default"
+      ],
+      [
+       "State",
+       "DISABLED"
+      ],
+      [
+       "Schedule",
+       "cron(0 3 ? * SUN *)"
+      ],
+      [
+       "Description",
+       "Weekly manual snapshot (replaced by AWS Backup)"
+      ],
+      [
+       "ARN",
+       "arn:aws:events:us-east-1:123456789012:rule/rds-snapshot-weekly"
+      ],
+      [
+       "Region",
+       "us-east-1"
+      ]
+     ],
+     "documents": [
+      [
+       "Target · snapshot",
+       "{\n  \"Arn\": \"arn:aws:ssm:us-east-1:123456789012:automation-definition/AWS-CreateRdsSnapshot:$DEFAULT\",\n  \"Id\": \"snapshot\",\n  \"RoleArn\": \"arn:aws:iam::123456789012:role/eventbridge-ssm-automation\"\n}"
+      ]
+     ]
+    }
+   },
+   {
+    "kind": "Event bus",
+    "name": "northwind-orders",
+    "container": "",
+    "region": "us-east-1",
+    "ref": "arn:aws:events:us-east-1:123456789012:event-bus/northwind-orders",
+    "detail": {
+     "fields": [
+      [
+       "Name",
+       "northwind-orders"
+      ],
+      [
+       "Description",
+       "Order lifecycle events from the storefront"
+      ],
+      [
+       "ARN",
+       "arn:aws:events:us-east-1:123456789012:event-bus/northwind-orders"
+      ],
+      [
+       "Region",
+       "us-east-1"
+      ]
+     ],
+     "documents": [
+      [
+       "Policy",
+       "{\n  \"Statement\": [\n    {\n      \"Action\": \"events:PutEvents\",\n      \"Effect\": \"Allow\",\n      \"Principal\": {\n        \"AWS\": \"arn:aws:iam::210987654321:root\"\n      },\n      \"Resource\": \"arn:aws:events:us-east-1:123456789012:event-bus/northwind-orders\",\n      \"Sid\": \"AllowPartnerPutEvents\"\n    }\n  ],\n  \"Version\": \"2012-10-17\"\n}"
+      ]
+     ]
+    },
+    "summary": "Order lifecycle events from the storefront"
+   },
+   {
+    "kind": "Rule",
+    "name": "order-placed-webhook",
+    "container": "northwind-orders",
+    "region": "us-east-1",
+    "state": "ENABLED",
+    "summary": "Event pattern",
+    "ref": "arn:aws:events:us-east-1:123456789012:rule/northwind-orders/order-placed-webhook",
+    "detail": {
+     "fields": [
+      [
+       "Name",
+       "order-placed-webhook"
+      ],
+      [
+       "Event bus",
+       "northwind-orders"
+      ],
+      [
+       "State",
+       "ENABLED"
+      ],
+      [
+       "Description",
+       "Forward new orders to the fulfilment webhook"
+      ],
+      [
+       "ARN",
+       "arn:aws:events:us-east-1:123456789012:rule/northwind-orders/order-placed-webhook"
+      ],
+      [
+       "Region",
+       "us-east-1"
+      ]
+     ],
+     "documents": [
+      [
+       "Event pattern",
+       "{\n  \"detail-type\": [\n    \"OrderPlaced\"\n  ],\n  \"source\": [\n    \"northwind.storefront\"\n  ]\n}"
+      ],
+      [
+       "Target · order-webhook",
+       "{\n  \"Arn\": \"arn:aws:lambda:us-east-1:123456789012:function:order-webhook\",\n  \"Id\": \"order-webhook\"\n}"
+      ]
+     ]
+    }
+   },
+   {
+    "kind": "Rule",
+    "name": "order-archive",
+    "container": "northwind-orders",
+    "region": "us-east-1",
+    "state": "ENABLED",
+    "summary": "Event pattern",
+    "ref": "arn:aws:events:us-east-1:123456789012:rule/northwind-orders/order-archive",
+    "detail": {
+     "fields": [
+      [
+       "Name",
+       "order-archive"
+      ],
+      [
+       "Event bus",
+       "northwind-orders"
+      ],
+      [
+       "State",
+       "ENABLED"
+      ],
+      [
+       "Description",
+       "Copy every order event to the archive queue"
+      ],
+      [
+       "ARN",
+       "arn:aws:events:us-east-1:123456789012:rule/northwind-orders/order-archive"
+      ],
+      [
+       "Region",
+       "us-east-1"
+      ]
+     ],
+     "documents": [
+      [
+       "Event pattern",
+       "{\n  \"source\": [\n    \"northwind.storefront\"\n  ]\n}"
+      ],
+      [
+       "Target · archive-queue",
+       "{\n  \"Arn\": \"arn:aws:sqs:us-east-1:123456789012:northwind-order-archive\",\n  \"Id\": \"archive-queue\"\n}"
+      ]
+     ]
+    }
+   },
+   {
+    "kind": "Schedule",
+    "name": "cache-warmup",
+    "container": "default",
+    "region": "us-east-1",
+    "state": "ENABLED",
+    "summary": "image-resize",
+    "ref": "arn:aws:scheduler:us-east-1:123456789012:schedule/default/cache-warmup",
+    "detail": {
+     "fields": [
+      [
+       "Name",
+       "cache-warmup"
+      ],
+      [
+       "Group",
+       "default"
+      ],
+      [
+       "State",
+       "ENABLED"
+      ],
+      [
+       "Expression",
+       "rate(15 minutes)"
+      ],
+      [
+       "Time zone",
+       "UTC"
+      ],
+      [
+       "Created",
+       "@today-90 10:12"
+      ],
+      [
+       "Modified",
+       "@iso today-6 08:40"
+      ],
+      [
+       "Description",
+       "Keep the resize function warm"
+      ],
+      [
+       "Target",
+       "arn:aws:lambda:us-east-1:123456789012:function:image-resize"
+      ],
+      [
+       "Role",
+       "arn:aws:iam::123456789012:role/scheduler-invoke-lambda"
+      ],
+      [
+       "Flexible window",
+       "OFF"
+      ],
+      [
+       "After completion",
+       "NONE"
+      ],
+      [
+       "ARN",
+       "arn:aws:scheduler:us-east-1:123456789012:schedule/default/cache-warmup"
+      ],
+      [
+       "Region",
+       "us-east-1"
+      ]
+     ],
+     "documents": [
+      [
+       "Target",
+       "{\n  \"Arn\": \"arn:aws:lambda:us-east-1:123456789012:function:image-resize\",\n  \"Input\": \"{\\\"source\\\": \\\"scheduler\\\", \\\"job\\\": \\\"cache-warmup\\\"}\",\n  \"RetryPolicy\": {\n    \"MaximumEventAgeInSeconds\": 86400,\n    \"MaximumRetryAttempts\": 3\n  },\n  \"RoleArn\": \"arn:aws:iam::123456789012:role/scheduler-invoke-lambda\"\n}"
+      ]
+     ]
+    }
+   }
+  ],
+  "us-west-1": [
+   {
+    "kind": "Schedule",
+    "name": "nightly-sales-report",
+    "container": "reports",
+    "region": "us-west-1",
+    "state": "ENABLED",
+    "summary": "nightly-report",
+    "ref": "arn:aws:scheduler:us-west-1:123456789012:schedule/reports/nightly-sales-report",
+    "detail": {
+     "fields": [
+      [
+       "Name",
+       "nightly-sales-report"
+      ],
+      [
+       "Group",
+       "reports"
+      ],
+      [
+       "State",
+       "ENABLED"
+      ],
+      [
+       "Expression",
+       "cron(30 1 * * ? *)"
+      ],
+      [
+       "Time zone",
+       "America/Los_Angeles"
+      ],
+      [
+       "Created",
+       "@today-210 17:05"
+      ],
+      [
+       "Modified",
+       "@iso today-14 09:22"
+      ],
+      [
+       "Description",
+       "Email yesterday's sales summary"
+      ],
+      [
+       "Target",
+       "arn:aws:lambda:us-west-1:123456789012:function:nightly-report"
+      ],
+      [
+       "Role",
+       "arn:aws:iam::123456789012:role/scheduler-invoke-lambda"
+      ],
+      [
+       "Flexible window",
+       "OFF"
+      ],
+      [
+       "After completion",
+       "NONE"
+      ],
+      [
+       "ARN",
+       "arn:aws:scheduler:us-west-1:123456789012:schedule/reports/nightly-sales-report"
+      ],
+      [
+       "Region",
+       "us-west-1"
+      ]
+     ],
+     "documents": [
+      [
+       "Target",
+       "{\n  \"Arn\": \"arn:aws:lambda:us-west-1:123456789012:function:nightly-report\",\n  \"Input\": \"{\\\"source\\\": \\\"scheduler\\\", \\\"job\\\": \\\"nightly-sales-report\\\"}\",\n  \"RetryPolicy\": {\n    \"MaximumEventAgeInSeconds\": 86400,\n    \"MaximumRetryAttempts\": 3\n  },\n  \"RoleArn\": \"arn:aws:iam::123456789012:role/scheduler-invoke-lambda\"\n}"
+      ]
+     ]
+    }
+   },
+   {
+    "kind": "Schedule",
+    "name": "month-end-close",
+    "container": "reports",
+    "region": "us-west-1",
+    "state": "DISABLED",
+    "summary": "nightly-report",
+    "ref": "arn:aws:scheduler:us-west-1:123456789012:schedule/reports/month-end-close",
+    "detail": {
+     "fields": [
+      [
+       "Name",
+       "month-end-close"
+      ],
+      [
+       "Group",
+       "reports"
+      ],
+      [
+       "State",
+       "DISABLED"
+      ],
+      [
+       "Expression",
+       "cron(0 6 1 * ? *)"
+      ],
+      [
+       "Time zone",
+       "America/Los_Angeles"
+      ],
+      [
+       "Created",
+       "@today-150 11:48"
+      ],
+      [
+       "Modified",
+       "@iso today-30 16:10"
+      ],
+      [
+       "Description",
+       "Month-end finance export (paused)"
+      ],
+      [
+       "Target",
+       "arn:aws:lambda:us-west-1:123456789012:function:nightly-report"
+      ],
+      [
+       "Role",
+       "arn:aws:iam::123456789012:role/scheduler-invoke-lambda"
+      ],
+      [
+       "Flexible window",
+       "OFF"
+      ],
+      [
+       "After completion",
+       "NONE"
+      ],
+      [
+       "ARN",
+       "arn:aws:scheduler:us-west-1:123456789012:schedule/reports/month-end-close"
+      ],
+      [
+       "Region",
+       "us-west-1"
+      ]
+     ],
+     "documents": [
+      [
+       "Target",
+       "{\n  \"Arn\": \"arn:aws:lambda:us-west-1:123456789012:function:nightly-report\",\n  \"Input\": \"{\\\"source\\\": \\\"scheduler\\\", \\\"job\\\": \\\"month-end-close\\\"}\",\n  \"RetryPolicy\": {\n    \"MaximumEventAgeInSeconds\": 86400,\n    \"MaximumRetryAttempts\": 3\n  },\n  \"RoleArn\": \"arn:aws:iam::123456789012:role/scheduler-invoke-lambda\"\n}"
+      ]
+     ]
+    }
+   }
+  ]
  }
 }

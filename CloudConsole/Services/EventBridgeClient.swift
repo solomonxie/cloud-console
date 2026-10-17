@@ -59,6 +59,7 @@ enum EventBridgeClient {
     }
 
     static func detail(of item: EventBridgeItem, credential: AWSSigV4Signer.Credential) async throws -> EventBridgeDetail {
+        if AppData.isDemo { return DemoCloud.eventBridgeDetail(item, credential) }
         switch item.kind {
         case .rule: return try await ruleDetail(item, credential: credential)
         case .schedule: return try await scheduleDetail(item, credential: credential)

@@ -16,6 +16,7 @@ enum TencentEventBridgeClient {
     }
 
     static func detail(of item: EventBridgeItem, credential: AWSSigV4Signer.Credential) async throws -> EventBridgeDetail {
+        if AppData.isDemo { return DemoCloud.eventBridgeDetail(item, credential) }
         switch item.kind {
         case .bus:
             let bus = try await busList(region: item.region, credential: credential).first { $0["EventBusId"] as? String == item.ref } ?? [:]

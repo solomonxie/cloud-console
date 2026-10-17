@@ -120,6 +120,24 @@ enum DemoCloud {
         return regions.values.joined().first { $0["name"] as? String == name }?["value"] as? String ?? ""
     }
 
+    /// Each fixture item carries `detail: {fields: [[label, value]], documents: [[title, text]]}`;
+    /// a numeric value is a resolved `@today…` date.
+    static func eventBridgeDetail(_ item: EventBridgeItem, _ credential: AWSSigV4Signer.Credential) -> EventBridgeDetail {
+        let f = fixture(credential.accessKeyID)
+        let list = (f["eventbridge"] as? [String: Any])?[item.region] ?? f["tencent-eventbridge"]
+        let match = ((list as? [[String: Any]]) ?? []).first {
+            $0["kind"] as? String == item.kind.rawValue && $0["container"] as? String == item.container && $0["name"] as? String == item.name
+        }
+        let detail = (match?["detail"] as? [String: Any]) ?? [:]
+        func text(_ value: Any) -> String {
+            (value as? Double).map { Date(timeIntervalSinceReferenceDate: $0).formatted(date: .abbreviated, time: .shortened) } ?? "\(value)"
+        }
+        return EventBridgeDetail(
+            fields: ((detail["fields"] as? [[Any]]) ?? []).filter { $0.count == 2 }.map { DetailField(label: "\($0[0])", value: text($0[1])) },
+            documents: ((detail["documents"] as? [[String]]) ?? []).filter { $0.count == 2 }.map { (title: $0[0], text: $0[1]) }
+        )
+    }
+
     /// Smooth made-up series, steady per metric id.
     static func metrics(_ ids: [String], from: Date, to: Date, period: Int) -> [String: [MetricPoint]] {
         let base: [String: Double] = ["cpu": 23, "mem": 61, "disk": 47, "netIn": 180_000, "netOut": 95_000, "diskRead": 40_000, "diskWrite": 120_000]
