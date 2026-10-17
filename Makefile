@@ -2,7 +2,7 @@
 # Device signing: DEVELOPMENT_TEAM + APP_BUNDLE_ID in Config/Local.xcconfig (copy the .example); DEVICE_UDID defaults to the first connected iPhone.
 STORE   ?= us
 SCHEME  := CloudConsole
-DERIVED := build/install
+DERIVED := /tmp/cloudconsole-build/install
 APP     := CloudConsole.app
 APP_ID  := $(shell sed -n 's/^APP_BUNDLE_ID *= *//p' Config/Local.xcconfig)
 SIM     ?= iPhone 18 Pro
@@ -38,7 +38,7 @@ sim: project
 
 check: project
 	xcodebuild -project CloudConsole.xcodeproj -scheme $(SCHEME) -configuration Release \
-		-destination 'generic/platform=iOS' -derivedDataPath build/check STORE=$(STORE) -quiet build
+		-destination 'generic/platform=iOS' -derivedDataPath /tmp/cloudconsole-build/check STORE=$(STORE) -quiet build
 	@echo "Release build OK"
 
 # Archive, sign for the App Store and upload — no Xcode Organizer.
