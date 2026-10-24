@@ -6,7 +6,7 @@ DERIVED := /tmp/cloudconsole-build/install
 APP     := CloudConsole.app
 APP_ID  := $(shell sed -n 's/^APP_BUNDLE_ID *= *//p' Config/Local.xcconfig)
 SIM     ?= iPhone 18 Pro
-DEVICE_UDID ?= $(shell xcrun devicectl list devices 2>/dev/null | awk '/physical/ && /connected/ {print $$3; exit}')
+DEVICE_UDID ?= $(shell xcrun devicectl list devices 2>/dev/null | awk '/physical/ && (/connected/ || /available/) {print $$3; exit}')
 
 .PHONY: help project device sim check release screenshots icon
 
