@@ -44,7 +44,7 @@ enum TencentBillingClient {
         struct Response: Decodable {
             struct Body: Decodable {
                 struct Total: Decodable { let RealTotalCost: String? }
-                struct Overview: Decodable { let BusinessCodeName: String; let RealTotalCost: String? }
+                struct Overview: Decodable { let BusinessCodeName: String; let BusinessCode: String?; let RealTotalCost: String? }
                 let SummaryTotal: Total?
                 let SummaryOverview: [Overview]?
             }
@@ -58,12 +58,87 @@ enum TencentBillingClient {
         let byService = (decoded.Response.SummaryOverview ?? [])
             .compactMap { item -> ServiceCost? in
                 guard let amount = item.RealTotalCost.flatMap(Double.init), amount > 0 else { return nil }
-                return ServiceCost(serviceName: item.BusinessCodeName, amount: amount)
+                return ServiceCost(serviceName: item.BusinessCodeName, amount: amount, code: item.BusinessCode)
             }
             .sorted { $0.amount > $1.amount }
 
         let month = monthFormatter.string(from: begin)
         return MonthToDateCost(periodStart: "\(month)-01", periodEnd: month, total: total, unit: "CNY", byService: byService, isEstimated: true)
+    }
+
+    /// One product's bill for a month (`yyyy-MM`) from its bill details — each row is one
+    /// resource's charge split into billing items (storage, traffic, requests, …). Tencent
+    /// keeps these for every month, so unlike AWS the per-resource split covers the whole period.
+    static func serviceDetail(product: ServiceCost, month: String, credential: AWSSigV4Signer.Credential) async throws -> ServiceCostDetail {
+        struct Response: Decodable {
+            struct Body: Decodable {
+                struct Detail: Decodable {
+                    struct Component: Decodable { let ItemCodeName: String?; let ComponentCodeName: String?; let RealCost: String? }
+                    let ResourceId: String?
+                    let ComponentSet: [Component]?
+                }
+                let DetailSet: [Detail]?
+                let Total: Int?
+            }
+            let Response: Body
+        }
+        let pageSize = 100, maxPages = 20
+        func page(_ offset: Int) async throws -> Response.Body {
+            var payload: [String: Any] = ["Month": month, "Offset": offset, "Limit": pageSize, "NeedRecordNum": 1]
+            if let code = product.code { payload["BusinessCode"] = code }
+            let data = try await TencentAPIClient.request(host: host, service: service, action: "DescribeBillDetail", version: version, payload: payload, credential: credential)
+            return try JSONDecoder().decode(Response.self, from: data).Response
+        }
+
+        // Sequential: DescribeBillDetail is rate-limited to a few calls a second.
+        let first = try await page(0)
+        let pages = min(((first.Total ?? 0) + pageSize - 1) / pageSize, maxPages)
+        var details = first.DetailSet ?? []
+        for index in stride(from: 1, to: pages, by: 1) {
+            details += try await page(index * pageSize).DetailSet ?? []
+        }
+
+        var byResource: [String: [(String, Double)]] = [:]
+        for detail in details {
+            for component in detail.ComponentSet ?? [] {
+                let item = component.ItemCodeName ?? component.ComponentCodeName ?? ""
+                byResource[detail.ResourceId ?? "", default: []].append((itemCategory(item), component.RealCost.flatMap(Double.init) ?? 0))
+            }
+        }
+        let resources = byResource.map { id, rows in
+            let usage = usageCosts(rows)
+            return ResourceCost(resourceID: id, amount: usage.reduce(0) { $0 + $1.amount }, usage: usage)
+        }
+        .filter { abs($0.amount) >= 0.005 }
+        .sorted { $0.amount > $1.amount }
+        let usage = usageCosts(byResource.values.flatMap { $0 })
+        return ServiceCostDetail(
+            serviceName: product.serviceName,
+            unit: "CNY",
+            total: usage.reduce(0) { $0 + $1.amount },
+            usage: usage,
+            resources: resources,
+            resourcesNote: (first.Total ?? 0) > maxPages * pageSize ? "Showing the first \(pages * pageSize) bill records." : nil
+        )
+    }
+
+    /// Billing item names (e.g. 标准存储容量, 外网下行流量) folded into storage / data in /
+    /// data out / requests; anything else keeps its own name.
+    static func itemCategory(_ item: String) -> String {
+        switch item {
+        case _ where item.contains("下行") || item.contains("出流量") || item.contains("回源"): return "Data transfer out"
+        case _ where item.contains("上行") || item.contains("入流量"): return "Data transfer in"
+        case _ where item.contains("存储") || item.contains("容量"): return "Storage"
+        case _ where item.contains("请求"): return "Requests"
+        default: return item
+        }
+    }
+
+    private static func usageCosts(_ rows: [(String, Double)]) -> [UsageCost] {
+        Dictionary(rows, uniquingKeysWith: +)
+            .filter { abs($0.value) >= 0.005 }
+            .map { UsageCost(name: $0.key, amount: $0.value) }
+            .sorted { $0.amount > $1.amount }
     }
 
     /// Tencent's `Balance` is in fen (1/100 CNY) — a prepaid-account concept AWS doesn't have.

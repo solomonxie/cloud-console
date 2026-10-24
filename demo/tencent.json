@@ -729,6 +729,352 @@
    "isEstimated": false
   }
  ],
+ "billing-detail": {
+  "对象存储 COS": {
+   "serviceName": "对象存储 COS",
+   "unit": "CNY",
+   "total": 173.03,
+   "usage": [
+    {
+     "name": "Data transfer out",
+     "amount": 83.86
+    },
+    {
+     "name": "Storage",
+     "amount": 76.26
+    },
+    {
+     "name": "Requests",
+     "amount": 12.91
+    },
+    {
+     "name": "Data transfer in",
+     "amount": 0.0
+    }
+   ],
+   "resources": [
+    {
+     "resourceID": "lanting-media-1310245871",
+     "amount": 86.52,
+     "usage": [
+      {
+       "name": "Data transfer out",
+       "amount": 43.26
+      },
+      {
+       "name": "Storage",
+       "amount": 36.05
+      },
+      {
+       "name": "Requests",
+       "amount": 7.21
+      },
+      {
+       "name": "Data transfer in",
+       "amount": 0.0
+      }
+     ]
+    },
+    {
+     "resourceID": "lanting-static-1310245871",
+     "amount": 55.37,
+     "usage": [
+      {
+       "name": "Data transfer out",
+       "amount": 40.27
+      },
+      {
+       "name": "Storage",
+       "amount": 10.07
+      },
+      {
+       "name": "Requests",
+       "amount": 5.03
+      },
+      {
+       "name": "Data transfer in",
+       "amount": 0.0
+      }
+     ]
+    },
+    {
+     "resourceID": "lanting-backup-1310245871",
+     "amount": 31.14,
+     "usage": [
+      {
+       "name": "Storage",
+       "amount": 30.14
+      },
+      {
+       "name": "Requests",
+       "amount": 0.67
+      },
+      {
+       "name": "Data transfer out",
+       "amount": 0.33
+      },
+      {
+       "name": "Data transfer in",
+       "amount": 0.0
+      }
+     ]
+    }
+   ]
+  },
+  "云服务器 CVM": {
+   "serviceName": "云服务器 CVM",
+   "unit": "CNY",
+   "total": 879.67,
+   "usage": [
+    {
+     "name": "实例",
+     "amount": 704.53
+    },
+    {
+     "name": "公网带宽",
+     "amount": 90.37
+    },
+    {
+     "name": "系统盘",
+     "amount": 84.77
+    }
+   ],
+   "resources": [
+    {
+     "resourceID": "ins-8x2kq4mz",
+     "amount": 351.87,
+     "usage": [
+      {
+       "name": "实例",
+       "amount": 255.9
+      },
+      {
+       "name": "公网带宽",
+       "amount": 63.98
+      },
+      {
+       "name": "系统盘",
+       "amount": 31.99
+      }
+     ]
+    },
+    {
+     "resourceID": "ins-3jd9fw1c",
+     "amount": 263.9,
+     "usage": [
+      {
+       "name": "实例",
+       "amount": 211.12
+      },
+      {
+       "name": "系统盘",
+       "amount": 26.39
+      },
+      {
+       "name": "公网带宽",
+       "amount": 26.39
+      }
+     ]
+    },
+    {
+     "resourceID": "ins-q7m2v8tn",
+     "amount": 175.93,
+     "usage": [
+      {
+       "name": "实例",
+       "amount": 158.34
+      },
+      {
+       "name": "系统盘",
+       "amount": 17.59
+      }
+     ]
+    },
+    {
+     "resourceID": "ins-a1b4c9de",
+     "amount": 87.97,
+     "usage": [
+      {
+       "name": "实例",
+       "amount": 79.17
+      },
+      {
+       "name": "系统盘",
+       "amount": 8.8
+      }
+     ]
+    }
+   ]
+  },
+  "云数据库 MySQL": {
+   "serviceName": "云数据库 MySQL",
+   "unit": "CNY",
+   "total": 457.58,
+   "usage": [
+    {
+     "name": "实例",
+     "amount": 366.06
+    },
+    {
+     "name": "Storage",
+     "amount": 68.64
+    },
+    {
+     "name": "备份空间",
+     "amount": 22.88
+    }
+   ],
+   "resources": [
+    {
+     "resourceID": "cdb-6ka2m9qp",
+     "amount": 457.58,
+     "usage": [
+      {
+       "name": "实例",
+       "amount": 366.06
+      },
+      {
+       "name": "Storage",
+       "amount": 68.64
+      },
+      {
+       "name": "备份空间",
+       "amount": 22.88
+      }
+     ]
+    }
+   ]
+  },
+  "内容分发网络 CDN": {
+   "serviceName": "内容分发网络 CDN",
+   "unit": "CNY",
+   "total": 251.13,
+   "usage": [
+    {
+     "name": "Data transfer out",
+     "amount": 237.91
+    },
+    {
+     "name": "Requests",
+     "amount": 13.22
+    }
+   ],
+   "resources": [
+    {
+     "resourceID": "static.lanting.cn",
+     "amount": 175.79,
+     "usage": [
+      {
+       "name": "Data transfer out",
+       "amount": 166.54
+      },
+      {
+       "name": "Requests",
+       "amount": 9.25
+      }
+     ]
+    },
+    {
+     "resourceID": "media.lanting.cn",
+     "amount": 75.34,
+     "usage": [
+      {
+       "name": "Data transfer out",
+       "amount": 71.37
+      },
+      {
+       "name": "Requests",
+       "amount": 3.97
+      }
+     ]
+    }
+   ]
+  },
+  "负载均衡 CLB": {
+   "serviceName": "负载均衡 CLB",
+   "unit": "CNY",
+   "total": 109.41,
+   "usage": [
+    {
+     "name": "实例",
+     "amount": 54.71
+    },
+    {
+     "name": "LCU",
+     "amount": 32.82
+    },
+    {
+     "name": "Data transfer out",
+     "amount": 21.88
+    }
+   ],
+   "resources": [
+    {
+     "resourceID": "lb-2f8kx0qa",
+     "amount": 109.41,
+     "usage": [
+      {
+       "name": "实例",
+       "amount": 54.71
+      },
+      {
+       "name": "LCU",
+       "amount": 32.82
+      },
+      {
+       "name": "Data transfer out",
+       "amount": 21.88
+      }
+     ]
+    }
+   ]
+  },
+  "云函数 SCF": {
+   "serviceName": "云函数 SCF",
+   "unit": "CNY",
+   "total": 28.12,
+   "usage": [
+    {
+     "name": "资源使用量",
+     "amount": 20.25
+    },
+    {
+     "name": "调用次数",
+     "amount": 7.87
+    }
+   ],
+   "resources": [
+    {
+     "resourceID": "thumbnail",
+     "amount": 16.87,
+     "usage": [
+      {
+       "name": "资源使用量",
+       "amount": 13.5
+      },
+      {
+       "name": "调用次数",
+       "amount": 3.37
+      }
+     ]
+    },
+    {
+     "resourceID": "order-notify",
+     "amount": 11.25,
+     "usage": [
+      {
+       "name": "资源使用量",
+       "amount": 6.75
+      },
+      {
+       "name": "调用次数",
+       "amount": 4.5
+      }
+     ]
+    }
+   ]
+  }
+ },
  "tencent-eventbridge": [
   {
    "kind": "Event bus",

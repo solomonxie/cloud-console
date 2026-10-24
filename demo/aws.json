@@ -1309,6 +1309,506 @@
    "isEstimated": false
   }
  ],
+ "billing-detail": {
+  "Amazon Simple Storage Service": {
+   "serviceName": "Amazon Simple Storage Service",
+   "unit": "USD",
+   "total": 71.58,
+   "usage": [
+    {
+     "name": "Storage",
+     "amount": 37.68
+    },
+    {
+     "name": "Data transfer out",
+     "amount": 23.36
+    },
+    {
+     "name": "Requests",
+     "amount": 10.54
+    },
+    {
+     "name": "Data transfer in",
+     "amount": 0.0
+    }
+   ],
+   "resources": [
+    {
+     "resourceID": "northwind-web-assets",
+     "amount": 24.34,
+     "usage": [
+      {
+       "name": "Data transfer out",
+       "amount": 17.04
+      },
+      {
+       "name": "Storage",
+       "amount": 4.87
+      },
+      {
+       "name": "Requests",
+       "amount": 2.43
+      },
+      {
+       "name": "Data transfer in",
+       "amount": 0.0
+      }
+     ]
+    },
+    {
+     "resourceID": "northwind-user-uploads",
+     "amount": 17.18,
+     "usage": [
+      {
+       "name": "Storage",
+       "amount": 8.59
+      },
+      {
+       "name": "Requests",
+       "amount": 5.15
+      },
+      {
+       "name": "Data transfer out",
+       "amount": 3.44
+      },
+      {
+       "name": "Data transfer in",
+       "amount": 0.0
+      }
+     ]
+    },
+    {
+     "resourceID": "northwind-db-backups",
+     "amount": 14.31,
+     "usage": [
+      {
+       "name": "Storage",
+       "amount": 13.56
+      },
+      {
+       "name": "Requests",
+       "amount": 0.45
+      },
+      {
+       "name": "Data transfer out",
+       "amount": 0.3
+      },
+      {
+       "name": "Data transfer in",
+       "amount": 0.0
+      }
+     ]
+    },
+    {
+     "resourceID": "northwind-ml-datasets",
+     "amount": 8.59,
+     "usage": [
+      {
+       "name": "Storage",
+       "amount": 5.15
+      },
+      {
+       "name": "Data transfer out",
+       "amount": 2.58
+      },
+      {
+       "name": "Requests",
+       "amount": 0.86
+      },
+      {
+       "name": "Data transfer in",
+       "amount": 0.0
+      }
+     ]
+    },
+    {
+     "resourceID": "northwind-logs-archive",
+     "amount": 6.44,
+     "usage": [
+      {
+       "name": "Storage",
+       "amount": 5.15
+      },
+      {
+       "name": "Requests",
+       "amount": 1.29
+      },
+      {
+       "name": "Data transfer out",
+       "amount": 0.0
+      },
+      {
+       "name": "Data transfer in",
+       "amount": 0.0
+      }
+     ]
+    },
+    {
+     "resourceID": "cf-templates-1x8k2pq7-us-east-1",
+     "amount": 0.72,
+     "usage": [
+      {
+       "name": "Storage",
+       "amount": 0.36
+      },
+      {
+       "name": "Requests",
+       "amount": 0.36
+      },
+      {
+       "name": "Data transfer out",
+       "amount": 0.0
+      },
+      {
+       "name": "Data transfer in",
+       "amount": 0.0
+      }
+     ]
+    }
+   ],
+   "resourcesFrom": "{today-13}",
+   "resourcesTo": "{today}"
+  },
+  "Amazon Elastic Compute Cloud - Compute": {
+   "serviceName": "Amazon Elastic Compute Cloud - Compute",
+   "unit": "USD",
+   "total": 216.26,
+   "usage": [
+    {
+     "name": "BoxUsage:c6i.2xlarge",
+     "amount": 90.83
+    },
+    {
+     "name": "BoxUsage:m6i.large",
+     "amount": 82.18
+    },
+    {
+     "name": "BoxUsage:t3.medium",
+     "amount": 25.95
+    },
+    {
+     "name": "BoxUsage:t3.micro",
+     "amount": 17.3
+    }
+   ],
+   "resources": [
+    {
+     "resourceID": "i-0a1b2c3d4e5f60001",
+     "amount": 90.83,
+     "usage": [
+      {
+       "name": "BoxUsage:c6i.2xlarge",
+       "amount": 90.83
+      }
+     ]
+    },
+    {
+     "resourceID": "i-0a1b2c3d4e5f60002",
+     "amount": 43.25,
+     "usage": [
+      {
+       "name": "BoxUsage:m6i.large",
+       "amount": 43.25
+      }
+     ]
+    },
+    {
+     "resourceID": "i-0a1b2c3d4e5f60003",
+     "amount": 38.93,
+     "usage": [
+      {
+       "name": "BoxUsage:m6i.large",
+       "amount": 38.93
+      }
+     ]
+    },
+    {
+     "resourceID": "i-0a1b2c3d4e5f60004",
+     "amount": 25.95,
+     "usage": [
+      {
+       "name": "BoxUsage:t3.medium",
+       "amount": 25.95
+      }
+     ]
+    },
+    {
+     "resourceID": "i-0a1b2c3d4e5f60005",
+     "amount": 17.3,
+     "usage": [
+      {
+       "name": "BoxUsage:t3.micro",
+       "amount": 17.3
+      }
+     ]
+    }
+   ],
+   "resourcesFrom": "{today-13}",
+   "resourcesTo": "{today}"
+  },
+  "Amazon Relational Database Service": {
+   "serviceName": "Amazon Relational Database Service",
+   "unit": "USD",
+   "total": 149.24,
+   "usage": [
+    {
+     "name": "InstanceUsage:db.r6g.large",
+     "amount": 93.13
+    },
+    {
+     "name": "InstanceUsage:db.t4g.medium",
+     "amount": 29.55
+    },
+    {
+     "name": "RDS:GP3-Storage",
+     "amount": 20.74
+    },
+    {
+     "name": "RDS:ChargedBackupUsage",
+     "amount": 5.82
+    }
+   ],
+   "resources": [
+    {
+     "resourceID": "arn:aws:rds:us-east-1:482913075521:db:northwind-prod",
+     "amount": 116.41,
+     "usage": [
+      {
+       "name": "InstanceUsage:db.r6g.large",
+       "amount": 93.13
+      },
+      {
+       "name": "RDS:GP3-Storage",
+       "amount": 17.46
+      },
+      {
+       "name": "RDS:ChargedBackupUsage",
+       "amount": 5.82
+      }
+     ]
+    },
+    {
+     "resourceID": "arn:aws:rds:us-east-1:482913075521:db:northwind-staging",
+     "amount": 32.83,
+     "usage": [
+      {
+       "name": "InstanceUsage:db.t4g.medium",
+       "amount": 29.55
+      },
+      {
+       "name": "RDS:GP3-Storage",
+       "amount": 3.28
+      }
+     ]
+    }
+   ],
+   "resourcesFrom": "{today-13}",
+   "resourcesTo": "{today}"
+  },
+  "Amazon CloudFront": {
+   "serviceName": "Amazon CloudFront",
+   "unit": "USD",
+   "total": 50.41,
+   "usage": [
+    {
+     "name": "Data transfer out",
+     "amount": 45.37
+    },
+    {
+     "name": "Requests",
+     "amount": 5.04
+    }
+   ],
+   "resources": [
+    {
+     "resourceID": "arn:aws:cloudfront::482913075521:distribution/E2QX7M1KQ4ZP8T",
+     "amount": 50.41,
+     "usage": [
+      {
+       "name": "Data transfer out",
+       "amount": 45.37
+      },
+      {
+       "name": "Requests",
+       "amount": 5.04
+      }
+     ]
+    }
+   ],
+   "resourcesFrom": "{today-13}",
+   "resourcesTo": "{today}"
+  },
+  "Amazon Elastic Load Balancing": {
+   "serviceName": "Amazon Elastic Load Balancing",
+   "unit": "USD",
+   "total": 21.21,
+   "usage": [
+    {
+     "name": "LoadBalancerUsage",
+     "amount": 12.73
+    },
+    {
+     "name": "LCUUsage",
+     "amount": 8.48
+    }
+   ],
+   "resources": [
+    {
+     "resourceID": "arn:aws:elasticloadbalancing:us-east-1:482913075521:loadbalancer/app/northwind-web/7f3e1c2a9b4d5e6f",
+     "amount": 21.21,
+     "usage": [
+      {
+       "name": "LoadBalancerUsage",
+       "amount": 12.73
+      },
+      {
+       "name": "LCUUsage",
+       "amount": 8.48
+      }
+     ]
+    }
+   ],
+   "resourcesFrom": "{today-13}",
+   "resourcesTo": "{today}"
+  },
+  "AWS Lambda": {
+   "serviceName": "AWS Lambda",
+   "unit": "USD",
+   "total": 12.53,
+   "usage": [
+    {
+     "name": "Lambda-GB-Second",
+     "amount": 10.71
+    },
+    {
+     "name": "Request",
+     "amount": 1.82
+    }
+   ],
+   "resources": [
+    {
+     "resourceID": "arn:aws:lambda:us-east-1:482913075521:function:image-resize",
+     "amount": 6.89,
+     "usage": [
+      {
+       "name": "Lambda-GB-Second",
+       "amount": 6.2
+      },
+      {
+       "name": "Request",
+       "amount": 0.69
+      }
+     ]
+    },
+    {
+     "resourceID": "arn:aws:lambda:us-east-1:482913075521:function:order-webhook",
+     "amount": 3.76,
+     "usage": [
+      {
+       "name": "Lambda-GB-Second",
+       "amount": 2.63
+      },
+      {
+       "name": "Request",
+       "amount": 1.13
+      }
+     ]
+    },
+    {
+     "resourceID": "arn:aws:lambda:us-east-1:482913075521:function:nightly-report",
+     "amount": 1.88,
+     "usage": [
+      {
+       "name": "Lambda-GB-Second",
+       "amount": 1.88
+      }
+     ]
+    }
+   ],
+   "resourcesFrom": "{today-13}",
+   "resourcesTo": "{today}"
+  },
+  "Amazon CloudWatch": {
+   "serviceName": "Amazon CloudWatch",
+   "unit": "USD",
+   "total": 9.6,
+   "usage": [
+    {
+     "name": "CW:MetricMonitorUsage",
+     "amount": 4.2
+    },
+    {
+     "name": "TimedStorage-ByteHrs",
+     "amount": 2.88
+    },
+    {
+     "name": "DataProcessing-Bytes",
+     "amount": 2.52
+    }
+   ],
+   "resources": [
+    {
+     "resourceID": "",
+     "amount": 6.72,
+     "usage": [
+      {
+       "name": "CW:MetricMonitorUsage",
+       "amount": 4.2
+      },
+      {
+       "name": "DataProcessing-Bytes",
+       "amount": 2.52
+      }
+     ]
+    },
+    {
+     "resourceID": "arn:aws:logs:us-east-1:482913075521:log-group:/aws/lambda/image-resize",
+     "amount": 2.88,
+     "usage": [
+      {
+       "name": "TimedStorage-ByteHrs",
+       "amount": 2.88
+      }
+     ]
+    }
+   ],
+   "resourcesFrom": "{today-13}",
+   "resourcesTo": "{today}"
+  },
+  "AWS Key Management Service": {
+   "serviceName": "AWS Key Management Service",
+   "unit": "USD",
+   "total": 3.19,
+   "usage": [
+    {
+     "name": "KMS-Keys",
+     "amount": 2.99
+    },
+    {
+     "name": "KMS-Requests",
+     "amount": 0.2
+    }
+   ],
+   "resources": [
+    {
+     "resourceID": "arn:aws:kms:us-east-1:482913075521:key/1f2e3d4c-5b6a-7980-a1b2-c3d4e5f60718",
+     "amount": 3.19,
+     "usage": [
+      {
+       "name": "KMS-Keys",
+       "amount": 2.99
+      },
+      {
+       "name": "KMS-Requests",
+       "amount": 0.2
+      }
+     ]
+    }
+   ],
+   "resourcesFrom": "{today-13}",
+   "resourcesTo": "{today}"
+  }
+ },
  "ssm-parameters": {
   "us-east-1": [
    {

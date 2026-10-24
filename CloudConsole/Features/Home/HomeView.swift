@@ -86,15 +86,23 @@ struct HomeView: View {
                 switch connection.vendor {
                 case .tencent:
                     BillingView(
+                        connectionName: connection.name,
                         cacheKey: credential.accessKeyID,
                         load: { try await TencentBillingClient.monthToDateCost(credential: credential) },
-                        loadHistory: { try await TencentBillingClient.monthlyBills(monthsBack: 11, credential: credential) }
+                        loadHistory: { try await TencentBillingClient.monthlyBills(monthsBack: 11, credential: credential) },
+                        loadDetail: { service, bill in
+                            try await TencentBillingClient.serviceDetail(product: service, month: String(bill.periodStart.prefix(7)), credential: credential)
+                        }
                     )
                 default:
                     BillingView(
+                        connectionName: connection.name,
                         cacheKey: credential.accessKeyID,
                         load: { try await CostExplorerClient.monthToDateCost(credential: credential) },
-                        loadHistory: { try await CostExplorerClient.monthlyBills(monthsBack: 11, credential: credential) }
+                        loadHistory: { try await CostExplorerClient.monthlyBills(monthsBack: 11, credential: credential) },
+                        loadDetail: { service, bill in
+                            try await CostExplorerClient.serviceDetail(service: service.serviceName, start: bill.periodStart, end: bill.periodEnd, credential: credential)
+                        }
                     )
                 }
             case .s3:
