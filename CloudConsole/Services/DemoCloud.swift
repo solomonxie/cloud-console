@@ -41,13 +41,14 @@ enum DemoCloud {
         (try? decode([CloudConnection].self, load("connections") as Any)) ?? []
     }
 
-    /// A list page's value by its cache key, `<kind>[@<region>]:<fixture>`. Regional kinds
+    /// A list page's value by its cache key, `<kind>[@<region>]:<fixture>[:<suffix>]`. Regional kinds
     /// are `{region: [...]}` in the fixture; a region not listed is empty.
     static func value<T: Decodable>(_ type: T.Type, cacheKey: String) throws -> T {
         let parts = cacheKey.split(separator: ":", maxSplits: 1).map(String.init)
         guard parts.count == 2 else { throw Unavailable() }
         let kind = parts[0].split(separator: "@", maxSplits: 1).map(String.init)
-        guard let json = fixture(parts[1])[kind[0]] else { throw Unavailable() }
+        let fixtureName = String(parts[1].prefix { $0 != ":" })
+        guard let json = fixture(fixtureName)[kind[0]] else { throw Unavailable() }
         guard kind.count == 2 else { return try decode(T.self, json) }
         return try decode(T.self, (json as? [String: Any])?[kind[1]] ?? [Any]())
     }
