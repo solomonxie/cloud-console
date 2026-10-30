@@ -1,0 +1,13 @@
+{
+  "kind": "compute#instanceGroupManagerAggregatedList",
+  "items": {
+    "regions/us-central1": {
+      "instanceGroupManagers": [
+        {"kind": "compute#instanceGroupManager", "id": "800000000000000001", "name": "api-mig", "baseInstanceName": "api", "region": "https://www.googleapis.com/compute/v1/projects/demo-project-123/regions/us-central1",
+         "instanceGroup": "https://www.googleapis.com/compute/v1/projects/demo-project-123/regions/us-central1/instanceGroups/api-mig", "instanceTemplate": "https://www.googleapis.com/compute/v1/projects/demo-project-123/global/instanceTemplates/api-template", "targetSize": 3,
+         "status": {"isStable": true}, "currentActions": {"none": 3, "creating": 0}, "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-project-123/regions/us-central1/instanceGroupManagers/api-mig"}
+      ]
+    },
+    "zones/us-central1-a": {"warning": {"code": "NO_RESULTS_ON_PAGE", "message": "There are no results for scope 'zones/us-central1-a' on this page."}}
+  }
+}

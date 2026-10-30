@@ -1,0 +1,7 @@
+{
+  "managedInstances": [
+    {"instance": "https://www.googleapis.com/compute/v1/projects/demo-project-123/zones/us-central1-a/instances/api-x1b2", "id": "700000000000000001", "instanceStatus": "RUNNING", "currentAction": "NONE"},
+    {"instance": "https://www.googleapis.com/compute/v1/projects/demo-project-123/zones/us-central1-b/instances/api-k9z8", "id": "700000000000000002", "instanceStatus": "RUNNING", "currentAction": "NONE"},
+    {"instance": "https://www.googleapis.com/compute/v1/projects/demo-project-123/zones/us-central1-c/instances/api-q4w5", "currentAction": "CREATING"}
+  ]
+}

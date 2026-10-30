@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "connections": [
+    {
+      "id": "0b9d7c1e-1f5a-4c33-9d8e-2a4f6b7c8d90",
+      "type": "s3",
+      "bucket": "example-bucket",
+      "name": "Personal",
+      "prefix": "photos/",
+      "accessKeyId": "AKIAIOSFODNN7EXAMPLE",
+      "secretAccessKey": "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
+      "region": "eu-west-1"
+    },
+    {
+      "id": "6e2f4a8b-3c1d-4e5f-8a9b-0c1d2e3f4a5b",
+      "type": "gcs",
+      "bucket": "my-gcs-bucket",
+      "name": "my-gcs-bucket",
+      "prefix": "",
+      "serviceAccountJson": "{\"type\":\"authorized_user\",\"client_id\":\"x.apps.googleusercontent.com\",\"client_secret\":\"s\",\"refresh_token\":\"r\"}"
+    }
+  ]
+}

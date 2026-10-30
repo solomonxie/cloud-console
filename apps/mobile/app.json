@@ -1,0 +1,34 @@
+{
+  "expo": {
+    "name": "Cloud Console",
+    "slug": "cloud-console",
+    "scheme": "cloudconsole",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "../ios/CloudConsole/Assets.xcassets/AppIcon.appiconset/icon-light.png",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "bundleIdentifier": "com.solomonxie.cloudconsole.rn",
+      "supportsTablet": true,
+      "config": { "usesNonExemptEncryption": false }
+    },
+    "android": {
+      "package": "com.solomonxie.cloudconsole.rn"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-local-authentication",
+        { "faceIDPermission": "Unlock Cloud Console with Face ID." }
+      ],
+      "expo-secure-store",
+      [
+        "expo-image-picker",
+        { "photosPermission": "Choose photos and videos to upload to your bucket." }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": false
+    }
+  }
+}

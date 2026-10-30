@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<EnumerationResults ServiceEndpoint="https://myaccount.blob.core.windows.net/" ContainerName="assets">
+  <Prefix>docs/</Prefix>
+  <Marker>2!88!MDAwMDE5IWRvY3MvcmVwb3J0LnBkZiEwMDAwMjgh</Marker>
+  <MaxResults>100</MaxResults>
+  <Delimiter>/</Delimiter>
+  <Blobs>
+    <BlobPrefix>
+      <Name>docs/zz/</Name>
+    </BlobPrefix>
+  </Blobs>
+  <NextMarker />
+</EnumerationResults>

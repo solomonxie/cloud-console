@@ -1,0 +1,15 @@
+{
+  "source": "Tencent Cloud API 3.0 'Signature v3' documentation worked example (CVM DescribeInstances, signed headers content-type;host); SecretId replaced with a placeholder (it isn't signed) so secret scanners don't flag the doc's example ID",
+  "secretId": "EXAMPLE-SECRET-ID",
+  "secretKey": "Gu5t9xGARNpq86cd98joQYCN3EXAMPLE",
+  "host": "cvm.tencentcloudapi.com",
+  "service": "cvm",
+  "action": "DescribeInstances",
+  "version": "2017-03-12",
+  "region": "ap-guangzhou",
+  "timestamp": 1551113065,
+  "payload": "{\"Limit\": 1, \"Filters\": [{\"Values\": [\"\\u672a\\u547d\\u540d\"], \"Name\": \"instance-name\"}]}",
+  "expectedCanonicalRequest": "POST\n/\n\ncontent-type:application/json; charset=utf-8\nhost:cvm.tencentcloudapi.com\n\ncontent-type;host\n35e9c5b0e3ae67532d3c9f17ead6c90222632e5b1ff7f6e89887f1398934f064",
+  "expectedStringToSign": "TC3-HMAC-SHA256\n1551113065\n2019-02-25/cvm/tc3_request\n5ffe6a04c0664d6b969fab9a13bdab201d63ee709638e2749d62a09ca18d7031",
+  "expectedAuthorization": "TC3-HMAC-SHA256 Credential=EXAMPLE-SECRET-ID/2019-02-25/cvm/tc3_request, SignedHeaders=content-type;host, Signature=72e494ea809ad7a8c8f7a4507b9bddcbaa8e581f516e8da2f66e2c5a96525168"
+}

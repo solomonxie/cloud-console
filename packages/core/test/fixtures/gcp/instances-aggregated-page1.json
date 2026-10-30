@@ -1,0 +1,31 @@
+{
+  "kind": "compute#instanceAggregatedList",
+  "id": "projects/demo-project-123/aggregated/instances",
+  "items": {
+    "zones/us-central1-a": {
+      "instances": [
+        {
+          "kind": "compute#instance",
+          "id": "4567890123456789012",
+          "creationTimestamp": "2024-06-01T09:12:33.123-07:00",
+          "name": "web-1",
+          "machineType": "https://www.googleapis.com/compute/v1/projects/demo-project-123/zones/us-central1-a/machineTypes/e2-medium",
+          "status": "RUNNING",
+          "zone": "https://www.googleapis.com/compute/v1/projects/demo-project-123/zones/us-central1-a",
+          "networkInterfaces": [
+            {"network": "https://www.googleapis.com/compute/v1/projects/demo-project-123/global/networks/default", "subnetwork": "https://www.googleapis.com/compute/v1/projects/demo-project-123/regions/us-central1/subnetworks/default", "networkIP": "10.128.0.2", "name": "nic0",
+             "accessConfigs": [{"kind": "compute#accessConfig", "type": "ONE_TO_ONE_NAT", "name": "External NAT", "natIP": "34.123.45.67", "networkTier": "PREMIUM"}]}
+          ],
+          "disks": [{"deviceName": "web-1", "boot": true, "diskSizeGb": "10", "mode": "READ_WRITE", "type": "PERSISTENT", "source": "https://www.googleapis.com/compute/v1/projects/demo-project-123/zones/us-central1-a/disks/web-1"}],
+          "labels": {"app": "web"},
+          "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-project-123/zones/us-central1-a/instances/web-1"
+        }
+      ]
+    },
+    "zones/us-central1-b": {
+      "warning": {"code": "NO_RESULTS_ON_PAGE", "message": "There are no results for scope 'zones/us-central1-b' on this page.", "data": [{"key": "scope", "value": "zones/us-central1-b"}]}
+    }
+  },
+  "nextPageToken": "agg-page-2",
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-project-123/aggregated/instances"
+}

@@ -1,0 +1,9 @@
+{
+  "account": "",
+  "client_id": "764086051850-fake.apps.googleusercontent.com",
+  "client_secret": "fake-client-secret",
+  "quota_project_id": "demo-project-123",
+  "refresh_token": "1//fake-refresh-token",
+  "type": "authorized_user",
+  "universe_domain": "googleapis.com"
+}

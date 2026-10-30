@@ -1,0 +1,24 @@
+{
+  "kind": "compute#instanceAggregatedList",
+  "id": "projects/demo-project-123/aggregated/instances",
+  "items": {
+    "zones/europe-west1-b": {
+      "instances": [
+        {
+          "kind": "compute#instance",
+          "id": "1234567890123456789",
+          "name": "batch-worker",
+          "machineType": "https://www.googleapis.com/compute/v1/projects/demo-project-123/zones/europe-west1-b/machineTypes/n2-standard-4",
+          "status": "TERMINATED",
+          "zone": "https://www.googleapis.com/compute/v1/projects/demo-project-123/zones/europe-west1-b",
+          "networkInterfaces": [{"network": "https://www.googleapis.com/compute/v1/projects/demo-project-123/global/networks/default", "networkIP": "10.132.0.5", "name": "nic0"}],
+          "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-project-123/zones/europe-west1-b/instances/batch-worker"
+        }
+      ]
+    },
+    "zones/asia-east1-a": {
+      "warning": {"code": "NO_RESULTS_ON_PAGE", "message": "There are no results for scope 'zones/asia-east1-a' on this page."}
+    }
+  },
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-project-123/aggregated/instances"
+}

@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Chrome Cloud Console</title>
+    <link rel="stylesheet" href="sidepanel.css" />
+    <link rel="stylesheet" href="gcp.css" />
+  </head>
+  <body>
+    <nav id="sectionTabs" class="section-tabs" role="tablist" aria-label="Sections" hidden></nav>
+    <div id="sectionHost" class="section-host"></div>
+
+    <!-- Storage section markup, mounted by src/sidepanel/storage-section.ts. -->
+    <template id="storageTemplate">
+      <header class="topbar">
+        <div class="brand" title="Storage">
+          <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+          </svg>
+        </div>
+        <select id="connectionSelect" aria-label="Connection"></select>
+        <button id="addConnBtn" class="icon-btn" title="Add connection" aria-label="Add connection"></button>
+        <button id="manageBtn" class="icon-btn" title="Edit connection" aria-label="Edit connection"></button>
+        <button id="exportBtn" class="icon-btn" title="Export all connections" aria-label="Export all connections"></button>
+        <button id="importBtn" class="icon-btn" title="Import connections" aria-label="Import connections"></button>
+        <input type="file" id="importInput" accept="application/json" hidden />
+      </header>
+
+      <div class="toolbar">
+        <button id="refreshBtn" class="icon-btn" title="Refresh" aria-label="Refresh"></button>
+        <button id="selectModeBtn" class="icon-btn" title="Select multiple" aria-label="Select multiple" disabled></button>
+        <button id="pasteBtn" class="icon-btn" title="Paste" aria-label="Paste" disabled></button>
+        <span class="spacer"></span>
+        <button id="newFolderBtn" class="btn" disabled></button>
+        <button id="uploadBtn" class="btn" disabled></button>
+        <input type="file" id="uploadInput" multiple hidden />
+      </div>
+
+      <nav id="breadcrumb" class="breadcrumb" aria-label="Path"></nav>
+
+      <div id="clipboardPill" class="clipboard-pill" hidden>
+        <span id="clipboardIcon"></span>
+        <span id="clipboardCount" class="count"></span>
+        <button type="button" id="clipboardClearBtn" class="icon-btn ghost" title="Clear clipboard" aria-label="Clear clipboard"></button>
+      </div>
+
+      <div id="selectionBar" class="selection-bar" hidden>
+        <label class="field checkbox select-all">
+          <input type="checkbox" id="selectAllCheckbox" />
+          <span id="selectionCount">0 selected</span>
+        </label>
+        <span class="spacer"></span>
+        <button id="bulkCopyBtn" class="icon-btn" title="Copy selected to…" aria-label="Copy selected to…"></button>
+        <button id="bulkMoveBtn" class="icon-btn" title="Move selected to…" aria-label="Move selected to…"></button>
+        <button id="bulkDeleteBtn" class="icon-btn danger-hover" title="Delete selected" aria-label="Delete selected"></button>
+        <button id="exitSelectBtn" class="icon-btn" title="Cancel selection" aria-label="Cancel selection"></button>
+      </div>
+
+      <div id="status" class="status" hidden></div>
+
+      <div id="fileList" class="file-list"></div>
+      <button id="loadMoreBtn" class="load-more" hidden>Load more…</button>
+      <div id="listStats" class="list-stats" hidden></div>
+    </template>
+
+    <dialog id="connectionModal">
+      <form id="connectionForm" method="dialog">
+        <h2 id="connectionModalTitle">Add connection</h2>
+        <input type="hidden" id="connId" />
+        <label class="field">
+          <span>Type</span>
+          <select id="connType">
+            <option value="s3">Amazon S3</option>
+            <option value="s3-compat">S3-compatible (R2, MinIO, …)</option>
+            <option value="azure">Azure Blob Storage</option>
+            <option value="gcs">Google Cloud Storage</option>
+            <option value="tencent-cos">Tencent Cloud COS</option>
+            <option value="alibaba-oss">Alibaba Cloud OSS</option>
+          </select>
+        </label>
+        <p id="connTypeHint" class="hint"></p>
+        <label class="field" id="connEndpointField">
+          <span>Endpoint</span>
+          <input id="connEndpoint" autocomplete="off" placeholder="e.g. abc123.r2.cloudflarestorage.com" />
+        </label>
+        <label class="field">
+          <span id="connBucketLabel">Bucket name</span>
+          <input id="connBucket" required autocomplete="off" placeholder="my-bucket" />
+        </label>
+        <label class="field" id="connAccessKeyField">
+          <span id="connAccessKeyLabel">Access key ID</span>
+          <input id="connAccessKey" autocomplete="off" />
+        </label>
+        <label class="field" id="connSecretKeyField">
+          <span id="connSecretKeyLabel">Secret access key</span>
+          <span class="input-with-action">
+            <input id="connSecretKey" type="password" autocomplete="off" />
+            <button type="button" id="toggleSecretBtn" class="icon-btn ghost" title="Show/hide" aria-label="Show or hide secret key"></button>
+          </span>
+        </label>
+        <label class="field" id="connServiceAccountJsonField">
+          <span>Credentials JSON <em>(service account key or gcloud ADC)</em></span>
+          <textarea id="connServiceAccountJson" rows="5" autocomplete="off" placeholder='{"type": "service_account", ...} or {"type": "authorized_user", ...}'></textarea>
+        </label>
+        <button type="button" id="connCredentialsFileBtn" class="link-btn">Load from file…</button>
+        <input type="file" id="connCredentialsFile" accept=".json,application/json" hidden />
+        <label class="field">
+          <span>Key prefix <em>(optional, starting folder)</em></span>
+          <input id="connPrefix" placeholder="e.g. logs/2026/" />
+        </label>
+        <label class="field">
+          <span>Name <em>(optional, defaults to bucket name)</em></span>
+          <input id="connName" placeholder="e.g. Personal, Work" />
+        </label>
+        <details class="advanced" id="connAdvanced">
+          <summary>Advanced</summary>
+          <label class="field" id="connRegionField">
+            <span>Region</span>
+            <input id="connRegion" placeholder="auto-detected from bucket" />
+          </label>
+        </details>
+        <datalist id="tencentCosRegions">
+          <option value="ap-beijing"></option>
+          <option value="ap-nanjing"></option>
+          <option value="ap-shanghai"></option>
+          <option value="ap-guangzhou"></option>
+          <option value="ap-chengdu"></option>
+          <option value="ap-chongqing"></option>
+          <option value="ap-hongkong"></option>
+          <option value="ap-singapore"></option>
+          <option value="ap-jakarta"></option>
+          <option value="ap-seoul"></option>
+          <option value="ap-tokyo"></option>
+          <option value="ap-bangkok"></option>
+          <option value="ap-mumbai"></option>
+          <option value="na-siliconvalley"></option>
+          <option value="na-ashburn"></option>
+          <option value="na-toronto"></option>
+          <option value="sa-saopaulo"></option>
+          <option value="eu-frankfurt"></option>
+        </datalist>
+        <datalist id="alibabaOssRegions">
+          <option value="cn-hangzhou"></option>
+          <option value="cn-shanghai"></option>
+          <option value="cn-nanjing"></option>
+          <option value="cn-fuzhou"></option>
+          <option value="cn-qingdao"></option>
+          <option value="cn-beijing"></option>
+          <option value="cn-zhangjiakou"></option>
+          <option value="cn-huhehaote"></option>
+          <option value="cn-wulanchabu"></option>
+          <option value="cn-shenzhen"></option>
+          <option value="cn-heyuan"></option>
+          <option value="cn-guangzhou"></option>
+          <option value="cn-chengdu"></option>
+          <option value="cn-hongkong"></option>
+          <option value="us-west-1"></option>
+          <option value="us-east-1"></option>
+          <option value="ap-northeast-1"></option>
+          <option value="ap-northeast-2"></option>
+          <option value="ap-southeast-1"></option>
+          <option value="ap-southeast-2"></option>
+          <option value="ap-southeast-3"></option>
+          <option value="ap-southeast-5"></option>
+          <option value="ap-southeast-6"></option>
+          <option value="ap-southeast-7"></option>
+          <option value="ap-south-1"></option>
+          <option value="eu-central-1"></option>
+          <option value="eu-west-1"></option>
+          <option value="me-east-1"></option>
+        </datalist>
+        <p class="hint">Keys are stored only in this browser (chrome.storage.local).</p>
+        <button type="button" id="connManageAllBtn" class="link-btn">Manage all connections…</button>
+        <div id="connFormStatus" class="status" hidden></div>
+        <div class="modal-actions">
+          <button type="button" id="connDeleteBtn" class="btn danger" hidden>Delete</button>
+          <span class="spacer"></span>
+          <button type="button" id="connCancelBtn" class="btn">Cancel</button>
+          <button type="submit" id="connSaveBtn" class="btn primary">Save</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="manageModal">
+      <h2>Manage connections</h2>
+      <ul id="manageList" class="manage-list"></ul>
+      <div class="modal-actions">
+        <span class="spacer"></span>
+        <button id="manageCloseBtn" class="btn primary">Close</button>
+      </div>
+    </dialog>
+
+    <dialog id="confirmDialog" class="alert-dialog">
+      <div class="alert-body">
+        <span id="confirmIcon" class="alert-icon"></span>
+        <div>
+          <h2 id="confirmTitle"></h2>
+          <p id="confirmMessage"></p>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <span class="spacer"></span>
+        <button type="button" id="confirmCancelBtn" class="btn">Cancel</button>
+        <button type="button" id="confirmOkBtn" class="btn danger">Confirm</button>
+      </div>
+    </dialog>
+
+    <dialog id="promptDialog" class="alert-dialog">
+      <form id="promptForm" method="dialog">
+        <h2 id="promptTitle"></h2>
+        <label class="field">
+          <span id="promptLabel"></span>
+          <input id="promptInput" required />
+        </label>
+        <div class="modal-actions">
+          <span class="spacer"></span>
+          <button type="button" id="promptCancelBtn" class="btn">Cancel</button>
+          <button type="submit" id="promptOkBtn" class="btn primary">OK</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="shareModal" class="alert-dialog share-dialog">
+      <h2 id="shareModalTitle">Share</h2>
+      <div class="share-row">
+        <span id="shareUriLabel">s3:// URI</span>
+        <div class="share-value">
+          <input id="shareS3Uri" readonly />
+          <button type="button" id="copyS3UriBtn" class="icon-btn" title="Copy" aria-label="Copy s3:// URI"></button>
+        </div>
+      </div>
+      <div class="share-row">
+        <span>HTTP link <em>(unsigned — only works if the object/bucket is public)</em></span>
+        <div class="share-value">
+          <input id="shareHttpUrl" readonly />
+          <button type="button" id="copyHttpUrlBtn" class="icon-btn" title="Copy" aria-label="Copy HTTP link"></button>
+        </div>
+      </div>
+      <div class="share-row" id="shareSignedRow">
+        <span>Signed link <em>(works on private objects, expires)</em></span>
+        <div class="share-value">
+          <select id="shareExpiry">
+            <option value="900">Expires in 15 minutes</option>
+            <option value="3600" selected>Expires in 1 hour</option>
+            <option value="21600">Expires in 6 hours</option>
+            <option value="86400">Expires in 1 day</option>
+            <option value="604800">Expires in 7 days</option>
+          </select>
+          <button type="button" id="generateSignedBtn" class="btn">Generate</button>
+        </div>
+        <div class="share-value">
+          <input id="shareSignedUrl" readonly placeholder="Click Generate…" />
+          <button type="button" id="copySignedUrlBtn" class="icon-btn" title="Copy" aria-label="Copy signed link"></button>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <span class="spacer"></span>
+        <button type="button" id="shareCloseBtn" class="btn primary">Close</button>
+      </div>
+    </dialog>
+
+    <dialog id="detailModal" class="sheet-dialog">
+      <div class="sheet-header">
+        <span id="detailIcon" class="badge"></span>
+        <h2 id="detailName"></h2>
+        <button type="button" id="detailCloseBtn" class="icon-btn" title="Close" aria-label="Close"></button>
+      </div>
+      <div class="sheet-body">
+        <div id="detailPreview" class="detail-preview"></div>
+        <dl id="detailMeta" class="detail-meta"></dl>
+      </div>
+      <div class="modal-actions sheet-actions">
+        <button type="button" id="detailSaveBtn" class="icon-btn" hidden></button>
+        <button type="button" id="detailShareBtn" class="icon-btn"></button>
+        <button type="button" id="detailDownloadBtn" class="icon-btn"></button>
+        <button type="button" id="detailCopyBtn" class="icon-btn"></button>
+        <button type="button" id="detailMoveBtn" class="icon-btn"></button>
+        <button type="button" id="detailDeleteBtn" class="icon-btn danger-hover"></button>
+      </div>
+    </dialog>
+
+    <script type="module" src="sidepanel.js"></script>
+  </body>
+</html>

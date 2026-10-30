@@ -20,7 +20,7 @@ App Store Connect paths start at **Apps → Cloud Consoles → Distribution →*
 
 Guideline 2.1 (completeness) and 2.2 (no placeholder or "coming soon" content). Already handled in code:
 
-- Unimplemented resource kinds and vendors are hidden everywhere (`resourceKinds`, `CloudVendor.available` in `CloudConsole/Models/CloudVendor.swift`). Add connection lists AWS and Tencent Cloud only.
+- Unimplemented resource kinds and vendors are hidden everywhere (`resourceKinds`, `CloudVendor.available` in `apps/ios/CloudConsole/Models/CloudVendor.swift`). Add connection lists AWS and Tencent Cloud only.
 - "Learn how to create →" opens [`docs/access-keys.md`](../access-keys.md) — **push it to `master` before submitting**, or the link 404s.
 - AWS and Tencent Cloud keys are both tested before saving (STS `GetCallerIdentity`).
 - iPhone only; SwiftUI `App` lifecycle with a scene manifest, so it launches on iPad (App Review runs it there) and on iOS 27.
@@ -178,7 +178,7 @@ Upload in filename order (the first two are what people actually see):
 
 Recapture: a `SCREENSHOTS` build (never in `make release`) takes `-screen <name>`, turns on
 Demo mode, resets demo data and bypasses the app lock. Names: `home billing s3 ec2 ec2-health
-lambda lambda-run parameters parameter iam add settings` (`CloudConsole/Screenshots.swift`).
+lambda lambda-run parameters parameter iam add settings` (`apps/ios/CloudConsole/Screenshots.swift`).
 
 ```
 U=<simulator udid>
@@ -363,7 +363,7 @@ grep -rniE "analytics|firebase|sentry|amplitude|mixpanel|posthog|bugsnag|crashly
 
 Data leaves the device only as requests the user triggers, to AWS or Tencent Cloud, under
 the user's own key and account — not an SDK, and you never receive any of it, so none of it
-is "collected" in Apple's sense. `CloudConsole/PrivacyInfo.xcprivacy` declares no tracking,
+is "collected" in Apple's sense. `apps/ios/CloudConsole/PrivacyInfo.xcprivacy` declares no tracking,
 no collected data, and the two required-reason APIs used (UserDefaults `CA92.1`, file
 timestamps `C617.1` for the resource cache).
 
@@ -384,7 +384,7 @@ Skip for 1.0 rather than over-claim.
 
 China mainland stays off for 1.0: a China listing needs an ICP filing, and the add-connection
 list offers AWS. `make release STORE=cn` already stamps the region into
-`Info.plist`, but nothing reads it yet (`storeRegion()` TODO in `CloudConsole/Services/DemoCloud.swift`).
+`Info.plist`, but nothing reads it yet (`storeRegion()` TODO in `apps/ios/CloudConsole/Services/DemoCloud.swift`).
 Gate vendors on it before shipping a `cn` build.
 
 ### Not needed for 1.0

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<EnumerationResults ServiceEndpoint="https://myaccount.blob.core.windows.net/" ContainerName="assets">
+  <Prefix>docs/</Prefix>
+  <MaxResults>100</MaxResults>
+  <Delimiter>/</Delimiter>
+  <Blobs>
+    <Blob>
+      <Name>docs/readme.md</Name>
+      <Properties>
+        <Creation-Time>Mon, 02 Mar 2026 10:00:00 GMT</Creation-Time>
+        <Last-Modified>Tue, 03 Mar 2026 11:22:33 GMT</Last-Modified>
+        <Etag>0x8DC3B1D2E4F5A60</Etag>
+        <Content-Length>2048</Content-Length>
+        <Content-Type>text/markdown</Content-Type>
+        <Content-Encoding />
+        <Content-Language />
+        <Content-MD5>XrY7u+Ae7tCTyyK7j1rNww==</Content-MD5>
+        <Cache-Control />
+        <BlobType>BlockBlob</BlobType>
+        <AccessTier>Hot</AccessTier>
+        <AccessTierInferred>true</AccessTierInferred>
+        <LeaseStatus>unlocked</LeaseStatus>
+        <LeaseState>available</LeaseState>
+        <ServerEncrypted>true</ServerEncrypted>
+      </Properties>
+      <OrMetadata />
+    </Blob>
+    <Blob>
+      <Name>docs/report 2026 &amp; plan.pdf</Name>
+      <Properties>
+        <Creation-Time>Wed, 04 Mar 2026 08:00:00 GMT</Creation-Time>
+        <Last-Modified>Wed, 04 Mar 2026 08:00:00 GMT</Last-Modified>
+        <Etag>0x8DC3C1D2E4F5A61</Etag>
+        <Content-Length>734003</Content-Length>
+        <Content-Type>application/pdf</Content-Type>
+        <BlobType>BlockBlob</BlobType>
+        <AccessTier>Cool</AccessTier>
+        <LeaseStatus>unlocked</LeaseStatus>
+        <LeaseState>available</LeaseState>
+        <ServerEncrypted>true</ServerEncrypted>
+      </Properties>
+      <OrMetadata />
+    </Blob>
+    <BlobPrefix>
+      <Name>docs/archive/</Name>
+    </BlobPrefix>
+  </Blobs>
+  <NextMarker>2!88!MDAwMDE5IWRvY3MvcmVwb3J0LnBkZiEwMDAwMjgh</NextMarker>
+</EnumerationResults>

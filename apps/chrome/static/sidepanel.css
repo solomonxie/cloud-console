@@ -1,0 +1,1076 @@
+/* color-scheme: light dark tells Chrome this UI supports both, so native
+   form controls/scrollbars auto-switch with the OS/browser theme on top of
+   the custom tokens below — no JS theme toggle needed. */
+:root {
+  color-scheme: light dark;
+  --bg: #ffffff;
+  --bg-elevated: #ffffff;
+  --bg-subtle: #f6f6f8;
+  --border: #e6e6ea;
+  --text: #16161a;
+  --text-muted: #6f6f78;
+  --accent: #d9720a;
+  --accent-hover: #c2650a;
+  --accent-contrast: #ffffff;
+  --accent-subtle: #fdf1e3;
+  --danger: #dc2626;
+  --danger-subtle: #fef2f2;
+  --shadow-sm: 0 1px 2px rgba(15, 15, 20, 0.06);
+  --shadow: 0 20px 40px -8px rgba(15, 15, 20, 0.18), 0 2px 10px rgba(15, 15, 20, 0.07);
+  --radius-sm: 7px;
+  --radius-md: 11px;
+  --radius-lg: 16px;
+  --transition: 150ms ease;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #18181b;
+    --bg-elevated: #202024;
+    --bg-subtle: #222226;
+    --border: #303036;
+    --text: #f3f3f4;
+    --text-muted: #9c9ca5;
+    --accent: #f0a848;
+    --accent-hover: #f5ba6c;
+    --accent-contrast: #1a1408;
+    --accent-subtle: rgba(240, 168, 72, 0.14);
+    --danger: #f87171;
+    --danger-subtle: rgba(248, 113, 113, 0.14);
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow: 0 20px 40px -8px rgba(0, 0, 0, 0.55), 0 2px 10px rgba(0, 0, 0, 0.35);
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* A later, more specific rule (e.g. `.status { display: flex }`) otherwise
+   beats the UA's `[hidden] { display: none }` in the cascade — pin it down
+   globally so toggling `.hidden` always actually hides the element. */
+[hidden] {
+  display: none !important;
+}
+
+body {
+  font: 13px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* Slim, theme-matched scrollbars instead of the chunky OS default. */
+::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 999px;
+  border: 2px solid var(--bg);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+.icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+/* --- Buttons ------------------------------------------------------ */
+
+button {
+  font: inherit;
+  cursor: pointer;
+  color: var(--text);
+  transition: background-color var(--transition), border-color var(--transition),
+    color var(--transition), box-shadow var(--transition), transform 100ms ease;
+}
+
+button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  padding: 5px 10px;
+  font-weight: 500;
+  box-shadow: var(--shadow-sm);
+}
+
+.btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+  box-shadow: none;
+}
+
+.btn.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-contrast);
+}
+
+.btn.primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+  color: var(--accent-contrast);
+}
+
+.btn.danger {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+.btn.danger:hover:not(:disabled) {
+  background: var(--danger-subtle);
+  color: var(--danger);
+}
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid transparent;
+  background: transparent;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.icon-btn:hover:not(:disabled) {
+  background: var(--bg-subtle);
+  color: var(--text);
+}
+
+.icon-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.icon-btn.ghost {
+  width: 24px;
+  height: 24px;
+}
+
+.icon-btn.danger-hover:hover {
+  color: var(--danger);
+  background: var(--danger-subtle);
+}
+
+.icon-btn.spinning .icon {
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* --- Section shell -------------------------------------------------- */
+
+/* Segmented control switching top-level sections (Storage, Google Cloud,
+   …); hidden while only one section is registered. Each section fills the
+   rest of the panel and owns its own scrolling. */
+.section-tabs {
+  display: flex;
+  gap: 2px;
+  margin: 8px 8px 0;
+  padding: 2px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-subtle);
+  flex-shrink: 0;
+}
+
+.section-tab {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-width: 0;
+  border: 1px solid transparent;
+  background: none;
+  padding: 4px 8px;
+  border-radius: 5px;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.section-tab .icon {
+  width: 14px;
+  height: 14px;
+}
+
+.section-tab span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.section-tab:hover:not(.active) {
+  color: var(--text);
+}
+
+.section-tab.active {
+  background: var(--bg);
+  border-color: var(--border);
+  color: var(--accent);
+  box-shadow: var(--shadow-sm);
+}
+
+.section-host {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.section-view {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- Header --------------------------------------------------------- */
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-subtle);
+}
+
+.brand {
+  display: flex;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.brand-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.topbar select {
+  flex: 1;
+  min-width: 0;
+  font: inherit;
+  padding: 5px 6px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--text);
+  transition: border-color var(--transition);
+}
+
+.topbar select:hover {
+  border-color: var(--accent);
+}
+
+.topbar select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* --- Breadcrumb ------------------------------------------------------- */
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--border);
+}
+
+.breadcrumb button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: none;
+  background: none;
+  padding: 3px 6px;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.breadcrumb button:last-child {
+  color: var(--text);
+  font-weight: 600;
+  background: var(--bg-subtle);
+}
+
+.breadcrumb button:hover {
+  background: var(--accent-subtle);
+  color: var(--accent);
+}
+
+.breadcrumb .sep {
+  display: inline-flex;
+  color: var(--border);
+  flex-shrink: 0;
+}
+
+.breadcrumb .sep .icon {
+  width: 13px;
+  height: 13px;
+}
+
+/* --- Toolbar / status ------------------------------------------------- */
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.icon-btn.active {
+  background: var(--accent-subtle);
+  color: var(--accent);
+}
+
+/* --- Clipboard pill ------------------------------------------------------- */
+
+.clipboard-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  font-size: 12px;
+  color: var(--accent);
+  background: var(--accent-subtle);
+  border-bottom: 1px solid var(--border);
+}
+
+.clipboard-pill .count {
+  flex: 1;
+}
+
+/* --- Selection bar ------------------------------------------------------- */
+
+.selection-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border);
+  background: var(--accent-subtle);
+}
+
+.selection-bar .select-all {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 12px;
+  color: var(--text);
+}
+
+.row-check {
+  flex-shrink: 0;
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-subtle);
+}
+
+.status.error {
+  color: var(--danger);
+  background: var(--danger-subtle);
+}
+
+.status .icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.status.loading .icon {
+  animation: spin 0.8s linear infinite;
+}
+
+dialog .status {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  margin-bottom: 10px;
+}
+
+dialog .status.error {
+  border-color: var(--danger);
+}
+
+/* --- File list -------------------------------------------------------- */
+
+.file-list {
+  flex: 1;
+  overflow-y: auto;
+  position: relative;
+}
+
+.file-list.drag-over {
+  outline: 2px dashed var(--accent);
+  outline-offset: -4px;
+  background: var(--accent-subtle);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 8px;
+  border-bottom: 1px solid var(--border);
+  transition: background-color var(--transition), box-shadow var(--transition);
+}
+
+.row:hover {
+  background: var(--bg-subtle);
+}
+
+.row.selectable {
+  cursor: pointer;
+}
+
+.row.selectable.selected {
+  background: var(--accent-subtle);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.row .badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-subtle);
+  color: var(--text-muted);
+  flex-shrink: 0;
+  transition: background-color var(--transition), color var(--transition);
+}
+
+.row .badge.folder {
+  color: var(--accent);
+  background: var(--accent-subtle);
+}
+
+.row .badge .icon {
+  width: 15px;
+  height: 15px;
+}
+
+button.badge {
+  border: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+}
+
+button.badge:hover {
+  filter: brightness(1.15);
+}
+
+button.name-btn {
+  border: none;
+  background: none;
+  text-align: left;
+  padding: 0;
+  color: inherit;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font: inherit;
+}
+
+button.name-btn:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+.row .name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.row .meta {
+  color: var(--text-muted);
+  text-align: right;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.row .actions {
+  display: flex;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.load-more {
+  margin: 8px;
+}
+
+.list-stats {
+  padding: 6px 8px;
+  font-size: 11px;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+  text-align: center;
+}
+
+/* --- Empty state -------------------------------------------------------- */
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 48px 24px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.empty-state .icon {
+  width: 26px;
+  height: 26px;
+  padding: 13px;
+  box-sizing: content-box;
+  border-radius: 999px;
+  background: var(--bg-subtle);
+  color: var(--text-muted);
+}
+
+.empty-state .primary {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* --- Dialogs -------------------------------------------------------- */
+
+dialog {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  width: 300px;
+  box-shadow: var(--shadow);
+  background: var(--bg-elevated);
+  color: var(--text);
+}
+
+dialog[open] {
+  animation: dialog-in 160ms ease-out;
+}
+
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+dialog::backdrop {
+  background: rgba(15, 15, 20, 0.4);
+  backdrop-filter: blur(2px);
+}
+
+/* The detail sheet shows media/PDF previews — blurring what's behind it
+   adds cost for no benefit there, so just dim without blurring. */
+dialog.sheet-dialog::backdrop {
+  backdrop-filter: none;
+}
+
+dialog h2 {
+  margin: 0 0 12px;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+}
+
+.field {
+  display: block;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+
+.field em {
+  font-style: normal;
+  opacity: 0.8;
+}
+
+.field.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.field input:not([type="checkbox"]),
+.field textarea {
+  width: 100%;
+  padding: 6px 7px;
+  margin-top: 3px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font: inherit;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.field textarea {
+  resize: vertical;
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+}
+
+.field input:focus-visible,
+.field textarea:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 0;
+}
+
+.input-with-action {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 3px;
+}
+
+.input-with-action input {
+  margin-top: 0 !important;
+}
+
+.advanced {
+  margin: -2px 0 10px;
+}
+
+.advanced summary {
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.advanced summary:hover {
+  color: var(--text);
+}
+
+.advanced .field:last-child {
+  margin-bottom: 0;
+}
+
+.hint {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.link-btn {
+  display: block;
+  border: none;
+  background: none;
+  padding: 0;
+  margin: -4px 0 10px;
+  font-size: 11px;
+  color: var(--accent);
+}
+
+.link-btn:hover {
+  text-decoration: underline;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.manage-list {
+  list-style: none;
+  margin: 0 0 8px;
+  padding: 0;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.manage-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 2px;
+  border-bottom: 1px solid var(--border);
+}
+
+.manage-list li .badge {
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-sm);
+  background: var(--accent-subtle);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.manage-list li .badge .icon {
+  width: 13px;
+  height: 13px;
+}
+
+.manage-list li .name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.manage-list li .name small {
+  display: block;
+  color: var(--text-muted);
+  font-weight: normal;
+}
+
+.manage-list li.active .name {
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.manage-list .empty {
+  color: var(--text-muted);
+  padding: 4px 2px;
+}
+
+/* --- Alert-style dialogs (confirm/prompt) --------------------------------- */
+
+.alert-dialog {
+  width: 280px;
+}
+
+.alert-body {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.alert-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  background: var(--danger-subtle);
+  color: var(--danger);
+  flex-shrink: 0;
+}
+
+.alert-icon .icon {
+  width: 16px;
+  height: 16px;
+}
+
+.alert-dialog h2 {
+  margin: 0 0 4px;
+  font-size: 14px;
+}
+
+.alert-dialog p {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+  word-break: break-word;
+}
+
+/* --- Share dialog ------------------------------------------------------- */
+
+.share-dialog {
+  width: 320px;
+}
+
+.share-row {
+  margin-bottom: 10px;
+}
+
+.share-row > span {
+  display: block;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.share-row em {
+  font-style: normal;
+  opacity: 0.8;
+}
+
+.share-value {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.share-value input {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 7px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font: inherit;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.share-value select {
+  flex: 1;
+  min-width: 0;
+  padding: 5px 6px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font: inherit;
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* --- Object detail sheet -------------------------------------------------- */
+
+dialog.sheet-dialog {
+  position: fixed;
+  inset: auto 0 0 0;
+  margin: 0;
+  width: 100%;
+  max-width: none;
+  height: 50%;
+  border-width: 1px 0 0 0;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  padding: 0;
+}
+
+/* display must only apply while open — a <dialog> with no [open] attribute
+   is closed and should stay hidden (the UA default), not forced visible. */
+dialog.sheet-dialog[open] {
+  display: flex;
+  flex-direction: column;
+  animation: sheet-up 0.18s ease-out;
+}
+
+@keyframes sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.sheet-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.sheet-header h2 {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sheet-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 16px;
+}
+
+.detail-meta {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 8px 10px;
+  font-size: 12px;
+}
+
+.detail-meta dt {
+  color: var(--text-muted);
+}
+
+.detail-meta dd {
+  margin: 0;
+  word-break: break-all;
+}
+
+.sheet-dialog .modal-actions {
+  padding: 10px 16px 14px;
+  margin: 0;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.sheet-actions {
+  justify-content: center;
+  gap: 10px;
+}
+
+/* --- Object preview / editor ------------------------------------------------ */
+
+.detail-preview:empty {
+  display: none;
+}
+
+.detail-preview {
+  margin-bottom: 12px;
+}
+
+.detail-preview img,
+.detail-preview video {
+  display: block;
+  max-width: 100%;
+  max-height: 260px;
+  margin: 0 auto;
+  border-radius: var(--radius-sm);
+  background: var(--bg-subtle);
+}
+
+.detail-preview audio {
+  width: 100%;
+}
+
+.detail-preview .pdf-frame {
+  width: 100%;
+  height: 320px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.detail-preview .preview-fallback {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 6px;
+}
+
+.detail-preview .preview-toolbar {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.detail-preview .preview-toolbar .btn.active {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.detail-editor {
+  width: 100%;
+  min-height: 200px;
+  resize: vertical;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-subtle);
+  color: var(--text);
+  font: 12px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+#detailSaveBtn.dirty {
+  color: var(--accent);
+}
+
+.markdown-preview {
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.markdown-preview :first-child {
+  margin-top: 0;
+}
+
+.markdown-preview pre {
+  background: var(--bg-subtle);
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  overflow-x: auto;
+}
+
+.markdown-preview code {
+  background: var(--bg-subtle);
+  padding: 1px 4px;
+  border-radius: 4px;
+  font: 11px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.markdown-preview pre code {
+  padding: 0;
+  background: none;
+}
+
+.markdown-preview blockquote {
+  margin: 0;
+  padding-left: 10px;
+  border-left: 3px solid var(--border);
+  color: var(--text-muted);
+}

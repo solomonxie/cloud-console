@@ -1,0 +1,16 @@
+{
+  "kind": "compute#instanceGroupAggregatedList",
+  "items": {
+    "zones/us-central1-a": {
+      "instanceGroups": [
+        {"kind": "compute#instanceGroup", "id": "900000000000000001", "name": "legacy-pool", "size": 2, "zone": "https://www.googleapis.com/compute/v1/projects/demo-project-123/zones/us-central1-a", "network": "https://www.googleapis.com/compute/v1/projects/demo-project-123/global/networks/default", "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-project-123/zones/us-central1-a/instanceGroups/legacy-pool"}
+      ]
+    },
+    "regions/us-central1": {
+      "instanceGroups": [
+        {"kind": "compute#instanceGroup", "id": "900000000000000002", "name": "api-mig", "size": 3, "region": "https://www.googleapis.com/compute/v1/projects/demo-project-123/regions/us-central1", "namedPorts": [{"name": "http", "port": 8080}], "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-project-123/regions/us-central1/instanceGroups/api-mig"}
+      ]
+    },
+    "regions/europe-west1": {"warning": {"code": "NO_RESULTS_ON_PAGE", "message": "There are no results for scope 'regions/europe-west1' on this page."}}
+  }
+}

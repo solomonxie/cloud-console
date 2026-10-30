@@ -1,0 +1,15 @@
+{
+  "launchTime": "@today-3 10:00",
+  "creationDate": "@today-612 09:14",
+  "periodStart": "@ymd month-2",
+  "periodEnd": "@ymd today",
+  "lastModified": "@iso today-9 15:22",
+  "nextMonth": "@ymd month+1",
+  "objectKey": "backups/{today-3}/db.sql.gz",
+  "twoTokens": "logs/{month-1}..{today}",
+  "unknownToken": "keep {yesterday} as is",
+  "notAToken": "@ymd sometime",
+  "plain": "@admin",
+  "number": 42,
+  "nested": [{ "at": "@today+1 07:05" }]
+}
