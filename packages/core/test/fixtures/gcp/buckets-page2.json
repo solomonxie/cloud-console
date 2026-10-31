@@ -1,0 +1,6 @@
+{
+  "kind": "storage#buckets",
+  "items": [
+    {"kind": "storage#bucket", "name": "demo-assets", "location": "US-CENTRAL1", "locationType": "region", "storageClass": "STANDARD", "timeCreated": "2025-01-15T08:30:00.000Z"}
+  ]
+}

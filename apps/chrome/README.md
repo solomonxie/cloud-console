@@ -1,10 +1,11 @@
 # Chrome Cloud Console
 
-A Chrome side panel for your cloud accounts. **Storage** browses buckets
-like a file explorer — S3, S3-compatible, Azure Blob Storage, Google Cloud
-Storage, Tencent Cloud COS, Alibaba Cloud OSS. **Google Cloud** lists
-projects, VM instances, instance groups and secrets. Each feature is a
-section of the panel, switched from the top.
+A Chrome side panel for your cloud accounts, laid out like the mobile app:
+**Home** shows one card per connection, any vendor, and you drill in from
+there. Storage connections browse a bucket like a file explorer — S3,
+S3-compatible, Azure Blob Storage, Google Cloud Storage, Tencent Cloud COS,
+Alibaba Cloud OSS. Google Cloud accounts open Cloud Storage, VM instances,
+instance groups and secrets, per project.
 
 Add one or more connections — pick a type, then just a bucket/container name
 and a credential (everything else is optional or auto-detected) — stored
@@ -25,8 +26,12 @@ with the mobile app through `packages/core` and bundled with esbuild. See
 
 ## Features
 
-- Multiple named connections, each scoped to one bucket/container,
-  switchable from the toolbar. Adding one only strictly needs a
+- Home: one card per connection — storage buckets and Google Cloud
+  accounts side by side — each listing its resources; tap a row to push
+  that screen, back to return. A filter box appears once there are many
+  connections. **+** asks what to add: a storage bucket or a Google Cloud
+  account.
+- Multiple named storage connections, each scoped to one bucket/container. Adding one only strictly needs a
   bucket/container name and a credential — region (where applicable) is
   auto-detected, name defaults to the bucket name, and a starting key
   prefix is optional.
@@ -50,6 +55,16 @@ with the mobile app through `packages/core` and bundled with esbuild. See
   expiry.
 - Download files. Create folders, recursive-delete folders.
 - Upload a file (or drag-and-drop one) into the current folder.
+- Filter the loaded rows of any list as you type.
+- Google Cloud accounts (service account key or gcloud ADC): Cloud Storage
+  (the project's buckets, each opening the same bucket browser), VM
+  instances, instance groups and Secret Manager, each with a searchable
+  project picker (type to filter, or type a project ID directly).
+- VM instance detail: vCPU/memory, disks, network interfaces and IPs,
+  labels, usage over the last 6 hours (CPU, memory with the Ops Agent,
+  network, disk), Start/Stop/Reset, serial output. Instance group detail:
+  size, template, named ports and member instances, each opening its
+  instance detail. Secrets: versions, reveal/copy, never stored.
 
 ## Install
 
@@ -67,17 +82,21 @@ make build      # bundle src/ (+ packages/core) and copy static/ into dist/
 make watch      # rebuild dist/ on every change (reload the extension after)
 make lint       # tsc --noEmit + validate static/manifest.json
 make zip        # lint, build, zip dist/ into chrome-cloud-console.zip
-make icons      # regenerate static/icons/icon*.png from icon.svg (needs Chrome)
+make icons      # regenerate static/icons/icon*.png from the mobile app icon (needs Chrome)
 make assets     # regenerate docs/store/*.png (needs Chrome)
 make clean      # remove dist/ and the zip
 ```
 
-Layout: `src/` is the TypeScript UI (`shell/` section switcher,
-`sidepanel/` the Storage section, `gcp/` the Google Cloud section),
+Layout: `src/` is the TypeScript UI (`app/` the stack navigator and Home,
+`sidepanel/` the bucket browser, `gcp/` the Google Cloud screens, `ui/`
+shared search widgets),
 `static/` the manifest, HTML, CSS and icons copied as-is, and the storage
 clients live in `packages/core/src/storage/` (tests: `npx vitest run` in
 `packages/core`). Build tooling comes from the workspace's `node_modules`;
-the icon/asset scripts need `python3`.
+the icon/asset scripts need `python3`. The toolbar icons are the mobile
+app's icon (`apps/ios/.../AppIcon.appiconset/icon-light.png`) with rounded
+corners; `static/icons/icon.svg` is a vector redraw of it used in the store
+art.
 
 `docs/store/` — Chrome Web Store listing assets, all rebuilt by `make assets`
 from the real side panel CSS via headless Chrome: screenshots (1280x800),

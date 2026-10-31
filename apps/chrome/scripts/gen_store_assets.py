@@ -24,7 +24,8 @@ CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 ACCENT_DARK = "#b5620a"
 ACCENT_LIGHT = "#f0a848"
 
-# The mark is the same vector source the extension icons are built from.
+# The mark: a vector redraw of the mobile app icon (the extension's PNG icons
+# are rasterized from the app icon itself). Full-color square, shown as-is.
 GLYPH = (EXT / "icons" / "icon.svg").read_text().replace(
     "<svg ", '<svg class="glyph" ', 1
 )
@@ -285,9 +286,8 @@ body {{ margin: 0; width: {width}px; height: {height}px; overflow: hidden;
   -webkit-font-smoothing: antialiased;
   display: flex; flex-direction: column; align-items: center;
   justify-content: center; gap: {gap}px; color: #fff; text-align: center; }}
-.glyph {{ width: {glyph_size}px; height: {glyph_size}px;
-  background: #fff; border-radius: {glyph_size // 4}px; padding: {glyph_size // 9}px;
-  box-shadow: 0 {glyph_size // 20}px {glyph_size // 6}px rgba(0,0,0,.18); }}
+.glyph {{ width: {glyph_size}px; height: {glyph_size}px; display: block;
+  filter: drop-shadow(0 {glyph_size // 20}px {glyph_size // 8}px rgba(0,0,0,.25)); }}
 h1 {{ margin: 0; font-size: {title_size}px; font-weight: 700; letter-spacing: -0.5px; }}
 p {{ margin: 0; font-size: {sub_size}px; color: rgba(255,255,255,.88); }}
 </style></head><body>

@@ -11,7 +11,11 @@ export interface GcpAccount {
   id: string;
   type: "gcp";
   name: string;
+  // The pasted JSON; empty when the account is linked to a file instead.
   credentialsJson: string;
+  // Name of the linked credentials file (its handle is in IndexedDB, see
+  // credentials-file.ts), re-read on every use.
+  credentialsFile?: string;
   lastProjectId?: string;
 }
 

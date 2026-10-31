@@ -1,0 +1,28 @@
+{
+  "services": [
+    {
+      "name": "projects/demo-project-123/locations/us-central1/services/web",
+      "uid": "3f1c2b4a-0000-4000-8000-000000000001",
+      "uri": "https://web-abc123-uc.a.run.app",
+      "urls": ["https://web-123456789.us-central1.run.app", "https://web-abc123-uc.a.run.app"],
+      "createTime": "2025-02-10T09:00:00.000000Z",
+      "updateTime": "2026-10-28T16:42:11.123456Z",
+      "lastModifier": "deployer@demo-project-123.iam.gserviceaccount.com",
+      "ingress": "INGRESS_TRAFFIC_ALL",
+      "template": {
+        "serviceAccount": "web-runtime@demo-project-123.iam.gserviceaccount.com",
+        "timeout": "300s",
+        "maxInstanceRequestConcurrency": 80,
+        "scaling": {"minInstanceCount": 1, "maxInstanceCount": 10},
+        "containers": [
+          {"image": "us-docker.pkg.dev/demo-project-123/app/web:2026.10.28", "ports": [{"name": "http1", "containerPort": 8080}], "resources": {"limits": {"cpu": "1000m", "memory": "512Mi"}, "cpuIdle": true}}
+        ]
+      },
+      "terminalCondition": {"type": "Ready", "state": "CONDITION_SUCCEEDED", "lastTransitionTime": "2026-10-28T16:43:02.000000Z"},
+      "latestReadyRevision": "projects/demo-project-123/locations/us-central1/services/web/revisions/web-00042-xyz",
+      "latestCreatedRevision": "projects/demo-project-123/locations/us-central1/services/web/revisions/web-00042-xyz",
+      "trafficStatuses": [{"type": "TRAFFIC_TARGET_ALLOCATION_TYPE_LATEST", "percent": 100}]
+    }
+  ],
+  "nextPageToken": "run-services-page-2"
+}

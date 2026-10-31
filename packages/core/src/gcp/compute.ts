@@ -349,3 +349,50 @@ export function zoneOfInstanceUrl(url: string): string {
   const m = /\/zones\/([^/]+)\//.exec(url);
   return m?.[1] ?? "";
 }
+
+// ---------------------------------------------------------------------------
+// Machine types and disks, for an instance's detail page.
+
+export interface MachineType {
+  name: string;
+  description?: string;
+  guestCpus: number;
+  memoryMb: number;
+  isSharedCpu?: boolean;
+}
+
+export function getMachineType(
+  creds: GoogleCredentials,
+  project: string,
+  zone: string,
+  name: string
+): Promise<MachineType> {
+  return gcpRequest<MachineType>(
+    creds,
+    `${projectBase(project)}/zones/${encodeURIComponent(zone)}/machineTypes/${encodeURIComponent(name)}`
+  );
+}
+
+export interface Disk {
+  name: string;
+  sizeGb?: string;
+  type?: string; // URL
+  status?: string;
+  provisionedIops?: string;
+  provisionedThroughput?: string;
+  sourceImage?: string;
+}
+
+export interface DiskSummary extends Disk {
+  typeName: string; // "pd-balanced"
+}
+
+// An attached disk's `source` is a www.googleapis.com URL; the same path
+// is fetched through compute.googleapis.com, the host the extension may call.
+export async function getDisk(creds: GoogleCredentials, sourceUrl: string): Promise<DiskSummary> {
+  const m = /\/projects\/([^/]+)\/(zones|regions)\/([^/]+)\/disks\/([^/?]+)/.exec(sourceUrl);
+  if (!m) throw new Error(`Not a disk URL: ${sourceUrl}`);
+  const [, project, scope, location, name] = m;
+  const disk = await gcpRequest<Disk>(creds, `${BASE}/projects/${project}/${scope}/${location}/disks/${name}`);
+  return { ...disk, typeName: lastSegment(disk.type) };
+}

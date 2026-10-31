@@ -17,4 +17,6 @@ export const consoleLinks = {
   secrets: (project: string) => `${CONSOLE}/security/secret-manager${q(project)}`,
   secret: (project: string, secretId: string) =>
     `${CONSOLE}/security/secret-manager/secret/${encodeURIComponent(secretId)}/versions${q(project)}`,
+  buckets: (project: string) => `${CONSOLE}/storage/browser${q(project)}`,
+  bucket: (project: string, bucket: string) => `${CONSOLE}/storage/browser/${encodeURIComponent(bucket)}${q(project)}`,
 };

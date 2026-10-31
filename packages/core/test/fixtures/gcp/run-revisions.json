@@ -1,0 +1,16 @@
+{
+  "revisions": [
+    {
+      "name": "projects/demo-project-123/locations/us-central1/services/web/revisions/web-00041-abc",
+      "createTime": "2026-10-20T10:00:00.000000Z",
+      "containers": [{"image": "us-docker.pkg.dev/demo-project-123/app/web:2026.10.20"}],
+      "conditions": [{"type": "Ready", "state": "CONDITION_SUCCEEDED"}, {"type": "Active", "state": "CONDITION_FAILED", "reason": "Retired"}]
+    },
+    {
+      "name": "projects/demo-project-123/locations/us-central1/services/web/revisions/web-00042-xyz",
+      "createTime": "2026-10-28T16:42:11.000000Z",
+      "containers": [{"image": "us-docker.pkg.dev/demo-project-123/app/web:2026.10.28"}],
+      "conditions": [{"type": "Ready", "state": "CONDITION_SUCCEEDED"}]
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "kind": "compute#disk",
+  "id": "8765432109876543210",
+  "name": "web-1",
+  "sizeGb": "10",
+  "zone": "https://www.googleapis.com/compute/v1/projects/demo-project-123/zones/us-central1-a",
+  "status": "READY",
+  "sourceImage": "https://www.googleapis.com/compute/v1/projects/debian-cloud/global/images/debian-12-bookworm-v20240515",
+  "type": "https://www.googleapis.com/compute/v1/projects/demo-project-123/zones/us-central1-a/diskTypes/pd-balanced",
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/demo-project-123/zones/us-central1-a/disks/web-1"
+}

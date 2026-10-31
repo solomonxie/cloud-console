@@ -1,6 +1,29 @@
 # Connections
 
-## Add / edit  (`#connectionModal`)
+Home lists both kinds side by side — storage connections and Google Cloud
+accounts are each one card. A card's [✎] opens the matching edit form.
+
+## Add  (the [＋] chooser)
+
+Home's [＋] first asks what kind of thing to add — the two forms take
+different credentials, so it's a choice, not a type dropdown that mixes
+them:
+
+```
+┌──────────────────────────────────────────────┐
+│ Add                                          │
+│ 🛢 Storage bucket                         ›  │ ← S3, S3-compatible/R2,
+│    S3, R2, Azure Blob, GCS, COS, OSS         │   Azure, GCS, COS, OSS
+│ ☁ Google Cloud account                   ›  │ ← service account key or
+│    VMs, instance groups, buckets, secrets    │   gcloud ADC
+│                              ( Cancel )      │
+└──────────────────────────────────────────────┘
+ Storage bucket       ─▶ the connection form below
+ Google Cloud account ─▶ name + credentials JSON (paste or Load from file…),
+                         checked against Google before it's saved
+```
+
+## Add / edit a storage connection  (`#connectionModal`)
 
 One form for six providers: the fields that don't apply are hidden, and the
 labels change — never a separate form per provider.

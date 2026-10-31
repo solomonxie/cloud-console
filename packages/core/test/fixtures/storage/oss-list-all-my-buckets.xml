@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListAllMyBucketsResult>
+  <Owner>
+    <ID>1234567890123456</ID>
+    <DisplayName>1234567890123456</DisplayName>
+  </Owner>
+  <Buckets>
+    <Bucket>
+      <CreationDate>2026-02-10T08:15:22.000Z</CreationDate>
+      <ExtranetEndpoint>oss-cn-shanghai.aliyuncs.com</ExtranetEndpoint>
+      <IntranetEndpoint>oss-cn-shanghai-internal.aliyuncs.com</IntranetEndpoint>
+      <Location>oss-cn-shanghai</Location>
+      <Name>media-sh</Name>
+      <Region>cn-shanghai</Region>
+      <StorageClass>Standard</StorageClass>
+    </Bucket>
+    <Bucket>
+      <CreationDate>2025-11-01T02:00:00.000Z</CreationDate>
+      <ExtranetEndpoint>oss-cn-hangzhou.aliyuncs.com</ExtranetEndpoint>
+      <IntranetEndpoint>oss-cn-hangzhou-internal.aliyuncs.com</IntranetEndpoint>
+      <Location>oss-cn-hangzhou</Location>
+      <Name>archive-hz</Name>
+      <Region>cn-hangzhou</Region>
+      <StorageClass>IA</StorageClass>
+    </Bucket>
+  </Buckets>
+</ListAllMyBucketsResult>

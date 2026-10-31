@@ -9,40 +9,40 @@ import {
   type SecretVersionSummary,
 } from "@cloud-console/core/gcp/secrets";
 import { consoleLinks } from "./console-links.ts";
-import type { ViewContext } from "./context.ts";
+import type { ListResult, ViewContext } from "./context.ts";
 import { clear, copyText, emptyState, externalLink, formatTime, h, icon, iconButton, statusLine } from "./dom.ts";
 import { describeError } from "./errors.ts";
 
-export async function renderSecrets(container: HTMLElement, ctx: ViewContext): Promise<void> {
+export async function renderSecrets(container: HTMLElement, ctx: ViewContext): Promise<ListResult | null> {
   clear(container);
   container.append(statusLine("loading", "Loading secrets…"));
   let secrets: SecretSummary[];
   try {
     secrets = await listSecrets(ctx.creds, ctx.projectId);
   } catch (err) {
-    if (!ctx.isCurrent()) return;
-    clear(container);
-    container.append(statusLine("error", describeError(err, "Couldn't list secrets")));
-    return;
+    if (!ctx.isCurrent()) return null;
+    container.replaceChildren(statusLine("error", describeError(err, "Couldn't list secrets")));
+    return null;
   }
-  if (!ctx.isCurrent()) return;
+  if (!ctx.isCurrent()) return null;
   clear(container);
   if (!secrets.length) {
     container.append(emptyState("key", "No secrets", "This project has no Secret Manager secrets this credential can see."));
-    return;
+    return null;
   }
-  const list = h("div", { class: "gcp-list" });
-  for (const s of secrets) list.append(secretRow(s, ctx));
-  container.append(list, h("div", { class: "list-stats" }, `${secrets.length} secret${secrets.length === 1 ? "" : "s"}`));
+  const rows = secrets.map((s) => secretRow(s, ctx));
+  const stats = h("div", { class: "list-stats" });
+  container.append(h("div", { class: "gcp-list" }, ...rows), stats);
+  return { rows, stats, noun: ["secret", "secrets"] };
 }
 
 function secretRow(secret: SecretSummary, ctx: ViewContext): HTMLElement {
-  const wrap = h("div", { class: "gcp-group" });
+  const labels = secret.labels ? Object.entries(secret.labels).map(([k, v]) => `${k}=${v}`).join(", ") : "";
+  const wrap = h("div", { class: "gcp-group", "data-search": `${secret.secretId} ${labels}`, "data-fav-id": secret.secretId });
   const chevron = h("span", { class: "gcp-chevron" });
   chevron.append(icon("chevronRight"));
   const badge = h("span", { class: "badge" });
   badge.append(icon("key"));
-  const labels = secret.labels ? Object.entries(secret.labels).map(([k, v]) => `${k}=${v}`).join(", ") : "";
   const row = h(
     "div",
     { class: "row selectable gcp-row", tabindex: 0, "aria-expanded": "false" },

@@ -6,7 +6,7 @@ import { open, state, type Item } from "./state.ts";
 
 export function setClipboard(items: Item[], cut: boolean): void {
   if (!items.length || !state.bucket) return;
-  state.clipboard = { items, cut, bucket: state.bucket, connectionId: state.activeId };
+  state.clipboard = { items, cut, bucket: state.bucket, connectionId: state.conn?.id ?? null };
   updateClipboardUI();
   setStatus(`${plural(items.length, "item")} ${cut ? "cut" : "copied"} — open a folder and click Paste.`);
 }
@@ -22,7 +22,7 @@ export function updateClipboardUI(): void {
   if (cb) {
     els.clipboardCount.textContent = `${plural(cb.items.length, "item")} ${cb.cut ? "cut" : "copied"}`;
   }
-  const mismatched = !!cb && cb.connectionId !== state.activeId;
+  const mismatched = !!cb && cb.connectionId !== (state.conn?.id ?? null);
   els.pasteBtn.disabled = !cb || mismatched || !state.bucket;
   els.pasteBtn.title = mismatched ? "Clipboard has items from a different connection" : "Paste";
 }

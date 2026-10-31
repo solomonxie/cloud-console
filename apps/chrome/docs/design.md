@@ -115,21 +115,23 @@ packages/core/src/            shared with the mobile app, consumed from source
 apps/chrome/
   static/                     copied as-is into dist/: manifest, sidepanel.html/.css, icons
   src/background.ts           opens the side panel on the toolbar icon click
-  src/shell/                  section registry + switcher (Storage, Google Cloud, …)
-  src/sidepanel/main.ts       entry: imports each section, starts the shell
-  src/sidepanel/*.ts          the Storage section (vanilla DOM, no framework):
+  src/app/                    stack navigator (nav.ts) + Home (home.ts)
+  src/sidepanel/*.ts          the bucket browser screen (vanilla DOM, no framework):
                               connections, browser, clipboard, preview, share, dialogs
-  src/gcp/                    the Google Cloud section (projects, VMs, groups, secrets)
+  src/gcp/                    the Google Cloud screens (buckets, VMs, groups, secrets)
+  src/ui/                     shared search: filter box, project combobox
   src/lib/                    store (chrome.storage.local), icons, markdown
   build.mjs                   esbuild bundle -> dist/
 ```
 
-**Sections.** The panel is a small shell hosting top-level sections. A
-feature module calls `registerSection({ id, title, icon, render })` on
-import; the shell shows a segmented switcher once more than one section is
-registered, renders each section into its own container the first time
-it's opened, and only hides it on switch so its state survives. A section
-that isn't built isn't registered, so it never shows up.
+**Stack navigation.** The panel is laid out like the mobile app: Home
+shows one card per connection, any vendor — a storage connection (one
+bucket) or a Google Cloud account — and a row pushes that resource's
+screen, which can push a detail screen; back pops one level. Popped-to
+screens keep their DOM, so a listing, filter or selection survives the round
+trip. A resource kind that isn't built has no row, so it never shows up.
+Long lists (projects, instances, buckets) are searched — a filter box, a
+type-or-pick combobox — never scrolled through a long dropdown.
 
 No background/content-script relay for API calls — the side panel is a full
 document with `host_permissions`, so it calls the provider directly via
@@ -233,11 +235,29 @@ JSON responses instead of the XML the other three clients parse.
 `*.r2.cloudflarestorage.com`, `storage.googleapis.com`,
 `oauth2.googleapis.com` (GCS token exchange), `*.blob.core.windows.net`,
 `*.myqcloud.com` (Tencent COS), `*.aliyuncs.com` (Alibaba OSS), plus
-`compute.googleapis.com`, `secretmanager.googleapis.com` and
-`cloudresourcemanager.googleapis.com` for the Google Cloud section. A custom
+`compute.googleapis.com`, `secretmanager.googleapis.com`,
+`cloudresourcemanager.googleapis.com` and `monitoring.googleapis.com` (VM
+usage charts) for the Google Cloud screens. A custom
 S3-compatible endpoint (MinIO, self-hosted) is the one case requested at
 runtime via `chrome.permissions.request` when the connection is saved —
 keeps the install-time permission prompt narrow.
+
+A Google Cloud account can only do what its own IAM roles allow; each
+screen shows Google's error verbatim when a permission is missing:
+
+```
+ project list         resourcemanager.projects.get/list (roles/browser and up)
+ VM instances, groups compute.viewer — also covers machine types and disks;
+                      Start/Stop/Reset and serial output need
+                      roles/compute.instanceAdmin.v1
+ VM usage charts      roles/monitoring.viewer (memory also needs the Ops
+                      Agent on the VM)
+ Cloud Storage list   storage.buckets.list — roles/storage.objectViewer is
+                      NOT enough; roles/storage.admin, or a custom role
+                      with storage.buckets.list
+ Secrets              roles/secretmanager.viewer; reveal needs
+                      roles/secretmanager.secretAccessor
+```
 
 ## Key flows
 

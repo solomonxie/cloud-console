@@ -1,10 +1,10 @@
-// Connection picker, add/edit form (per-type fields), manage list, and
-// export/import of all connections.
+// Storage connections: the add/edit form (per-type fields), delete, and
+// export/import of all of them. Home (app/home.ts) lists them; saving or
+// deleting one goes back there so it re-renders.
 import { credentialsProblem } from "@cloud-console/core/gcp/auth";
 import { buildConnectionString, parseConnectionString } from "@cloud-console/core/storage/azure";
 import { createClient } from "@cloud-console/core/storage/client";
 import {
-  connectionLabel,
   exportConnections,
   normalizeEndpoint,
   normalizePrefix,
@@ -15,71 +15,16 @@ import {
 import { detectBucketRegion } from "@cloud-console/core/storage/s3";
 import type { StorageType } from "@cloud-console/core/storage/types";
 import { icon } from "../lib/icons.ts";
+import { nav } from "../app/nav.ts";
 import { deleteConnection, getConnections, newConnectionId, upsertConnection } from "../lib/store.ts";
-import { refresh, renderBreadcrumb } from "./browser.ts";
-import { updateClipboardUI } from "./clipboard.ts";
 import { confirmDialog } from "./dialogs.ts";
-import { els, errorMessage, escapeHtml, setFormStatus, setStatus } from "./dom.ts";
-import { activeConnection, state } from "./state.ts";
+import { els, errorMessage, setFormStatus } from "./dom.ts";
 
-export async function loadConnections(): Promise<void> {
-  state.connections = await getConnections();
-  const { lastConnectionId } = (await chrome.storage.local.get("lastConnectionId")) as { lastConnectionId?: string };
-  state.activeId =
-    (lastConnectionId && state.connections.some((c) => c.id === lastConnectionId)
-      ? lastConnectionId
-      : state.connections[0]?.id) || null;
-  renderConnectionSelect();
-  await onConnectionChanged();
-}
-
-function renderConnectionSelect(): void {
-  els.connectionSelect.innerHTML = "";
-  if (state.connections.length === 0) {
-    const opt = document.createElement("option");
-    opt.textContent = "No connections — click +";
-    els.connectionSelect.appendChild(opt);
-    els.connectionSelect.disabled = true;
-    return;
-  }
-  els.connectionSelect.disabled = false;
-  for (const conn of state.connections) {
-    const opt = document.createElement("option");
-    opt.value = conn.id;
-    opt.textContent = connectionLabel(conn);
-    opt.selected = conn.id === state.activeId;
-    els.connectionSelect.appendChild(opt);
-  }
-}
-
-async function onConnectionChanged(): Promise<void> {
-  const conn = activeConnection();
-  state.client = null;
-  if (conn) {
-    try {
-      state.client = createClient(conn);
-    } catch (err) {
-      // e.g. a GCS connection whose stored credentials JSON no longer parses
-      console.error(err);
-      setStatus(errorMessage(err), { error: true });
-    }
-  }
-  state.bucket = conn?.bucket || null;
-  state.prefix = conn?.prefix || "";
-  state.token = null;
-  await chrome.storage.local.set({ lastConnectionId: state.activeId });
-  updateToolbar();
-  renderBreadcrumb();
-  await refresh();
-}
-
-function updateToolbar(): void {
-  const inBucket = !!state.bucket;
-  els.newFolderBtn.disabled = !inBucket;
-  els.uploadBtn.disabled = !inBucket;
-  els.selectModeBtn.disabled = !inBucket;
-  els.manageBtn.disabled = !state.activeId;
-  updateClipboardUI();
+// Synthetic connections built on the fly for a bucket under a Google Cloud
+// account ("gcp:<accountId>:<bucket>") aren't in storage, so they can't be
+// edited or deleted from the connection form.
+export function isStored(conn: StorageConnection): boolean {
+  return !conn.id.startsWith("gcp:");
 }
 
 // --- Connection form ---------------------------------------------------------
@@ -324,10 +269,7 @@ async function saveConnectionFromForm(): Promise<boolean> {
       return false;
     }
 
-    state.connections = await upsertConnection(conn);
-    state.activeId = conn.id;
-    renderConnectionSelect();
-    await onConnectionChanged();
+    await upsertConnection(conn);
     setFormStatus("");
     return true;
   } finally {
@@ -336,65 +278,30 @@ async function saveConnectionFromForm(): Promise<boolean> {
 }
 
 async function deleteConnectionById(id: string): Promise<void> {
-  const conn = state.connections.find((c) => c.id === id);
+  const conn = (await getConnections()).find((c) => c.id === id);
   const ok = await confirmDialog({
     title: "Delete connection?",
     message: `"${conn?.name}" and its stored keys will be removed from this browser.`,
   });
   if (!ok) return;
-  state.connections = await deleteConnection(id);
-  if (state.activeId === id) state.activeId = state.connections[0]?.id || null;
-  renderConnectionSelect();
-  renderManageList();
-  await onConnectionChanged();
+  await deleteConnection(id);
+  nav.home();
 }
 
-// --- Manage modal ------------------------------------------------------------
+// --- Export / import ---------------------------------------------------------
 
-function renderManageList(): void {
-  els.manageList.innerHTML = "";
-  for (const conn of state.connections) {
-    const li = document.createElement("li");
-    li.className = conn.id === state.activeId ? "active" : "";
+export async function exportAllConnections(): Promise<void> {
+  downloadTextFile("chrome-cloud-console-connections.json", exportConnections(await getConnections()));
+}
 
-    const badge = document.createElement("span");
-    badge.className = "badge";
-    badge.innerHTML = icon("bucket");
-    li.appendChild(badge);
-
-    const label = connectionLabel(conn);
-    const name = document.createElement("span");
-    name.className = "name";
-    name.innerHTML =
-      !conn.bucket || label === conn.bucket
-        ? escapeHtml(label)
-        : `${escapeHtml(label)}<small>${escapeHtml(conn.bucket)}</small>`;
-    li.appendChild(name);
-
-    const editBtn = document.createElement("button");
-    editBtn.className = "icon-btn";
-    editBtn.title = "Edit";
-    editBtn.setAttribute("aria-label", `Edit ${conn.name}`);
-    editBtn.innerHTML = icon("settings");
-    editBtn.addEventListener("click", () => openConnectionModal(conn));
-    li.appendChild(editBtn);
-
-    const deleteBtn = document.createElement("button");
-    deleteBtn.className = "icon-btn danger-hover";
-    deleteBtn.title = "Delete";
-    deleteBtn.setAttribute("aria-label", `Delete ${conn.name}`);
-    deleteBtn.innerHTML = icon("trash");
-    deleteBtn.addEventListener("click", () => void deleteConnectionById(conn.id));
-    li.appendChild(deleteBtn);
-
-    els.manageList.appendChild(li);
+// Merges connections from an exported JSON file; returns how many it read.
+// Throws a user-facing message if the file isn't an export.
+export async function importConnectionsFile(file: File): Promise<number> {
+  const imported = parseImport(await file.text());
+  for (const conn of imported) {
+    await upsertConnection(conn);
   }
-  if (state.connections.length === 0) {
-    const li = document.createElement("li");
-    li.className = "empty";
-    li.textContent = "No connections yet.";
-    els.manageList.appendChild(li);
-  }
+  return imported.length;
 }
 
 function downloadTextFile(filename: string, text: string): void {
@@ -407,15 +314,9 @@ function downloadTextFile(filename: string, text: string): void {
 
 // --- Wiring ------------------------------------------------------------------
 
+// The connection modal is static markup: wire it once, at boot.
 export function wireConnections(): void {
-  els.connectionSelect.addEventListener("change", async () => {
-    state.activeId = els.connectionSelect.value;
-    await onConnectionChanged();
-  });
-  els.addConnBtn.addEventListener("click", () => openConnectionModal(null));
-  els.manageBtn.addEventListener("click", () => openConnectionModal(activeConnection()));
   els.connType.addEventListener("change", () => applyTypeToForm(els.connType.value));
-
   // An extension can't read ~/.config itself — the file picker is how the
   // user grants access to one file, once. Its contents land in the textarea
   // and are stored like a pasted key; the file isn't re-read later, so a
@@ -454,34 +355,10 @@ export function wireConnections(): void {
   els.connectionForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const ok = await saveConnectionFromForm();
-    if (ok) els.connectionModal.close();
-  });
-  els.connManageAllBtn.addEventListener("click", () => {
+    if (!ok) return;
     els.connectionModal.close();
-    renderManageList();
-    els.manageModal.showModal();
-  });
-
-  els.manageCloseBtn.addEventListener("click", () => els.manageModal.close());
-  els.exportBtn.addEventListener("click", () => {
-    downloadTextFile("chrome-cloud-console-connections.json", exportConnections(state.connections));
-  });
-  els.importBtn.addEventListener("click", () => els.importInput.click());
-  els.importInput.addEventListener("change", async () => {
-    const file = els.importInput.files?.[0];
-    if (!file) return;
-    try {
-      const imported = parseImport(await file.text());
-      for (const conn of imported) {
-        await upsertConnection(conn);
-      }
-      state.connections = await getConnections();
-      renderConnectionSelect();
-      renderManageList();
-      setStatus(`Imported ${imported.length} connection(s).`);
-    } catch (err) {
-      setStatus(errorMessage(err), { error: true });
-    }
-    els.importInput.value = "";
+    // Back to Home (popping the bucket screen too, if it had this one open)
+    // so the new/edited card shows.
+    nav.home();
   });
 }

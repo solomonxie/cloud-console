@@ -1,0 +1,14 @@
+{
+  "timeSeries": [
+    {
+      "metric": {"type": "compute.googleapis.com/instance/cpu/utilization"},
+      "resource": {"type": "gce_instance", "labels": {"instance_id": "4567890123456789012", "project_id": "demo-project-123", "zone": "us-central1-a"}},
+      "metricKind": "GAUGE",
+      "valueType": "DOUBLE",
+      "points": [
+        {"interval": {"startTime": "2026-10-30T12:05:00Z", "endTime": "2026-10-30T12:10:00Z"}, "value": {"doubleValue": 0.42}},
+        {"interval": {"startTime": "2026-10-30T12:00:00Z", "endTime": "2026-10-30T12:05:00Z"}, "value": {"doubleValue": 0.125}}
+      ]
+    }
+  ]
+}

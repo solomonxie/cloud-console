@@ -3,13 +3,15 @@
 // upload).
 import { formatSize } from "@cloud-console/core/storage/format";
 import type { ListPage } from "@cloud-console/core/storage/types";
+import { favoriteButton, loadFavorites, pinFavorites } from "../lib/favorites.ts";
 import { icon, iconForFileName } from "../lib/icons.ts";
+import { applyFilter } from "../ui/search.ts";
 import { setClipboard } from "./clipboard.ts";
-import { openConnectionModal } from "./connections.ts";
+import { isStored, openConnectionModal } from "./connections.ts";
 import { confirmDialog, promptDialog } from "./dialogs.ts";
 import { els, escapeHtml, formatDate, plural, setStatus, withStatus, errorMessage } from "./dom.ts";
 import { openObjectDetail } from "./preview.ts";
-import { activeConnection, open, rootPrefix, state, type Item } from "./state.ts";
+import { open, rootPrefix, state, type Item } from "./state.ts";
 
 // --- Navigation --------------------------------------------------------------
 
@@ -21,7 +23,7 @@ interface Crumb {
 
 export function renderBreadcrumb(): void {
   els.breadcrumb.innerHTML = "";
-  const conn = activeConnection();
+  const conn = state.conn;
   const crumbs: Crumb[] = [];
   if (conn) {
     const root = rootPrefix();
@@ -59,8 +61,33 @@ export function navigateToPrefix(prefix: string): void {
   const root = rootPrefix();
   state.prefix = prefix.startsWith(root) ? prefix : root;
   state.token = null;
+  clearFilter();
   renderBreadcrumb();
   void refresh();
+}
+
+// --- Filter ------------------------------------------------------------------
+
+// Narrows the loaded rows by name (client-side only — it doesn't list
+// anything new). Cleared whenever the folder changes.
+export function setFilter(query: string): void {
+  state.filter = query;
+  applyRowFilter();
+  renderStats();
+}
+
+function clearFilter(): void {
+  state.filter = "";
+  const input = els.fileFilter.querySelector("input");
+  if (input) input.value = "";
+}
+
+function filterableRows(): HTMLElement[] {
+  return [...els.fileList.querySelectorAll<HTMLElement>(".row[data-search]")];
+}
+
+function applyRowFilter(): void {
+  applyFilter(filterableRows(), state.filter);
 }
 
 // Prefix one level up from `prefix`, never rising above `root`.
@@ -82,15 +109,13 @@ export async function refresh(): Promise<void> {
   els.fileList.innerHTML = "";
   els.loadMoreBtn.hidden = true;
   els.listStats.hidden = true;
-  if (!state.client) {
-    renderEmptyState("home", "Add a connection to get started", "Click + next to the connection dropdown.");
-    return;
-  }
+  if (!state.client) return; // createClient failed; its error is in the status line
   if (!state.bucket) {
-    renderEmptyState("bucket", "This connection has no bucket set", "Edit it and add a bucket name.", {
+    const conn = state.conn;
+    renderEmptyState("bucket", "This connection has no bucket set", "Edit it and add a bucket name.", conn && isStored(conn) ? {
       label: "Edit connection",
-      onClick: () => openConnectionModal(activeConnection()),
-    });
+      onClick: () => openConnectionModal(conn),
+    } : undefined);
     return;
   }
   await loadMore(true);
@@ -98,11 +123,20 @@ export async function refresh(): Promise<void> {
 
 export async function loadMore(reset = false): Promise<void> {
   if (!state.client || !state.bucket) return;
+  const list = els.fileList; // a new element on every push of the screen
+  const prefix = state.prefix;
   try {
-    const data = await withStatus(
-      state.client.listObjects(state.bucket, state.prefix, state.token ?? undefined),
+    const [data, favs] = await withStatus(
+      Promise.all([
+        state.client.listObjects(state.bucket, state.prefix, state.token ?? undefined),
+        reset ? loadFavorites(favScope()).catch(() => new Set<string>()) : Promise.resolve(fav.ids),
+      ]),
       "Loading…"
     );
+    // Stale: the screen was left (or reopened on another connection), or the
+    // user moved to another folder while this page was loading.
+    if (els.fileList !== list || state.prefix !== prefix) return;
+    fav.ids = favs;
     renderObjectRows(data, reset);
     state.token = data.nextToken ?? null;
     els.loadMoreBtn.hidden = !state.token;
@@ -159,6 +193,10 @@ function renderStats(): void {
   }
   const parts = [plural(folders, "folder"), plural(files, "file")];
   if (bytes) parts.push(formatSize(bytes));
+  if (state.filter) {
+    const rows = filterableRows();
+    parts.unshift(`${rows.filter((r) => !r.hidden).length} of ${rows.length} shown`);
+  }
   if (state.token) parts.push("more not loaded");
   els.listStats.hidden = false;
   els.listStats.textContent = parts.join(" · ");
@@ -222,6 +260,20 @@ export async function bulkDelete(): Promise<void> {
   }
 }
 
+// --- Favorites ---------------------------------------------------------------
+
+// Starred folders/files of this bucket (any folder), and the loaded rows in
+// their listing order, so favorites can be pinned within what's loaded.
+const fav = { ids: new Set<string>(), rows: [] as HTMLElement[] };
+
+function favScope(): string {
+  return `bucket:${state.conn?.id ?? ""}:${state.bucket ?? ""}`;
+}
+
+function repinFavorites(): void {
+  pinFavorites(els.fileList, fav.rows, fav.ids);
+}
+
 // --- Rows --------------------------------------------------------------------
 
 interface RowAction {
@@ -241,11 +293,14 @@ interface RowSpec {
   itemKey?: string;
   isFolder?: boolean;
   checked?: boolean;
+  favorite?: boolean; // gets a star (outside select mode) and can be pinned
 }
 
-function makeRow({ badgeIcon, badgeClass, name, meta, onOpen, actions, itemKey, isFolder, checked }: RowSpec): HTMLElement {
+function makeRow({ badgeIcon, badgeClass, name, meta, onOpen, actions, itemKey, isFolder, checked, favorite }: RowSpec): HTMLElement {
   const row = document.createElement("div");
   row.className = "row";
+  if (itemKey) row.dataset.search = name;
+  if (favorite && itemKey) row.dataset.favId = itemKey;
   const selectable = state.selectMode && !!itemKey;
 
   if (selectable && itemKey) {
@@ -311,6 +366,9 @@ function makeRow({ badgeIcon, badgeClass, name, meta, onOpen, actions, itemKey, 
 
   const actionsEl = document.createElement("span");
   actionsEl.className = "actions";
+  if (favorite && itemKey && !state.selectMode) {
+    actionsEl.appendChild(favoriteButton(favScope(), itemKey, fav.ids, repinFavorites));
+  }
   for (const action of actions || []) {
     const btn = document.createElement("button");
     btn.className = action.danger ? "icon-btn danger-hover" : "icon-btn";
@@ -329,6 +387,7 @@ function renderObjectRows(data: ListPage, reset: boolean): void {
   if (reset) {
     els.fileList.innerHTML = "";
     state.stats = { folders: 0, files: 0, bytes: 0 };
+    fav.rows = [];
     appendParentRow();
   }
   state.stats.folders += data.folders.length;
@@ -336,24 +395,25 @@ function renderObjectRows(data: ListPage, reset: boolean): void {
     const name = prefix.slice(state.prefix.length).replace(/\/$/, "");
     const item = { key: prefix, isFolder: true };
     state.listedItems.push(item);
-    els.fileList.appendChild(
-      makeRow({
-        badgeIcon: "folder",
-        badgeClass: "folder",
-        name,
-        itemKey: prefix,
-        isFolder: true,
-        checked: state.selected.has(prefix),
-        onOpen: () => navigateToPrefix(prefix),
-        actions: state.selectMode
-          ? []
-          : [
-              { iconName: "copy", title: "Copy", onClick: () => setClipboard([item], false) },
-              { iconName: "scissors", title: "Cut", onClick: () => setClipboard([item], true) },
-              { iconName: "trash", title: "Delete folder", danger: true, onClick: () => void deleteFolder(prefix) },
-            ],
-      })
-    );
+    const row = makeRow({
+      badgeIcon: "folder",
+      badgeClass: "folder",
+      name,
+      itemKey: prefix,
+      isFolder: true,
+      checked: state.selected.has(prefix),
+      favorite: true,
+      onOpen: () => navigateToPrefix(prefix),
+      actions: state.selectMode
+        ? []
+        : [
+            { iconName: "copy", title: "Copy", onClick: () => setClipboard([item], false) },
+            { iconName: "scissors", title: "Cut", onClick: () => setClipboard([item], true) },
+            { iconName: "trash", title: "Delete folder", danger: true, onClick: () => void deleteFolder(prefix) },
+          ],
+    });
+    fav.rows.push(row);
+    els.fileList.appendChild(row);
   }
   for (const obj of data.objects) {
     if (obj.key.endsWith("/")) continue; // folder-marker object, already shown as a folder
@@ -363,27 +423,32 @@ function renderObjectRows(data: ListPage, reset: boolean): void {
     state.stats.bytes += obj.size || 0;
     const item = { key: obj.key, isFolder: false };
     state.listedItems.push(item);
-    els.fileList.appendChild(
-      makeRow({
-        badgeIcon: iconForFileName(name),
-        name,
-        meta: `${formatSize(obj.size)} · ${formatDate(obj.lastModified)}`,
-        itemKey: obj.key,
-        isFolder: false,
-        checked: state.selected.has(obj.key),
-        onOpen: () => openObjectDetail(obj, name),
-        actions: state.selectMode
-          ? []
-          : [
-              { iconName: "copy", title: "Copy", onClick: () => setClipboard([item], false) },
-              { iconName: "scissors", title: "Cut", onClick: () => setClipboard([item], true) },
-            ],
-      })
-    );
+    const row = makeRow({
+      badgeIcon: iconForFileName(name),
+      name,
+      meta: `${formatSize(obj.size)} · ${formatDate(obj.lastModified)}`,
+      itemKey: obj.key,
+      isFolder: false,
+      checked: state.selected.has(obj.key),
+      favorite: true,
+      onOpen: () => openObjectDetail(obj, name),
+      actions: state.selectMode
+        ? []
+        : [
+            { iconName: "copy", title: "Copy", onClick: () => setClipboard([item], false) },
+            { iconName: "scissors", title: "Cut", onClick: () => setClipboard([item], true) },
+          ],
+    });
+    fav.rows.push(row);
+    els.fileList.appendChild(row);
   }
   if (reset && data.folders.length === 0 && data.objects.length === 0) {
     els.fileList.appendChild(emptyStateNode("inbox", "This folder is empty", "Upload a file or drop one here."));
   }
+  // Favorites first (after ".."), within what's loaded so far; folders still
+  // before files inside each group.
+  repinFavorites();
+  if (state.filter) applyRowFilter();
 }
 
 // --- Object actions ----------------------------------------------------------

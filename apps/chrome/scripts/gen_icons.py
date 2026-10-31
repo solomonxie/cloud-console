@@ -1,8 +1,15 @@
 #!/usr/bin/env python3
-"""Regenerate static/icons/icon*.png from icon.svg, the master mark.
+"""Regenerate static/icons/icon*.png from the mobile app icon.
 
-Headless Chrome rasterizes the SVG at each size, so the PNGs always match the
-vector source (and keep their alpha channel, unlike the store listing art).
+The source of truth is the iOS app icon
+(apps/ios/CloudConsole/Assets.xcassets/AppIcon.appiconset/icon-light.png,
+the same file apps/mobile/app.json uses), so the extension and the app share
+one mark. That PNG is a full 1024x1024 square; headless Chrome renders it once
+with rounded, transparent corners (~22% radius, like a toolbar icon), then
+macOS `sips` downsamples that to each size, keeping the alpha channel.
+
+static/icons/icon.svg is a hand-made vector redraw of the same mark, used as
+the glyph in the store listing art; it is not an input here.
 """
 import struct
 import subprocess
@@ -12,14 +19,24 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 ICON_DIR = ROOT / "static" / "icons"
-SOURCE = ICON_DIR / "icon.svg"
+SOURCE = (
+    ROOT.parent
+    / "ios"
+    / "CloudConsole"
+    / "Assets.xcassets"
+    / "AppIcon.appiconset"
+    / "icon-light.png"
+)
+MASTER = 1024
+RADIUS = 0.2237  # iOS-style corner radius as a fraction of the side
 SIZES = (16, 32, 48, 128)
 CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 
 PAGE = """<!doctype html><html><head><style>
 html, body {{ margin: 0; padding: 0; background: transparent; }}
-svg {{ display: block; width: {size}px; height: {size}px; }}
-</style></head><body>{svg}</body></html>"""
+img {{ display: block; width: {size}px; height: {size}px;
+  border-radius: {radius}px; }}
+</style></head><body><img src="{src}"></body></html>"""
 
 
 def png_size(path):
@@ -28,9 +45,11 @@ def png_size(path):
     return struct.unpack(">II", data[16:24])
 
 
-def render(svg, size, dest, workdir):
-    src = workdir / f"icon{size}.html"
-    src.write_text(PAGE.format(size=size, svg=svg))
+def render_rounded(dest, workdir):
+    page = workdir / "icon.html"
+    page.write_text(
+        PAGE.format(size=MASTER, radius=round(MASTER * RADIUS), src=SOURCE.as_uri())
+    )
     subprocess.run(
         [
             CHROME,
@@ -39,10 +58,20 @@ def render(svg, size, dest, workdir):
             "--hide-scrollbars",
             "--force-device-scale-factor=1",
             "--default-background-color=00000000",
-            f"--window-size={size},{size}",
+            f"--window-size={MASTER},{MASTER}",
             f"--screenshot={dest}",
-            f"file://{src}",
+            page.as_uri(),
         ],
+        check=True,
+        capture_output=True,
+    )
+    got = png_size(dest)
+    assert got == (MASTER, MASTER), f"{dest.name}: got {got}, want {(MASTER, MASTER)}"
+
+
+def resize(master, size, dest):
+    subprocess.run(
+        ["sips", "-z", str(size), str(size), str(master), "--out", str(dest)],
         check=True,
         capture_output=True,
     )
@@ -54,10 +83,13 @@ def render(svg, size, dest, workdir):
 def main():
     if not Path(CHROME).exists():
         sys.exit(f"Chrome not found at {CHROME}")
-    svg = SOURCE.read_text()
+    if not SOURCE.exists():
+        sys.exit(f"App icon not found at {SOURCE}")
     workdir = Path(tempfile.mkdtemp(prefix="icons-"))
+    master = workdir / "icon-rounded.png"
+    render_rounded(master, workdir)
     for size in SIZES:
-        render(svg, size, ICON_DIR / f"icon{size}.png", workdir)
+        resize(master, size, ICON_DIR / f"icon{size}.png")
 
 
 if __name__ == "__main__":

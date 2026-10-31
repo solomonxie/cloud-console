@@ -1,0 +1,32 @@
+{
+  "executions": [
+    {
+      "name": "projects/demo-project-123/locations/us-central1/jobs/nightly-export/executions/nightly-export-a1b2c",
+      "createTime": "2026-10-28T02:00:00.000000Z",
+      "startTime": "2026-10-28T02:00:05.000000Z",
+      "completionTime": "2026-10-28T02:20:00.000000Z",
+      "taskCount": 4,
+      "succeededCount": 3,
+      "failedCount": 1,
+      "conditions": [{"type": "Completed", "state": "CONDITION_FAILED"}],
+      "logUri": "https://console.cloud.google.com/logs/viewer?project=demo-project-123"
+    },
+    {
+      "name": "projects/demo-project-123/locations/us-central1/jobs/nightly-export/executions/nightly-export-k2p9x",
+      "createTime": "2026-10-30T02:00:00.000000Z",
+      "startTime": "2026-10-30T02:00:04.000000Z",
+      "completionTime": "2026-10-30T02:14:37.000000Z",
+      "taskCount": 4,
+      "succeededCount": 4,
+      "conditions": [{"type": "Completed", "state": "CONDITION_SUCCEEDED"}]
+    },
+    {
+      "name": "projects/demo-project-123/locations/us-central1/jobs/nightly-export/executions/nightly-export-zz9q1",
+      "createTime": "2026-10-30T15:30:00.000000Z",
+      "startTime": "2026-10-30T15:30:03.000000Z",
+      "taskCount": 4,
+      "runningCount": 2,
+      "succeededCount": 1
+    }
+  ]
+}

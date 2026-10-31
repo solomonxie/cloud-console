@@ -1,6 +1,9 @@
-// Element lookups and small DOM helpers shared by the storage section's
-// modules. `els` is filled by initEls() once the section's markup has been
-// mounted (see storage-section.ts), so modules can import it up front.
+// Element lookups and small DOM helpers shared by the bucket browser's
+// modules. `els` holds two groups: the static dialogs in sidepanel.html
+// (looked up once at boot by initDialogEls()) and the bucket screen's own
+// controls, cloned from <template id="storageTemplate"> on every push and
+// re-looked-up by initScreenEls() (see bucket-screen.ts). Modules can import
+// `els` up front either way.
 import { icon } from "../lib/icons.ts";
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string): T => {
@@ -9,14 +12,12 @@ const $ = <T extends HTMLElement = HTMLElement>(id: string): T => {
   return el as T;
 };
 
-function lookup() {
-  const btn = (id: string) => $<HTMLButtonElement>(id);
-  const input = (id: string) => $<HTMLInputElement>(id);
-  const dialog = (id: string) => $<HTMLDialogElement>(id);
+const btn = (id: string) => $<HTMLButtonElement>(id);
+const input = (id: string) => $<HTMLInputElement>(id);
+const dialog = (id: string) => $<HTMLDialogElement>(id);
+
+function lookupScreen() {
   return {
-    connectionSelect: $<HTMLSelectElement>("connectionSelect"),
-    addConnBtn: btn("addConnBtn"),
-    manageBtn: btn("manageBtn"),
     breadcrumb: $("breadcrumb"),
     refreshBtn: btn("refreshBtn"),
     selectModeBtn: btn("selectModeBtn"),
@@ -36,17 +37,21 @@ function lookup() {
     uploadBtn: btn("uploadBtn"),
     uploadInput: input("uploadInput"),
     status: $("status"),
+    fileFilter: $("fileFilter"),
     fileList: $("fileList"),
     loadMoreBtn: btn("loadMoreBtn"),
     listStats: $("listStats"),
+  };
+}
+
+function lookupDialogs() {
+  return {
     connectionModal: dialog("connectionModal"),
     connectionForm: $<HTMLFormElement>("connectionForm"),
     connectionModalTitle: $("connectionModalTitle"),
     connId: input("connId"),
-    connType: $<HTMLSelectElement>("connType"),
+    connType: input("connType"),
     connTypeHint: $("connTypeHint"),
-    connBucketLabel: $("connBucketLabel"),
-    connBucket: input("connBucket"),
     connAccessKeyField: $("connAccessKeyField"),
     connAccessKeyLabel: $("connAccessKeyLabel"),
     connAccessKey: input("connAccessKey"),
@@ -57,7 +62,7 @@ function lookup() {
     connServiceAccountJson: $<HTMLTextAreaElement>("connServiceAccountJson"),
     connCredentialsFileBtn: btn("connCredentialsFileBtn"),
     connCredentialsFile: input("connCredentialsFile"),
-    connPrefix: input("connPrefix"),
+    connResources: $("connResources"),
     connName: input("connName"),
     connAdvanced: $<HTMLDetailsElement>("connAdvanced"),
     connRegionField: $("connRegionField"),
@@ -68,14 +73,7 @@ function lookup() {
     connCancelBtn: btn("connCancelBtn"),
     connSaveBtn: btn("connSaveBtn"),
     connFormStatus: $("connFormStatus"),
-    connManageAllBtn: btn("connManageAllBtn"),
     toggleSecretBtn: btn("toggleSecretBtn"),
-    manageModal: dialog("manageModal"),
-    manageList: $("manageList"),
-    importBtn: btn("importBtn"),
-    exportBtn: btn("exportBtn"),
-    importInput: input("importInput"),
-    manageCloseBtn: btn("manageCloseBtn"),
     confirmDialog: dialog("confirmDialog"),
     confirmIcon: $("confirmIcon"),
     confirmTitle: $("confirmTitle"),
@@ -110,17 +108,24 @@ function lookup() {
     detailSaveBtn: btn("detailSaveBtn"),
     detailShareBtn: btn("detailShareBtn"),
     detailDownloadBtn: btn("detailDownloadBtn"),
+    detailOpenBtn: btn("detailOpenBtn"),
     detailCopyBtn: btn("detailCopyBtn"),
     detailMoveBtn: btn("detailMoveBtn"),
     detailDeleteBtn: btn("detailDeleteBtn"),
   };
 }
 
-export type Els = ReturnType<typeof lookup>;
+export type Els = ReturnType<typeof lookupScreen> & ReturnType<typeof lookupDialogs>;
 export const els = {} as Els;
 
-export function initEls(): void {
-  Object.assign(els, lookup());
+export function initDialogEls(): void {
+  Object.assign(els, lookupDialogs());
+}
+
+// Call after each mount of the bucket screen's template (its elements are
+// new every time).
+export function initScreenEls(): void {
+  Object.assign(els, lookupScreen());
 }
 
 export function escapeHtml(str: unknown): string {

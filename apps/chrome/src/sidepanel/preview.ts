@@ -21,6 +21,22 @@ interface EditorState {
 
 let editorState: EditorState | null = null; // while a text/markdown file is open
 
+// Opens the object in a new tab via a short-lived signed link, so the
+// browser streams it directly (no size limit, unlike the inline preview).
+// GCS with gcloud user credentials can't sign; storage.cloud.google.com
+// serves the object to the browser's own signed-in Google account instead.
+async function openInNewTab(key: string): Promise<void> {
+  const { client, bucket } = open();
+  try {
+    const url = client.canPresign
+      ? await withStatus(client.presignedUrl(bucket, key, 3600), "Signing link…")
+      : `https://storage.cloud.google.com/${bucket}/${key.split("/").map(encodeURIComponent).join("/")}`;
+    await chrome.tabs.create({ url });
+  } catch {
+    // withStatus already surfaced the error
+  }
+}
+
 export function isEditorDirty(): boolean {
   return !!editorState && editorState.el.value !== editorState.original;
 }
@@ -214,6 +230,7 @@ export function openObjectDetail(obj: StorageObject, name: string): void {
     els.detailModal.close();
     void downloadObject(obj.key, name);
   };
+  els.detailOpenBtn.onclick = () => void openInNewTab(obj.key);
   els.detailCopyBtn.onclick = () => {
     els.detailModal.close();
     setClipboard([item], false);

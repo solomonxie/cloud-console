@@ -197,115 +197,401 @@ button:active:not(:disabled) {
   }
 }
 
-/* --- Section shell -------------------------------------------------- */
+/* --- App header + screen stack --------------------------------------- */
 
-/* Segmented control switching top-level sections (Storage, Google Cloud,
-   …); hidden while only one section is registered. Each section fills the
-   rest of the panel and owns its own scrolling. */
-.section-tabs {
-  display: flex;
-  gap: 2px;
-  margin: 8px 8px 0;
-  padding: 2px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--bg-subtle);
-  flex-shrink: 0;
-}
-
-.section-tab {
-  flex: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  min-width: 0;
-  border: 1px solid transparent;
-  background: none;
-  padding: 4px 8px;
-  border-radius: 5px;
-  color: var(--text-muted);
-  font-size: 12px;
-  font-weight: 500;
-  white-space: nowrap;
-}
-
-.section-tab .icon {
-  width: 14px;
-  height: 14px;
-}
-
-.section-tab span {
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.section-tab:hover:not(.active) {
-  color: var(--text);
-}
-
-.section-tab.active {
-  background: var(--bg);
-  border-color: var(--border);
-  color: var(--accent);
-  box-shadow: var(--shadow-sm);
-}
-
-.section-host {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.section-view {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-/* --- Header --------------------------------------------------------- */
-
-.topbar {
+/* One persistent bar: back (below Home) or the brand mark (on Home), the
+   screen's title/subtitle, and its own action buttons. Screens stack under
+   it in #screenHost; only the top one is shown, and each owns its own
+   scrolling. */
+.app-header {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 8px;
+  min-height: 44px;
+  padding: 6px 8px;
   border-bottom: 1px solid var(--border);
   background: var(--bg-subtle);
-}
-
-.brand {
-  display: flex;
-  color: var(--accent);
   flex-shrink: 0;
 }
 
-.brand-icon {
+.nav-back {
+  margin-left: -2px;
+  color: var(--accent);
+}
+
+.nav-back .icon {
   width: 20px;
   height: 20px;
 }
 
-.topbar select {
+.nav-brand {
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  flex-shrink: 0;
+  margin: 0 2px;
+}
+
+.nav-titles {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.nav-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nav-subtitle {
+  font-size: 11px;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nav-actions,
+.screen-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.screen-host {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.screen {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+/* The bucket browser scrolls inside its file list, keeping the toolbar,
+   breadcrumb and filter in view. */
+.screen.bucket-screen {
+  overflow: hidden;
+}
+
+/* --- Home ----------------------------------------------------------- */
+
+/* iOS-style inset grouped list, sized for a ~360px side panel: one rounded
+   floating card per connection, its resources as rows with chevrons. */
+.home-screen {
+  background: var(--bg-subtle);
+}
+
+.home-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+}
+
+.home-list > .filter-box {
+  margin: -12px -12px 0;
+  border-radius: 0;
+  background: var(--bg-subtle);
+}
+
+.home-status .status {
+  border-bottom: 1px solid var(--border);
+}
+
+.conn-card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.conn-card-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 10px 10px 12px;
+}
+
+.vendor-badge,
+.kind-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #fff;
+  background: var(--vendor, var(--accent));
+}
+
+.vendor-badge {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+}
+
+.vendor-badge .icon {
+  width: 19px;
+  height: 19px;
+}
+
+.kind-badge {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+}
+
+.kind-badge .icon {
+  width: 15px;
+  height: 15px;
+}
+
+.conn-card-titles {
+  flex: 1;
+  min-width: 0;
+}
+
+.conn-card-name {
+  font-size: 15px;
+  font-weight: 650;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.conn-card-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.card-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 42px;
+  padding: 7px 10px 7px 12px;
+  border: none;
+  border-top: 1px solid var(--border);
+  background: none;
+  text-align: left;
+  color: var(--text);
+}
+
+.card-row:hover {
+  background: var(--bg-subtle);
+}
+
+.card-row:active:not(:disabled) {
+  transform: none;
+  background: var(--accent-subtle);
+}
+
+.card-row:focus-visible {
+  outline-offset: -2px;
+}
+
+.card-row-label {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.card-row-label > span,
+.card-row-label small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.card-row-label > span {
+  font-weight: 500;
+}
+
+.card-row-label small {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.card-row .chevron {
+  display: flex;
+  color: var(--text-muted);
+  opacity: 0.6;
+}
+
+.card-row .chevron .icon {
+  width: 14px;
+  height: 14px;
+}
+
+/* "+" chooser: the same rows, inside a bordered group. */
+.chooser-options {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.chooser-options .card-row:first-child {
+  border-top: none;
+}
+
+.chooser-options .kind-badge {
+  background: var(--accent);
+  color: var(--accent-contrast);
+}
+
+/* --- Search: filter box + combobox (src/ui/search.ts) ------------------ */
+
+.filter-box {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  color: var(--text-muted);
+  cursor: text;
+}
+
+.filter-box .icon {
+  width: 14px;
+  height: 14px;
+}
+
+.filter-box input {
   flex: 1;
   min-width: 0;
   font: inherit;
-  padding: 5px 6px;
+  padding: 4px 2px;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  outline: none;
+}
+
+.filter-box:focus-within {
+  color: var(--accent);
+  box-shadow: inset 0 -2px 0 var(--accent);
+}
+
+.file-filter:empty {
+  display: none;
+}
+
+.combo {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 8px;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   background: var(--bg);
-  color: var(--text);
+  color: var(--text-muted);
   transition: border-color var(--transition);
 }
 
-.topbar select:hover {
+.combo:hover,
+.combo:focus-within {
   border-color: var(--accent);
 }
 
-.topbar select:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 1px;
+.combo > .icon {
+  width: 14px;
+  height: 14px;
+}
+
+.combo input {
+  flex: 1;
+  min-width: 0;
+  font: inherit;
+  padding: 5px 0;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  outline: none;
+}
+
+.combo input:disabled {
+  opacity: 0.5;
+}
+
+.combo-list {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 20;
+  max-height: 280px;
+  overflow-y: auto;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow);
+}
+
+.combo-list li {
+  display: flex;
+  flex-direction: column;
+  padding: 5px 8px;
+  border-radius: 5px;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.combo-list li span,
+.combo-list li small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.combo-list li small {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.combo-list li:hover,
+.combo-list li.active {
+  background: var(--bg-subtle);
+}
+
+.combo-list li.current {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.combo-list li.muted {
+  color: var(--text-muted);
+  cursor: default;
+  font-style: italic;
+}
+
+.combo-list li.muted:hover {
+  background: none;
 }
 
 /* --- Breadcrumb ------------------------------------------------------- */
@@ -558,6 +844,36 @@ button.name-btn:hover {
   flex-shrink: 0;
 }
 
+/* Favorites: a star in a row's actions (or a card's header). Faint until the
+   row is hovered/focused; always shown, filled, once favorited. */
+.fav-btn {
+  opacity: 0;
+  transition: opacity var(--transition), color var(--transition);
+}
+
+.row:hover .fav-btn,
+.gcp-group:hover .fav-btn,
+.conn-card:hover .fav-btn,
+.fav-btn:focus-visible,
+.fav-btn.fav-on {
+  opacity: 1;
+}
+
+.fav-btn.fav-on,
+.fav-btn.fav-on:hover:not(:disabled) {
+  color: #f5b301;
+}
+
+.fav-btn.fav-on .icon {
+  fill: currentColor;
+}
+
+@media (hover: none) {
+  .fav-btn {
+    opacity: 1;
+  }
+}
+
 .load-more {
   margin: 8px;
 }
@@ -741,63 +1057,6 @@ dialog h2 {
 
 .spacer {
   flex: 1;
-}
-
-.manage-list {
-  list-style: none;
-  margin: 0 0 8px;
-  padding: 0;
-  max-height: 240px;
-  overflow-y: auto;
-}
-
-.manage-list li {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 2px;
-  border-bottom: 1px solid var(--border);
-}
-
-.manage-list li .badge {
-  width: 22px;
-  height: 22px;
-  border-radius: var(--radius-sm);
-  background: var(--accent-subtle);
-  color: var(--accent);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.manage-list li .badge .icon {
-  width: 13px;
-  height: 13px;
-}
-
-.manage-list li .name {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.manage-list li .name small {
-  display: block;
-  color: var(--text-muted);
-  font-weight: normal;
-}
-
-.manage-list li.active .name {
-  font-weight: 600;
-  color: var(--accent);
-}
-
-.manage-list .empty {
-  color: var(--text-muted);
-  padding: 4px 2px;
 }
 
 /* --- Alert-style dialogs (confirm/prompt) --------------------------------- */

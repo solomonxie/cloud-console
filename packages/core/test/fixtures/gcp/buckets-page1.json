@@ -1,0 +1,7 @@
+{
+  "kind": "storage#buckets",
+  "nextPageToken": "buckets-page-2",
+  "items": [
+    {"kind": "storage#bucket", "name": "zeta-logs", "location": "US", "locationType": "multi-region", "storageClass": "STANDARD", "timeCreated": "2024-03-01T10:00:00.000Z"}
+  ]
+}

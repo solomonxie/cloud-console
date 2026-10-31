@@ -1,8 +1,20 @@
-// Side panel entry. Each feature module registers its section on import;
-// the shell then renders the switcher and opens the last-used section.
-// Storage first, so it's the default for a fresh install.
-import "./storage-section.ts";
-import "../gcp/index.ts";
-import { startShell } from "../shell/shell.ts";
+// Side panel entry: wire the static dialogs once, then start the stack
+// navigator on Home (connections, any vendor → resource → detail).
+import { homeScreen } from "../app/home.ts";
+import { startNavigator } from "../app/navigator.ts";
+import { initBucketBrowser } from "./bucket-screen.ts";
 
-void startShell(document.getElementById("sectionTabs")!, document.getElementById("sectionHost")!);
+const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
+
+initBucketBrowser();
+startNavigator(
+  {
+    backBtn: $<HTMLButtonElement>("navBackBtn"),
+    brand: $("navBrand"),
+    title: $("navTitle"),
+    subtitle: $("navSubtitle"),
+    actions: $("navActions"),
+    host: $("screenHost"),
+  },
+  homeScreen
+);

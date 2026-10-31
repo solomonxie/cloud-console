@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<EnumerationResults ServiceEndpoint="https://exampleaccount.blob.core.windows.net/">
+  <MaxResults>2</MaxResults>
+  <Containers>
+    <Container>
+      <Name>backups</Name>
+      <Properties>
+        <Last-Modified>Tue, 03 Mar 2026 09:12:44 GMT</Last-Modified>
+        <Etag>"0x8DC3B2A1F0E9D88"</Etag>
+        <LeaseStatus>unlocked</LeaseStatus>
+        <LeaseState>available</LeaseState>
+        <HasImmutabilityPolicy>false</HasImmutabilityPolicy>
+        <HasLegalHold>false</HasLegalHold>
+      </Properties>
+    </Container>
+    <Container>
+      <Name>0001</Name>
+      <Properties>
+        <Last-Modified>Wed, 15 Apr 2026 18:00:00 GMT</Last-Modified>
+        <Etag>"0x8DC5D3B2E1F0A77"</Etag>
+      </Properties>
+    </Container>
+  </Containers>
+  <NextMarker>/exampleaccount/photos</NextMarker>
+</EnumerationResults>

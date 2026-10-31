@@ -1,0 +1,13 @@
+{
+  "timeSeries": [
+    {
+      "metric": {"type": "compute.googleapis.com/instance/network/received_bytes_count"},
+      "resource": {"type": "gce_instance", "labels": {"instance_id": "4567890123456789012"}},
+      "metricKind": "GAUGE",
+      "valueType": "INT64",
+      "points": [
+        {"interval": {"startTime": "2026-10-30T12:05:00Z", "endTime": "2026-10-30T12:10:00Z"}, "value": {"int64Value": "2048"}}
+      ]
+    }
+  ]
+}

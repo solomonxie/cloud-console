@@ -1,0 +1,7 @@
+{
+  "name": "projects/demo-project-123/locations/us-central1/operations/7c1d2e3f-0000-4000-8000-00000000abcd",
+  "metadata": {
+    "@type": "type.googleapis.com/google.cloud.run.v2.Execution",
+    "name": "projects/demo-project-123/locations/us-central1/jobs/nightly-export/executions/nightly-export-n3w01"
+  }
+}

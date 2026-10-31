@@ -46,6 +46,7 @@ export const VENDOR_ACCENT: Record<VendorId, string> = {
   gcp: "#FF3B30",
   tencent: "#30B0C7",
   alibaba: "#FF2D55",
+  s3compat: "#8E8E93",
 };
 
 export const MONO = "Menlo";

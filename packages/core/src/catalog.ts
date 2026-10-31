@@ -4,7 +4,9 @@
 
 export type Platform = "mobile" | "chrome";
 
-export type VendorId = "aws" | "azure" | "gcp" | "tencent" | "alibaba";
+// "s3compat" is any S3-compatible service (Cloudflare R2, MinIO, …) reached
+// at its own endpoint — a vendor in the UI's sense: one key, its buckets.
+export type VendorId = "aws" | "azure" | "gcp" | "tencent" | "alibaba" | "s3compat";
 
 export interface Vendor {
   id: VendorId;
@@ -17,8 +19,10 @@ export const VENDORS: Vendor[] = [
   { id: "aws", name: "AWS", platforms: ["mobile", "chrome"] },
   { id: "azure", name: "Azure", platforms: ["chrome"] },
   { id: "gcp", name: "Google Cloud", platforms: ["chrome"] },
-  { id: "tencent", name: "Tencent Cloud", platforms: ["mobile"] },
+  // Chrome: COS storage only this version (its other kinds are mobile-only).
+  { id: "tencent", name: "Tencent Cloud", platforms: ["mobile", "chrome"] },
   { id: "alibaba", name: "Alibaba Cloud", platforms: ["chrome"] },
+  { id: "s3compat", name: "S3-compatible", platforms: ["chrome"] },
 ];
 
 export type ResourceKindId =
@@ -33,6 +37,9 @@ export type ResourceKindId =
   | "parameterStore"
   | "cloudWatchAlarms"
   | "cos"
+  | "azureBlob"
+  | "oss"
+  | "s3compatBuckets"
   | "camUsers"
   | "camRoles"
   | "cvm"
@@ -69,7 +76,7 @@ export const RESOURCE_KINDS: ResourceKind[] = [
   { id: "cloudWatchAlarms", vendor: "aws", title: "CloudWatch Alarms", isImplemented: false, platforms: both },
 
   { id: "billing", vendor: "tencent", title: "Billing", isImplemented: true, platforms: ["mobile"] },
-  { id: "cos", vendor: "tencent", title: "COS Buckets", isImplemented: true, platforms: ["mobile"] },
+  { id: "cos", vendor: "tencent", title: "COS Buckets", isImplemented: true, platforms: both },
   { id: "camUsers", vendor: "tencent", title: "CAM Users", isImplemented: true, platforms: ["mobile"] },
   { id: "camRoles", vendor: "tencent", title: "CAM Roles", isImplemented: true, platforms: ["mobile"] },
   { id: "cvm", vendor: "tencent", title: "CVM Instances", isImplemented: true, platforms: ["mobile"] },
@@ -77,6 +84,10 @@ export const RESOURCE_KINDS: ResourceKind[] = [
   { id: "cdb", vendor: "tencent", title: "CDB Databases", isImplemented: false, platforms: ["mobile"] },
   { id: "tencentEventBridge", vendor: "tencent", title: "EventBridge (CEB)", isImplemented: true, platforms: ["mobile"] },
   { id: "monitorAlarms", vendor: "tencent", title: "Cloud Monitor Alarms", isImplemented: false, platforms: ["mobile"] },
+
+  { id: "azureBlob", vendor: "azure", title: "Blob Containers", isImplemented: true, platforms: ["chrome"] },
+  { id: "oss", vendor: "alibaba", title: "OSS Buckets", isImplemented: true, platforms: ["chrome"] },
+  { id: "s3compatBuckets", vendor: "s3compat", title: "Buckets", isImplemented: true, platforms: ["chrome"] },
 
   { id: "gcpProjects", vendor: "gcp", title: "Projects", isImplemented: true, platforms: ["chrome"] },
   { id: "gcs", vendor: "gcp", title: "Cloud Storage", isImplemented: true, platforms: ["chrome"] },

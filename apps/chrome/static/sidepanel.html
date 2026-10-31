@@ -7,25 +7,21 @@
     <link rel="stylesheet" href="gcp.css" />
   </head>
   <body>
-    <nav id="sectionTabs" class="section-tabs" role="tablist" aria-label="Sections" hidden></nav>
-    <div id="sectionHost" class="section-host"></div>
+    <!-- One persistent header bar (back, title, per-screen actions) over a
+         stack of screen bodies — see src/app/navigator.ts. -->
+    <header id="appHeader" class="app-header">
+      <button type="button" id="navBackBtn" class="icon-btn nav-back" title="Back" aria-label="Back" hidden></button>
+      <img id="navBrand" class="nav-brand" src="icons/icon32.png" alt="" width="22" height="22" hidden />
+      <div class="nav-titles">
+        <h1 id="navTitle" class="nav-title"></h1>
+        <div id="navSubtitle" class="nav-subtitle" hidden></div>
+      </div>
+      <div id="navActions" class="nav-actions"></div>
+    </header>
+    <main id="screenHost" class="screen-host"></main>
 
-    <!-- Storage section markup, mounted by src/sidepanel/storage-section.ts. -->
+    <!-- Bucket browser markup, cloned per push by src/sidepanel/bucket-screen.ts. -->
     <template id="storageTemplate">
-      <header class="topbar">
-        <div class="brand" title="Storage">
-          <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
-          </svg>
-        </div>
-        <select id="connectionSelect" aria-label="Connection"></select>
-        <button id="addConnBtn" class="icon-btn" title="Add connection" aria-label="Add connection"></button>
-        <button id="manageBtn" class="icon-btn" title="Edit connection" aria-label="Edit connection"></button>
-        <button id="exportBtn" class="icon-btn" title="Export all connections" aria-label="Export all connections"></button>
-        <button id="importBtn" class="icon-btn" title="Import connections" aria-label="Import connections"></button>
-        <input type="file" id="importInput" accept="application/json" hidden />
-      </header>
-
       <div class="toolbar">
         <button id="refreshBtn" class="icon-btn" title="Refresh" aria-label="Refresh"></button>
         <button id="selectModeBtn" class="icon-btn" title="Select multiple" aria-label="Select multiple" disabled></button>
@@ -58,6 +54,7 @@
 
       <div id="status" class="status" hidden></div>
 
+      <div id="fileFilter" class="file-filter"></div>
       <div id="fileList" class="file-list"></div>
       <button id="loadMoreBtn" class="load-more" hidden>Load more…</button>
       <div id="listStats" class="list-stats" hidden></div>
@@ -67,25 +64,16 @@
       <form id="connectionForm" method="dialog">
         <h2 id="connectionModalTitle">Add connection</h2>
         <input type="hidden" id="connId" />
+        <!-- The vendor is picked in Home's "+" chooser; this carries its storage type. -->
+        <input type="hidden" id="connType" />
         <label class="field">
-          <span>Type</span>
-          <select id="connType">
-            <option value="s3">Amazon S3</option>
-            <option value="s3-compat">S3-compatible (R2, MinIO, …)</option>
-            <option value="azure">Azure Blob Storage</option>
-            <option value="gcs">Google Cloud Storage</option>
-            <option value="tencent-cos">Tencent Cloud COS</option>
-            <option value="alibaba-oss">Alibaba Cloud OSS</option>
-          </select>
+          <span>Name <em>(optional)</em></span>
+          <input id="connName" placeholder="e.g. Personal, Work" />
         </label>
         <p id="connTypeHint" class="hint"></p>
         <label class="field" id="connEndpointField">
           <span>Endpoint</span>
           <input id="connEndpoint" autocomplete="off" placeholder="e.g. abc123.r2.cloudflarestorage.com" />
-        </label>
-        <label class="field">
-          <span id="connBucketLabel">Bucket name</span>
-          <input id="connBucket" required autocomplete="off" placeholder="my-bucket" />
         </label>
         <label class="field" id="connAccessKeyField">
           <span id="connAccessKeyLabel">Access key ID</span>
@@ -104,14 +92,6 @@
         </label>
         <button type="button" id="connCredentialsFileBtn" class="link-btn">Load from file…</button>
         <input type="file" id="connCredentialsFile" accept=".json,application/json" hidden />
-        <label class="field">
-          <span>Key prefix <em>(optional, starting folder)</em></span>
-          <input id="connPrefix" placeholder="e.g. logs/2026/" />
-        </label>
-        <label class="field">
-          <span>Name <em>(optional, defaults to bucket name)</em></span>
-          <input id="connName" placeholder="e.g. Personal, Work" />
-        </label>
         <details class="advanced" id="connAdvanced">
           <summary>Advanced</summary>
           <label class="field" id="connRegionField">
@@ -119,6 +99,8 @@
             <input id="connRegion" placeholder="auto-detected from bucket" />
           </label>
         </details>
+        <!-- Resources checkboxes (+ optional bucket/prefix limit), built per vendor. -->
+        <div id="connResources"></div>
         <datalist id="tencentCosRegions">
           <option value="ap-beijing"></option>
           <option value="ap-nanjing"></option>
@@ -170,7 +152,6 @@
           <option value="me-east-1"></option>
         </datalist>
         <p class="hint">Keys are stored only in this browser (chrome.storage.local).</p>
-        <button type="button" id="connManageAllBtn" class="link-btn">Manage all connections…</button>
         <div id="connFormStatus" class="status" hidden></div>
         <div class="modal-actions">
           <button type="button" id="connDeleteBtn" class="btn danger" hidden>Delete</button>
@@ -179,15 +160,6 @@
           <button type="submit" id="connSaveBtn" class="btn primary">Save</button>
         </div>
       </form>
-    </dialog>
-
-    <dialog id="manageModal">
-      <h2>Manage connections</h2>
-      <ul id="manageList" class="manage-list"></ul>
-      <div class="modal-actions">
-        <span class="spacer"></span>
-        <button id="manageCloseBtn" class="btn primary">Close</button>
-      </div>
     </dialog>
 
     <dialog id="confirmDialog" class="alert-dialog">
@@ -273,6 +245,7 @@
         <button type="button" id="detailSaveBtn" class="icon-btn" hidden></button>
         <button type="button" id="detailShareBtn" class="icon-btn"></button>
         <button type="button" id="detailDownloadBtn" class="icon-btn"></button>
+        <button type="button" id="detailOpenBtn" class="icon-btn"></button>
         <button type="button" id="detailCopyBtn" class="icon-btn"></button>
         <button type="button" id="detailMoveBtn" class="icon-btn"></button>
         <button type="button" id="detailDeleteBtn" class="icon-btn danger-hover"></button>

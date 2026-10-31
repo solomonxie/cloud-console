@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "connections": [
+    {
+      "id": "4c1f2e3d-5a6b-4c7d-8e9f-0a1b2c3d4e5f",
+      "type": "s3",
+      "name": "Work AWS",
+      "resources": ["s3"],
+      "accessKeyId": "AKIAIOSFODNN7EXAMPLE",
+      "secretAccessKey": "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
+      "region": "us-east-1"
+    },
+    {
+      "id": "9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d",
+      "type": "alibaba-oss",
+      "name": "OSS media",
+      "storageScope": { "bucket": "media-sh", "prefix": "public/" },
+      "accessKeyId": "LTAI5tEXAMPLEEXAMPLE",
+      "secretAccessKey": "EXAMPLEsecretEXAMPLEsecret",
+      "region": "cn-shanghai"
+    }
+  ]
+}

@@ -12,14 +12,13 @@ core, to `apps/chrome/` otherwise.
 | File | Responsibility |
 |---|---|
 | `static/manifest.json` | MV3 manifest: side panel, permissions, icons |
-| `static/sidepanel.html` | markup: section switcher + host, the Storage section's `<template>`, `<dialog>` modals |
-| `static/sidepanel.css` | all styling, no preprocessor (`gcp.css` for the Google Cloud section) |
+| `static/sidepanel.html` | markup: the screen stack host, the bucket browser's `<template>`, `<dialog>` modals |
+| `static/sidepanel.css` | all styling, no preprocessor (`gcp.css` for the Google Cloud screens) |
 | `src/background.ts` | one call: opens side panel on action click |
-| `src/shell/registry.ts` | `registerSection()` — the list of top-level sections |
-| `src/shell/shell.ts` | `startShell()` — segmented switcher, lazy mount, remembers last section |
-| `src/sidepanel/main.ts` | entry: imports each section module, starts the shell |
-| `src/sidepanel/storage-section.ts` | registers "Storage", mounts its template, wires every module |
-| `src/sidepanel/state.ts` | the Storage section's `state` + `activeConnection()`/`rootPrefix()` |
+| `src/app/nav.ts` | stack navigator: `push()`/`pop()`/`home()`, shared screen header (back, title, subtitle, actions) |
+| `src/app/home.ts` | Home: one card per connection (storage + Google Cloud), the [＋] chooser, export/import |
+| `src/sidepanel/bucket-screen.ts` | the bucket browser as a pushed screen, mounts its template, wires every module |
+| `src/sidepanel/state.ts` | the bucket browser's `state` + `activeConnection()`/`rootPrefix()` |
 | `src/sidepanel/dom.ts` | `els` lookups, `setStatus()`/`withStatus()`, `escapeHtml()`, `formatDate()` |
 | `src/sidepanel/connections.ts` | picker, add/edit form (`TYPE_META`), manage list, export/import |
 | `src/sidepanel/browser.ts` | breadcrumb, listing/pagination, rows, multi-select, delete/upload/new folder |
@@ -30,6 +29,8 @@ core, to `apps/chrome/` otherwise.
 | `src/lib/store.ts` | connections CRUD in `chrome.storage.local` |
 | `src/lib/icons.ts` | inline-SVG icon set (`icon()`) + `iconForFileName()` by extension |
 | `src/lib/markdown.ts` | `renderMarkdown()` — dependency-free Markdown → HTML |
+| `src/gcp/screens.ts` | Google Cloud screens: Cloud Storage, VM instances, instance groups, secrets, and their detail screens |
+| `src/ui/search.ts` | `filterBox()` over loaded rows, project combobox, `matches()` |
 | `packages/core/src/aws/sigv4.ts` | `signRequest()` — AWS Signature V4; `presignUrl()` — query-string presigning |
 | `packages/core/src/gcp/auth.ts` | `getAccessToken()` — JWT Bearer / refresh-token flow; `signedUrlV4()`; `credentialsProblem()` |
 | `packages/core/src/storage/types.ts` | `StorageClient` interface, `ListPage`, `StorageObject` |
@@ -44,7 +45,7 @@ core, to `apps/chrome/` otherwise.
 | `packages/core/src/storage/format.ts`, `preview.ts` | `formatSize()`; `previewKind()`, `isTooLargeForTextPreview()`, `mimeForName()` |
 | `packages/core/src/util/base64.ts` | pure-JS base64 (Azure keys/signatures) |
 | `build.mjs` | esbuild: bundles `src/` (+ core) into `dist/`, copies `static/` |
-| `scripts/gen_icons.py` | rasterizes `static/icons/icon.svg` into `icon{16,32,48,128}.png` via headless Chrome |
+| `scripts/gen_icons.py` | `icon{16,32,48,128}.png` from the mobile app icon: headless Chrome rounds the corners, `sips` resizes |
 
 ## SigV4 signer (`core/aws/sigv4.ts`)
 
@@ -176,27 +177,26 @@ polling needed (unlike Azure's async copy).
 
 ## Storage (`src/lib/store.ts`, `core/storage/connection.ts`)
 
-Single `chrome.storage.local` key `"connections"`, an array. Plus a separate
-`"lastConnectionId"` key so the panel reopens on the last-used connection,
-and `"lastSectionId"` for the last-open section. The stored shape is
-`StorageConnection` — unchanged from the plain-JS extension, so saved
+Single `chrome.storage.local` key `"connections"`, an array (Google Cloud
+accounts live under their own `"gcpAccounts"` key, `src/gcp/accounts.ts`).
+The stored shape is `StorageConnection` — unchanged from the plain-JS extension, so saved
 connections and old export files keep loading.
 `exportConnections()`/`parseImport()` round-trip `{ version: 1, connections: [...] }`
 as downloadable/importable JSON — secrets included, plaintext, by design (see
 design.md).
 
-## Shell (`src/shell/`)
+## Navigation (`src/app/`)
 
-`main.ts` imports every section module (each calls `registerSection()`),
-then `startShell()` renders `#sectionTabs` — a segmented control, hidden
-while only one section exists — and mounts the last-used (or first)
-section into `#sectionHost`. A section's `render(container)` runs once, on
-first open; switching away sets `hidden` on its container, so listings,
-selections and the clipboard survive a round trip. The Storage section's
-markup is a `<template>` cloned into its container; its `<dialog>`s stay at
-body level.
+`nav.ts` is a stack navigator, like the mobile app's: Home → a resource
+screen → a detail screen. A `Screen` gets an empty body and the shared
+header on `push()`; going back pops it and re-shows the previous screen
+exactly as it was left (its DOM is only hidden, never rebuilt). `home.ts`
+renders the root: one card per connection, any vendor, each row pushing
+that resource's screen — `bucket-screen.ts` for a storage connection,
+`gcp/screens.ts` for a Google Cloud account's resources. Long lists use
+`ui/search.ts`: a filter box over loaded rows, and a combobox for projects.
 
-## UI (`src/sidepanel/`)
+## Bucket browser (`src/sidepanel/`)
 
 Single mutable `state` object (`connections`, `activeId`, `client`, `bucket`,
 `prefix`, `token`), re-rendered imperatively — no framework, no virtual DOM.
@@ -310,12 +310,12 @@ of losing the edit — see `closeDetailModal()`.
    using the `withStatus()` helper so busy/error states show in the status
    bar.
 
-## Adding a section
+## Adding a screen
 
-Create a module that calls `registerSection({ id, title, icon, render })`
-(`icon` is a name from `src/lib/icons.ts`) and import it from
-`src/sidepanel/main.ts`. `render` gets an empty container that fills the
-panel below the switcher; build into it with plain DOM.
+Implement a `Screen` (`{ title, subtitle?, render(body, header) }`, see
+`src/app/nav.ts`) and `nav.push()` it from a row on Home or on another
+screen. `render` gets an empty body below the header; build into it with
+plain DOM, and put icon buttons in `header.actions`.
 
 ## Testing this locally
 

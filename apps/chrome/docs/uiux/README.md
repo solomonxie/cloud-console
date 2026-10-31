@@ -11,14 +11,29 @@ button · `›` opens · `⟳` working · `←` annotation · `!` destructive ·
 
 ## Surface map
 
+A stack, like the mobile app: Home → resource screen → detail screen.
+Every pushed screen has the same header (back, title, subtitle, actions);
+back pops to the previous screen exactly as it was left.
+
 ```
  Chrome toolbar icon ─▶ side panel (the entire UI)
    │
-   ├ header    connection ▾   [＋] [⚙] [⬆] [⬇]
-   │              ＋/⚙ ─▶ [connection dialog] ─▶ [manage connections]
-   │              ⬆ export all · ⬇ import (a JSON file)
+   └ Home      ☁ Cloud Console              [＋] [⬆] [⬇]
+       │          ＋ ─▶ [add chooser] ─▶ [connection dialog] | [Google Cloud account]
+       │          ⬆ export all · ⬇ import (a JSON file)
+       ├ filter box (only with many connections)
+       ├ storage card   [S3] Personal · Amazon S3          [✎]
+       │   └ my-bucket                                  › ─▶ bucket browser
+       └ GCP card       [GCP] Work · Google Cloud          [✎]
+           ├ Cloud Storage    › ─▶ buckets of the project ─▶ bucket browser
+           ├ VM Instances     › ─▶ instance list ─▶ instance detail
+           ├ Instance Groups  › ─▶ group list ─▶ group detail ─▶ instance detail
+           └ Secrets          › ─▶ secret list ─▶ secret detail
+
+ bucket browser   [←] my-bucket / Personal          [actions]
    ├ toolbar   [⟳] [☑] [📋]            [New folder] [Upload]
    ├ breadcrumb  bucket › logs › 2026
+   ├ filter box (narrows the loaded rows)
    ├ clipboard pill (only while something is cut/copied)
    ├ selection bar (only in select mode)
    ├ status line (only while working, or on an error)
@@ -27,13 +42,17 @@ button · `›` opens · `⟳` working · `←` annotation · `!` destructive ·
    ├ [ Load more… ]
    └ stats      3 folders · 128 files · 1.2 GB · more not loaded
 
- dialogs: connection · manage · confirm · prompt · share · detail
+ GCP list screens   project combobox (type to filter, or a project ID)
+                    + filter box over the loaded rows
+
+ dialogs: add chooser · connection · GCP account · manage · confirm ·
+          prompt · share · detail
 ```
 
 ## Files
 
 | File | Covers |
 |---|---|
-| `panel.md` | header, toolbar, breadcrumb, list, stats, empty states |
+| `panel.md` | Home, screen header, stack, bucket browser toolbar/list/stats, GCP screens, empty states |
 | `objects.md` | detail sheet, preview/edit, share, upload, clipboard, bulk |
-| `connections.md` | add/edit connection per provider, manage, import/export |
+| `connections.md` | the + chooser, add/edit connection per provider, manage, import/export |

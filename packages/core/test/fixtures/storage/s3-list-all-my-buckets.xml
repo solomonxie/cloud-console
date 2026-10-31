@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListAllMyBucketsResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
+  <Owner>
+    <ID>79a59df900b949e55d96a1e698fbacedfd6e09d98eacf8f8d5218e7cd47ef2be</ID>
+    <DisplayName>example</DisplayName>
+  </Owner>
+  <Buckets>
+    <Bucket>
+      <Name>zeta-logs</Name>
+      <CreationDate>2026-04-01T12:00:00.000Z</CreationDate>
+    </Bucket>
+    <Bucket>
+      <Name>alpha-photos</Name>
+      <CreationDate>2025-06-15T08:30:00.000Z</CreationDate>
+    </Bucket>
+  </Buckets>
+</ListAllMyBucketsResult>

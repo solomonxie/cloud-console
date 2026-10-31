@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListAllMyBucketsResult>
+  <Owner>
+    <ID>qcs::cam::uin/100000000001:uin/100000000001</ID>
+    <DisplayName>100000000001</DisplayName>
+  </Owner>
+  <Buckets>
+    <Bucket>
+      <Name>logs-1250000000</Name>
+      <Location>ap-guangzhou</Location>
+      <CreationDate>2026-03-12T04:20:10Z</CreationDate>
+      <BucketType>cos</BucketType>
+    </Bucket>
+    <Bucket>
+      <Name>assets-1250000000</Name>
+      <Location>ap-singapore</Location>
+      <CreationDate>2025-12-30T23:59:59Z</CreationDate>
+      <BucketType>cos</BucketType>
+    </Bucket>
+  </Buckets>
+</ListAllMyBucketsResult>
