@@ -153,6 +153,10 @@ enum CostExplorerClient {
                 }
                 .filter { abs($0.amount) >= 0.005 }
                 .sorted { $0.amount > $1.amount }
+            } catch AWSQueryError.awsError(_, let code, let message) where code.contains("AccessDenied") && message.contains("opt-in") {
+                note = "Per-resource costs need \"Resource-level data\" turned on in the payer account's Cost Explorer settings."
+            } catch AWSQueryError.awsError(_, let code, _) where code.contains("AccessDenied") {
+                note = "This key can't read per-resource costs — it needs the ce:GetCostAndUsageWithResources permission."
             } catch {
                 note = "Per-resource costs need resource-level data turned on in Cost Explorer preferences. (\(error.localizedDescription))"
             }
