@@ -18,4 +18,6 @@ Chrome and Hermes: no `crypto.subtle`/`DOMParser`), `packages/demo`
   rows (App Review 2.1/2.2). Keep it in `packages/core/src/catalog.ts`
   with `isImplemented: false`; `resourceKinds()` and `availableVendors()`
   filter it out, per platform. Build order: S3 → EC2 → Lambda → RDS → more.
-- **No Tencent in Chrome this version** beyond COS storage.
+- **Chrome mirrors the mobile app**: every resource kind the mobile app has
+  (AWS and Tencent included) is offered in Chrome too, plus Chrome-only ones
+  (GCP, Azure, Alibaba OSS, S3-compatible).

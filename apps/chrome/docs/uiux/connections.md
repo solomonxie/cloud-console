@@ -1,71 +1,95 @@
 # Connections
 
-Home lists both kinds side by side — storage connections and Google Cloud
-accounts are each one card. A card's [✎] opens the matching edit form.
+A connection is a **cloud vendor + one key** — never a bucket. Its buckets
+are listed from the account; the form only optionally limits it to one
+bucket (and a prefix inside it). Home shows one card per connection, its
+rows the resources picked in the form. A card's [✎] opens the matching
+edit form.
 
 ## Add  (the [＋] chooser)
 
-Home's [＋] first asks what kind of thing to add — the two forms take
-different credentials, so it's a choice, not a type dropdown that mixes
-them:
-
-```
-┌──────────────────────────────────────────────┐
-│ Add                                          │
-│ 🛢 Storage bucket                         ›  │ ← S3, S3-compatible/R2,
-│    S3, R2, Azure Blob, GCS, COS, OSS         │   Azure, GCS, COS, OSS
-│ ☁ Google Cloud account                   ›  │ ← service account key or
-│    VMs, instance groups, buckets, secrets    │   gcloud ADC
-│                              ( Cancel )      │
-└──────────────────────────────────────────────┘
- Storage bucket       ─▶ the connection form below
- Google Cloud account ─▶ name + credentials JSON (paste or Load from file…),
-                         checked against Google before it's saved
-```
-
-## Add / edit a storage connection  (`#connectionModal`)
-
-One form for six providers: the fields that don't apply are hidden, and the
-labels change — never a separate form per provider.
+Home's [＋] lists cloud vendors, like the mobile app's provider picker.
+Only vendors with at least one implemented Chrome resource kind appear
+(`availableVendors("chrome")` in packages/core/src/catalog.ts) — never a
+"coming soon" row:
 
 ```
 ┌──────────────────────────────────────────────┐
 │ Add connection                               │
-│ Type                        Amazon S3     ▾  │
-│ <one-line hint for the chosen type>          │
+│ ☁ Amazon Web Services                    ›  │ ← accent per vendor
+│    S3 buckets                                │
+│ ☁ Google Cloud                           ›  │ ─▶ account dialog
+│    Cloud Storage, VMs, Cloud Run, secrets…   │    (gcp/screens.ts)
+│ ☁ Microsoft Azure                        ›  │
+│    Blob containers                           │
+│ ☁ Alibaba Cloud                          ›  │
+│    OSS buckets                               │
+│ ☁ Tencent Cloud                          ›  │
+│    COS, CVM, CAM, EventBridge, billing       │
+│ ☁ S3-compatible                          ›  │
+│    Cloudflare R2, MinIO…                     │
+│                              ( Cancel )      │
+└──────────────────────────────────────────────┘
+ Google Cloud ─▶ name + credentials (Link a file / Paste JSON) + Resources
+ any other    ─▶ the connection form below, for that vendor
+```
+
+## Add / edit a storage connection  (`#connectionModal`)
+
+One form, shown for the vendor picked in the chooser: no type dropdown,
+the title names the vendor, and only that vendor's key fields show.
+**No bucket field** — buckets are listed from the account.
+
+```
+┌──────────────────────────────────────────────┐
+│ Add Amazon Web Services                      │
+│ Name (optional)     e.g. Personal, Work      │
+│ <one-line hint for the vendor>               │
 │ Endpoint            e.g. abc123.r2.cloud…    │ ← S3-compatible only
-│ Bucket name         my-bucket                │ ← label changes per type
-│ Access key ID                                │   (Azure: account/… )
-│ Secret access key   ••••••••         [👁]    │
-│ Service account JSON key                     │ ← GCS only
-│ ┌──────────────────────────────────────────┐ │
-│ │ {"type": "service_account", …}           │ │
-│ └──────────────────────────────────────────┘ │
-│ Key prefix (optional, starting folder)       │
-│                     e.g. logs/2026/          │ ← becomes the panel's root;
-│ Name (optional, defaults to bucket name)     │   it never navigates above it
-│                     e.g. Personal, Work      │
-│ › Advanced                                   │ ← collapsed for S3: Region,
-│     Region        auto-detected from bucket  │   "auto-detected" placeholder
-│ Keys are stored only in this browser         │   reads as optional; forced
-│ (chrome.storage.local).                      │   open + required for COS/OSS
-│ ( Manage all connections… )                  │
+│ Access key ID                                │ ← per vendor: SecretId,
+│ Secret access key   ••••••••         [👁]    │   AccessKey ID/secret;
+│                                              │   Azure: connection string
+│ › Advanced                                   │ ← AWS: region, optional;
+│     Region        auto-detected per bucket   │   forced open + required
+│                                              │   for COS/OSS
+│ ┌ Resources ───────────────────────────────┐ │
+│ │ [x] S3 Buckets                           │ │ ← one per implemented kind
+│ │     Limit to (optional) — leave empty to │ │   (resourceKinds(vendor,
+│ │     list every bucket this key can see.  │ │   "chrome")); all checked
+│ │     Bucket name     all buckets          │ │   by default, ≥1 required
+│ │     Prefix          e.g. logs/2026/      │ │ ← enabled once a bucket is
+│ └──────────────────────────────────────────┘ │   typed; the hard root
+│ Keys are stored only in this browser         │
+│ (chrome.storage.local).                      │
 │ ⊗ <error, inline>                            │
 │ [ Delete ]!            ( Cancel )  [[ Save ]] │ ← Delete only when editing
 └──────────────────────────────────────────────┘
 ```
 
-Six types, one shape:
+Save checks the key against the provider first: with a "Limit to" bucket
+it lists that bucket under the prefix (works for keys without ListBuckets);
+otherwise it lists the account's buckets.
 
 ```
- Amazon S3                  bucket · access key · secret
- S3-compatible (R2, MinIO…) + endpoint
- Azure Blob Storage         connection string parsed down to the same fields
- Google Cloud Storage       service account JSON parsed down to the same
-                            fields + serviceAccountJson
- Tencent Cloud COS          bucket (incl. APPID) · SecretId/Key · + region
- Alibaba Cloud OSS          bucket · AccessKey ID/secret · + region
+ Vendor                key fields                         storage type
+ Amazon Web Services   access key ID · secret             s3
+ Microsoft Azure       connection string                  azure
+ Alibaba Cloud         AccessKey ID/secret · region       alibaba-oss
+ Tencent Cloud         SecretId/SecretKey · region        tencent-cos
+ S3-compatible         endpoint · key · secret            s3-compat
 ```
+
+Stored on the connection: `resources` (absent = all) and `storageScope:
+{ bucket?, prefix? }`. Connections saved when each was pinned to one bucket
+load as `storageScope: { bucket, prefix }` — they still open straight into
+that bucket.
+
+## Google Cloud account dialog
+
+Name, credentials (Link a file / Paste JSON), then the same Resources
+section: a checkbox per implemented GCP kind (Cloud Storage, VM Instances,
+Instance Groups, Cloud Run, Secrets — straight from the catalog). Home
+shows only the checked ones.
 
 ## Manage  (`#manageModal`)
 

@@ -4,12 +4,15 @@
 // screens. Everything runs with the credential's own IAM permissions,
 // straight against Google's APIs.
 
-import type { GoogleCredentials } from "@cloud-console/core/gcp/auth";
+import { resourceKinds } from "@cloud-console/core/catalog";
+import { impersonatedEmail, type GoogleCredentials } from "@cloud-console/core/gcp/auth";
 import { listProjects, type GcpProject } from "@cloud-console/core/gcp/projects";
 import type { Screen } from "../app/nav.ts";
+import { resourcesField } from "../app/resources-field.ts";
 import { decorateFavorites } from "../lib/favorites.ts";
 import { applyFilter, combobox, filterBox, type ComboOption } from "../ui/search.ts";
 import {
+  accountCredentials,
   credentialsLabel,
   deleteAccount,
   newAccountId,
@@ -18,8 +21,8 @@ import {
   upsertAccount,
   type GcpAccount,
 } from "./accounts.ts";
-import { renderBuckets } from "./buckets-view.ts";
-import { ADC_PATH, credentialsFor, deleteHandle, pickCredentialsFile, readHandle, saveHandle } from "./credentials-file.ts";
+import { openGcsBucket, parseGcsPath, pinnedPathsList, renderBuckets } from "./buckets-view.ts";
+import { ADC_LINK_COMMAND, ADC_LINK_NAME, ADC_PATH, credentialsFor, primeLinkedFile, deleteHandle, pickCredentialsFile, readHandle, saveHandle } from "./credentials-file.ts";
 import { cachedProjects, forgetAccount } from "./cache.ts";
 import { consoleLinks } from "./console-links.ts";
 import { favoritesScope, type ListResult, type ViewContext } from "./context.ts";
@@ -27,9 +30,10 @@ import { confirmDialog, emptyState, externalLink, h, icon, iconButton, statusLin
 import { describeError } from "./errors.ts";
 import { renderGroups } from "./groups-view.ts";
 import { renderInstances } from "./instances-view.ts";
+import { renderJobs, renderServices } from "./run-view.ts";
 import { renderSecrets } from "./secrets-view.ts";
 
-export type GcpKind = "gcs" | "gceInstances" | "gceInstanceGroups" | "gcpSecrets";
+export type GcpKind = "gcs" | "gceInstances" | "gceInstanceGroups" | "cloudRunServices" | "cloudRunJobs" | "gcpSecrets";
 
 interface KindInfo {
   title: string;
@@ -43,7 +47,9 @@ const KINDS: Record<GcpKind, KindInfo> = {
     title: "Cloud Storage",
     filter: "Filter by name or location",
     consoleLink: consoleLinks.buckets,
-    render: (c, ctx, account) => renderBuckets(c, ctx, account.credentialsJson),
+    // The effective credentials (impersonation included), kept in memory
+    // only for the bucket screens opened from here.
+    render: (c, ctx) => renderBuckets(c, ctx, JSON.stringify(ctx.creds)),
   },
   gceInstances: {
     title: "VM Instances",
@@ -56,6 +62,18 @@ const KINDS: Record<GcpKind, KindInfo> = {
     filter: "Filter by name or location",
     consoleLink: consoleLinks.instanceGroups,
     render: (c, ctx) => renderGroups(c, ctx),
+  },
+  cloudRunServices: {
+    title: "Cloud Run Services",
+    filter: "Filter by name, region, image, URL…",
+    consoleLink: consoleLinks.runServices,
+    render: (c, ctx) => renderServices(c, ctx),
+  },
+  cloudRunJobs: {
+    title: "Cloud Run Jobs",
+    filter: "Filter by name, region, image…",
+    consoleLink: consoleLinks.runJobs,
+    render: (c, ctx) => renderJobs(c, ctx),
   },
   gcpSecrets: {
     title: "Secrets",
@@ -72,6 +90,9 @@ function projectLabel(p: GcpProject): string {
 // The credential's own project: a service account may lack
 // resourcemanager.projects.list but still work inside it.
 function ownProject(creds: GoogleCredentials): string | undefined {
+  if (creds.type === "impersonated_service_account") {
+    return /@([^.]+)\.iam\.gserviceaccount\.com$/.exec(impersonatedEmail(creds))?.[1] ?? ownProject(creds.source_credentials);
+  }
   return creds.type !== "authorized_user" ? creds.project_id : creds.quota_project_id;
 }
 
@@ -87,17 +108,36 @@ export function gcpResourceScreen(account: GcpAccount, kind: GcpKind): Screen {
   let current: ListResult | null = null;
 
   const consoleSlot = h("span", { class: "gcp-console-slot" });
+  // On Cloud Storage the project only picks whose buckets are listed; the
+  // main box is the bucket search (see bucketSearch below).
   const projectBox = combobox({
     placeholder: "Search projects or type a project ID",
     options: [],
     allowFreeText: true,
-    onPick: (v) => selectProject(v),
+    onPick: (v) => selectProject(v, true),
   });
   projectBox.setDisabled(true);
   const listEl = h("div", { class: "gcp-list-body" });
   const projectNote = h("div", {});
+  // Cloud Storage: buckets/folders starred from a bucket screen, above the
+  // project picker since they don't depend on it.
+  const pinnedEl = h("div", {});
+
+  function openPath(bucket: string, prefix: string): void {
+    if (hasCreds) openGcsBucket(account.id, JSON.stringify(creds), bucket, prefix, account.name);
+  }
+
+  let pinnedRows: HTMLElement[] = [];
+  async function renderPinned(): Promise<void> {
+    if (kind !== "gcs") return;
+    const list = await pinnedPathsList(account.id, openPath);
+    pinnedRows = list ? [...list.querySelectorAll<HTMLElement>(".row")] : [];
+    applyFilter(pinnedRows, query);
+    pinnedEl.replaceChildren(...(list ? [list] : []));
+  }
 
   function updateStats(): void {
+    applyFilter(pinnedRows, query);
     if (!current) return;
     const total = current.rows.length;
     const shown = applyFilter(current.rows, query);
@@ -112,6 +152,33 @@ export function gcpResourceScreen(account: GcpAccount, kind: GcpKind): Screen {
   });
   filter.hidden = true;
 
+  // Cloud Storage's main box: filters pinned and listed buckets as you type,
+  // and Enter opens what's typed as a bucket or gs:// path — any bucket this
+  // account can reach, in any project (e.g. a customer's, shared with it).
+  // A folder in the path becomes the hard root of browsing.
+  const typedPath = h("div", { class: "gcp-typed-path", hidden: true });
+  const bucketSearch = (() => {
+    const box = filterBox("Search buckets or type gs://bucket/folder/", (q) => {
+      query = q;
+      updateStats();
+      const path = parseGcsPath(q);
+      typedPath.hidden = !path;
+      if (path) typedPath.textContent = `Enter opens gs://${path.bucket}/${path.prefix}`;
+    });
+    box.querySelector("input")!.addEventListener("keydown", (e) => {
+      if (e.key !== "Enter") return;
+      const path = parseGcsPath(query);
+      if (path) openPath(path.bucket, path.prefix);
+    });
+    return box;
+  })();
+
+  const projectBar =
+    kind === "gcs"
+      ? h("div", { class: "gcp-project-bar gcp-project-inline" }, h("span", {}, "Buckets in"), projectBox.el)
+      : h("div", { class: "gcp-project-bar" }, projectBox.el);
+  const top: HTMLElement[] = kind === "gcs" ? [bucketSearch, typedPath, pinnedEl, projectBar, projectNote] : [projectBar, projectNote, filter];
+
   return {
     title: info.title,
     subtitle: account.name,
@@ -121,16 +188,20 @@ export function gcpResourceScreen(account: GcpAccount, kind: GcpKind): Screen {
       // A linked file is re-read on refresh too, so a fresh gcloud login is
       // picked up without leaving the screen.
       header.actions.append(
-        iconButton("refresh", "Refresh", () => void (account.credentialsFile || !hasCreds ? loadCredentials() : reload(true))),
+        iconButton("refresh", "Refresh", () => {
+          primeLinkedFile(account);
+          void (account.credentialsFile || !hasCreds ? loadCredentials() : reload(true));
+        }),
         consoleSlot
       );
-      body.append(h("div", { class: "gcp-project-bar" }, projectBox.el), projectNote, filter, listEl);
-      void loadCredentials();
+      body.append(...top, listEl);
+      void renderPinned().then(() => loadCredentials());
     },
     onLeave() {
       generation++;
     },
     onShow() {
+      void renderPinned(); // a star may have changed on the bucket screen
       if (!changed) return;
       changed = false;
       void reload(true);
@@ -142,7 +213,7 @@ export function gcpResourceScreen(account: GcpAccount, kind: GcpKind): Screen {
   async function loadCredentials(): Promise<void> {
     try {
       account.credentialsJson = await credentialsFor(account, listEl);
-      creds = parseCredentials(account.credentialsJson);
+      creds = accountCredentials(account.credentialsJson, account.impersonate);
       hasCreds = true;
     } catch (err) {
       listEl.replaceChildren(statusLine("error", (err as Error).message));
@@ -175,6 +246,14 @@ export function gcpResourceScreen(account: GcpAccount, kind: GcpKind): Screen {
         ? statusLine("info", `${describeError(listError, "Couldn't list projects")} You can still type a project ID above.`)
         : ""
     );
+    // Cloud Storage with pins: they are what this account is for (often a
+    // bucket in someone else's project), so don't list a project's buckets
+    // nobody asked for — that's usually a permission error. Pick one below.
+    if (kind === "gcs" && pinnedRows.length) {
+      projectBox.setOptions(options, "");
+      listEl.replaceChildren();
+      return;
+    }
     if (!wanted) {
       listEl.replaceChildren(
         emptyState("cloud", "No projects visible", "This credential can't list any project. Type a project ID above, or see docs/gcp-access.md for the roles it needs.")
@@ -184,10 +263,12 @@ export function gcpResourceScreen(account: GcpAccount, kind: GcpKind): Screen {
     selectProject(wanted);
   }
 
-  function selectProject(id: string): void {
+  // Only a project the user picked is remembered, not the first one listed
+  // (which may be one this account can't do anything in).
+  function selectProject(id: string, picked = false): void {
     projectId = id;
     consoleSlot.replaceChildren(externalLink(info.consoleLink(id), `Open ${info.title} in Google Cloud console`));
-    if (account.lastProjectId !== id) {
+    if (picked && account.lastProjectId !== id) {
       account.lastProjectId = id;
       void rememberProject(account.id, id);
     }
@@ -217,12 +298,19 @@ export function gcpResourceScreen(account: GcpAccount, kind: GcpKind): Screen {
     current = result;
     filter.hidden = !result;
     updateStats();
+    if (kind === "gcs" && result) applyFilter(result.rows, query);
     // Rows carry data-fav-id: star each and pin favorites on top.
     if (result) void decorateFavorites(favoritesScope(ctx, kind), result.rows);
   }
 }
 
 // --- Add / edit account dialog ----------------------------------------------
+
+// The account's resource kinds as Home rows: every implemented Chrome GCP
+// kind this file can render (the project picker is part of each screen).
+export function gcpHomeKinds() {
+  return resourceKinds("gcp", "chrome").filter((k) => k.id in KINDS);
+}
 
 export function openGcpAccountDialog(existing: GcpAccount | undefined, onSaved: () => void): void {
   const dialog = h("dialog", { class: "gcp-dialog gcp-account-dialog" });
@@ -245,9 +333,9 @@ export function openGcpAccountDialog(existing: GcpAccount | undefined, onSaved: 
   const fileName = h("code", { class: "gcp-file-name" }, existing?.credentialsFile ?? "No file linked");
   const pickBtn = h("button", { type: "button", class: "btn" }, icon("key"), existing?.credentialsFile ? "Change file…" : "Link file…");
   pickBtn.addEventListener("click", async () => {
-    // The picker can't be opened at a path; put the usual one on the
-    // clipboard so ⌘⇧G + paste gets there in one step.
-    await navigator.clipboard.writeText(ADC_PATH).catch(() => undefined);
+    // Chrome refuses files under ~/.config ("contains system files"), so
+    // put the one-time hard-link command on the clipboard.
+    await navigator.clipboard.writeText(ADC_LINK_COMMAND).catch(() => undefined);
     try {
       const handle = await pickCredentialsFile();
       if (!handle) return;
@@ -271,7 +359,7 @@ export function openGcpAccountDialog(existing: GcpAccount | undefined, onSaved: 
     h(
       "p",
       { class: "hint" },
-      `Usually ${ADC_PATH} (from \`gcloud auth application-default login\`). In the picker press ⌘⇧G and paste — the path is already on your clipboard. Read fresh each time it's used; Chrome asks first, and its "Allow on every visit" stops the asking. Never copied or stored.`
+      `Usually ${ADC_PATH} (from \`gcloud auth application-default login\`). Chrome won't open files inside ~/.config, so hard-link it out once — the command is on your clipboard; run it in a terminal, then pick ~/${ADC_LINK_NAME} (⌘⇧H in the picker jumps home; ⌘⇧. shows hidden files). gcloud rewrites the file in place, so the link stays current. Read fresh each time it's used; Chrome asks first, and its "Allow on every visit" stops the asking. Never copied or stored.`
     )
   );
   const pasteField = h(
@@ -298,6 +386,30 @@ export function openGcpAccountDialog(existing: GcpAccount | undefined, onSaved: 
   }
   setSource(source);
 
+  // Optional service account to act as, like gcloud's
+  // --impersonate-service-account.
+  const impersonateInput = h("input", {
+    type: "email",
+    autocomplete: "off",
+    spellcheck: "false",
+    placeholder: "name@project.iam.gserviceaccount.com",
+    value: existing?.impersonate ?? "",
+  });
+  const impersonateField = h(
+    "div",
+    { class: "field" },
+    h("label", { class: "field" }, h("span", {}, "Impersonate service account (optional)"), impersonateInput),
+    h(
+      "p",
+      { class: "hint" },
+      "Act as this service account, like gcloud's --impersonate-service-account. The credentials above need Service Account Token Creator on it; every call then runs with its permissions."
+    )
+  );
+
+  // Which of the account's resource kinds Home shows (catalog-driven; the
+  // project picker isn't a row of its own).
+  const resources = resourcesField({ kinds: gcpHomeKinds(), selected: existing?.resources });
+
   const saveBtn = h("button", { type: "submit", class: "btn primary" }, existing ? "Save" : "Add");
   const close = () => {
     dialog.close();
@@ -312,6 +424,8 @@ export function openGcpAccountDialog(existing: GcpAccount | undefined, onSaved: 
     sourceTabs,
     fileField,
     pasteField,
+    impersonateField,
+    resources.el,
     h(
       "div",
       { class: "modal-actions" },
@@ -349,11 +463,16 @@ export function openGcpAccountDialog(existing: GcpAccount | undefined, onSaved: 
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
+    const chosen = resources.value();
+    if (!chosen.ok) {
+      status.replaceChildren(statusLine("error", chosen.error));
+      return;
+    }
     let json: string;
     let creds: GoogleCredentials;
     try {
       json = await currentJson();
-      creds = parseCredentials(json);
+      creds = accountCredentials(json, impersonateInput.value.trim() || undefined);
     } catch (err) {
       status.replaceChildren(statusLine("error", (err as Error).message));
       return;
@@ -363,8 +482,10 @@ export function openGcpAccountDialog(existing: GcpAccount | undefined, onSaved: 
     try {
       // Validate by actually listing projects. A service account without
       // project-list permission still gets saved if it has a project_id.
+      // An impersonated account's token is minted first, so a missing Token
+      // Creator grant shows up here rather than on first use.
       await listProjects(creds).catch((err: unknown) => {
-        if (creds.type !== "authorized_user" && creds.project_id) return [];
+        if (creds.type !== "authorized_user" && creds.type !== "impersonated_service_account" && creds.project_id) return [];
         throw err;
       });
     } catch (err) {
@@ -380,7 +501,9 @@ export function openGcpAccountDialog(existing: GcpAccount | undefined, onSaved: 
       // A linked account keeps no copy — the file is read on each use.
       credentialsJson: linked ? "" : json,
       credentialsFile: linked ? (picked?.name ?? existing?.credentialsFile) : undefined,
+      ...(impersonateInput.value.trim() ? { impersonate: impersonateInput.value.trim() } : {}),
       lastProjectId: existing?.lastProjectId,
+      ...(chosen.resources ? { resources: chosen.resources } : {}),
     };
     if (linked && picked) await saveHandle(account.id, picked);
     if (!linked) await deleteHandle(account.id);

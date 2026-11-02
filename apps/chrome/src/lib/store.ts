@@ -1,6 +1,6 @@
 // Storage connections (name + keys) are kept only in chrome.storage.local —
 // never synced, never sent anywhere except directly to the provider they name.
-import type { StorageConnection } from "@cloud-console/core/storage/connection";
+import { withStorageScope, type StorageConnection } from "@cloud-console/core/storage/connection";
 
 const CONNECTIONS_KEY = "connections";
 
@@ -10,9 +10,13 @@ export async function getConnections(): Promise<StorageConnection[]> {
   // Self-heal: earlier versions of the connection form could leave behind
   // entries with neither a name nor a bucket (nothing to identify or browse
   // with) — prune those from storage itself instead of showing blank rows.
-  const valid = connections.filter((c) => c.bucket || c.name);
-  if (valid.length !== connections.length) await saveConnections(valid);
-  return valid;
+  // Connections saved when each was pinned to one bucket (top-level
+  // bucket+prefix) are migrated to vendor-level ones limited to that bucket
+  // (storageScope), and written back once.
+  const valid = connections.filter((c) => c.bucket || c.storageScope?.bucket || c.name);
+  const migrated = valid.map(withStorageScope);
+  if (valid.length !== connections.length || migrated.some((c, i) => c !== valid[i])) await saveConnections(migrated);
+  return migrated;
 }
 
 async function saveConnections(connections: StorageConnection[]): Promise<StorageConnection[]> {

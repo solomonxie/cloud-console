@@ -17,6 +17,12 @@ export const consoleLinks = {
   secrets: (project: string) => `${CONSOLE}/security/secret-manager${q(project)}`,
   secret: (project: string, secretId: string) =>
     `${CONSOLE}/security/secret-manager/secret/${encodeURIComponent(secretId)}/versions${q(project)}`,
+  runServices: (project: string) => `${CONSOLE}/run${q(project)}`,
+  runService: (project: string, region: string, service: string) =>
+    `${CONSOLE}/run/detail/${encodeURIComponent(region)}/${encodeURIComponent(service)}/metrics${q(project)}`,
+  runJobs: (project: string) => `${CONSOLE}/run/jobs${q(project)}`,
+  runJob: (project: string, region: string, job: string) =>
+    `${CONSOLE}/run/jobs/details/${encodeURIComponent(region)}/${encodeURIComponent(job)}/executions${q(project)}`,
   buckets: (project: string) => `${CONSOLE}/storage/browser${q(project)}`,
   bucket: (project: string, bucket: string) => `${CONSOLE}/storage/browser/${encodeURIComponent(bucket)}${q(project)}`,
 };

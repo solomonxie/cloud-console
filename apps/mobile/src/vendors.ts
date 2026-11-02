@@ -19,6 +19,8 @@ export const KIND_ICON: Record<ResourceKindId, string> = {
   cvm: "server.rack",
   gceInstances: "server.rack",
   gceInstanceGroups: "server.rack",
+  cloudRunServices: "shippingbox.fill",
+  cloudRunJobs: "play.rectangle.fill",
   lambda: "bolt.fill",
   scf: "bolt.fill",
   rds: "cylinder.split.1x2.fill",

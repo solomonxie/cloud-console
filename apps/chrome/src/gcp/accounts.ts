@@ -2,7 +2,8 @@
 // gcloud ADC), stored only in chrome.storage.local under `gcpAccounts` —
 // never synced, only ever sent to Google's own token endpoint.
 
-import { credentialsProblem, type GoogleCredentials } from "@cloud-console/core/gcp/auth";
+import type { ResourceKindId } from "@cloud-console/core/catalog";
+import { credentialsProblem, impersonate, impersonatedEmail, type GoogleCredentials } from "@cloud-console/core/gcp/auth";
 
 const ACCOUNTS_KEY = "gcpAccounts";
 const LAST_ACCOUNT_KEY = "gcpLastAccountId";
@@ -16,7 +17,13 @@ export interface GcpAccount {
   // Name of the linked credentials file (its handle is in IndexedDB, see
   // credentials-file.ts), re-read on every use.
   credentialsFile?: string;
+  // Service account to act as, like gcloud's --impersonate-service-account:
+  // the credentials above only mint its tokens (needs Service Account Token
+  // Creator on it).
+  impersonate?: string;
   lastProjectId?: string;
+  // Resource kinds shown on Home for this account; absent = all implemented.
+  resources?: ResourceKindId[];
 }
 
 export async function getAccounts(): Promise<GcpAccount[]> {
@@ -72,7 +79,15 @@ export function parseCredentials(json: string): GoogleCredentials {
   return parsed as GoogleCredentials;
 }
 
+// The credentials the account's calls run as: the parsed JSON, wrapped to
+// impersonate when the account names a service account.
+export function accountCredentials(json: string, impersonateEmail?: string): GoogleCredentials {
+  const creds = parseCredentials(json);
+  return impersonateEmail ? impersonate(creds, impersonateEmail) : creds;
+}
+
 export function credentialsLabel(creds: GoogleCredentials): string {
+  if (creds.type === "impersonated_service_account") return impersonatedEmail(creds);
   return creds.type === "authorized_user" ? "gcloud user credentials" : creds.client_email;
 }
 

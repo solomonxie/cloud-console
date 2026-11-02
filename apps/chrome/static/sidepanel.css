@@ -326,6 +326,31 @@ button:active:not(:disabled) {
   padding: 12px 10px 10px 12px;
 }
 
+.conn-card-head[role="button"] {
+  cursor: pointer;
+  user-select: none;
+}
+
+.conn-card-head:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.conn-card-toggle {
+  display: flex;
+  color: var(--text-muted);
+  transition: transform var(--transition);
+}
+
+.conn-card-toggle .icon {
+  width: 16px;
+  height: 16px;
+}
+
+.conn-card.open .conn-card-toggle {
+  transform: rotate(90deg);
+}
+
 .vendor-badge,
 .kind-badge {
   display: flex;
@@ -845,7 +870,8 @@ button.name-btn:hover {
 }
 
 /* Favorites: a star in a row's actions (or a card's header). Faint until the
-   row is hovered/focused; always shown, filled, once favorited. */
+   row is hovered/focused; always shown, filled, once favorited. A star in
+   the screen header (pin this bucket/folder) is always shown. */
 .fav-btn {
   opacity: 0;
   transition: opacity var(--transition), color var(--transition);
@@ -855,7 +881,8 @@ button.name-btn:hover {
 .gcp-group:hover .fav-btn,
 .conn-card:hover .fav-btn,
 .fav-btn:focus-visible,
-.fav-btn.fav-on {
+.fav-btn.fav-on,
+.screen-actions .fav-btn {
   opacity: 1;
 }
 
@@ -1332,4 +1359,36 @@ dialog.sheet-dialog[open] {
   padding-left: 10px;
   border-left: 3px solid var(--border);
   color: var(--text-muted);
+}
+
+/* --- Connection form: Resources section --------------------------------- */
+
+.resources-field {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px 2px;
+  margin: 0 0 10px;
+}
+
+.resources-field legend {
+  font-size: 12px;
+  color: var(--text-muted);
+  padding: 0 4px;
+}
+
+.resources-field .field.checkbox {
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.resource-scope {
+  margin: 0 0 6px 22px;
+}
+
+.resource-scope .hint {
+  margin: 0 0 6px;
+}
+
+.resource-scope .field input:disabled {
+  opacity: 0.5;
 }

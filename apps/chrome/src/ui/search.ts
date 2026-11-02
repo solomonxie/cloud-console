@@ -93,7 +93,7 @@ export function combobox(opts: {
       );
       li.addEventListener("mousedown", (e) => {
         e.preventDefault();
-        pick(o.value);
+        pick(o);
       });
       list.append(li);
     });
@@ -114,11 +114,11 @@ export function combobox(opts: {
     active = -1;
     showValue();
   };
-  const pick = (v: string) => {
-    value = v;
+  const pick = (o: ComboOption) => {
+    value = o.value;
     close();
     input.blur();
-    opts.onPick(v);
+    opts.onPick(o.value);
   };
 
   input.addEventListener("focus", () => {
@@ -141,8 +141,8 @@ export function combobox(opts: {
     } else if (e.key === "Enter") {
       e.preventDefault();
       const hit = items[active >= 0 ? active : 0];
-      if (hit) pick(hit.value);
-      else if (opts.allowFreeText && input.value.trim()) pick(input.value.trim());
+      if (hit) pick(hit);
+      else if (opts.allowFreeText && input.value.trim()) pick({ value: input.value.trim(), label: input.value.trim() });
     } else if (e.key === "Escape") {
       e.stopPropagation();
       close();

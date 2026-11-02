@@ -30,6 +30,9 @@ export const state = {
   selectMode: false,
   selected: new Map<string, Item>(),
   clipboard: null as Clipboard | null,
+  // Called with the folder being shown whenever it changes (e.g. to move the
+  // header's pin star to the current path).
+  onPrefixChange: null as ((prefix: string) => void) | null,
 };
 
 // A connection's own prefix (if any) is a hard boundary: browsing never goes

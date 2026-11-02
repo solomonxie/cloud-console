@@ -1,0 +1,211 @@
+/* AWS screens (src/aws/*) — only what gcp.css / sidepanel.css don't
+   already cover: region groups, the scan status line, the Lambda run
+   panel, policy disclosures. */
+
+/* Regional lists: one group per region, with a count and a fold. */
+.aws-scan-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  font-size: 11px;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+}
+
+.aws-scan-status > .icon {
+  width: 12px;
+  height: 12px;
+}
+
+.aws-failed-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #c2410c;
+  font-size: 11px;
+}
+
+.aws-failed-btn .icon {
+  width: 12px;
+  height: 12px;
+}
+
+.aws-failures {
+  margin: 6px 8px;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-subtle);
+  font-size: 11px;
+  word-break: break-word;
+}
+
+.aws-failures-title {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.aws-failure + .aws-failure {
+  margin-top: 4px;
+}
+
+.aws-region {
+  margin: 8px 8px 0;
+}
+
+.aws-region-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 4px 6px;
+  border: none;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.aws-region-id {
+  font-weight: 600;
+  font-size: 12.5px;
+}
+
+.aws-region-head small {
+  color: var(--text-muted);
+  font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.aws-region-count {
+  padding: 0 7px;
+  border-radius: 999px;
+  background: var(--bg-subtle);
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.aws-region.open > .aws-region-head .gcp-chevron {
+  transform: rotate(90deg);
+}
+
+.aws-region > .gcp-list {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.aws-region > .gcp-list .row:last-child {
+  border-bottom: none;
+}
+
+/* Detail pages */
+
+.aws-meta dd {
+  word-break: break-all;
+}
+
+.aws-notes {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 6px;
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.aws-notes .status {
+  padding: 0;
+}
+
+.aws-code {
+  margin: 0;
+  max-height: 320px;
+}
+
+.aws-disclosure {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+.aws-disclosure + .aws-disclosure {
+  margin-top: 6px;
+}
+
+.aws-disclosure summary {
+  cursor: pointer;
+  min-width: 0;
+}
+
+.aws-disclosure summary > .gcp-two-line {
+  display: inline-flex;
+  max-width: calc(100% - 16px);
+  vertical-align: top;
+}
+
+.aws-disclosure-body {
+  margin-top: 6px;
+}
+
+.aws-value-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.aws-value-row .gcp-secret-value {
+  flex: 1;
+  min-width: 0;
+  margin-top: 0;
+}
+
+/* Lambda run panel */
+
+.aws-json-input {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--text);
+  font-family: ui-monospace, monospace;
+  font-size: 11.5px;
+  resize: vertical;
+}
+
+.aws-invalid {
+  margin-top: 4px;
+  color: var(--danger);
+  font-size: 11px;
+}
+
+.aws-run-bar {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 6px;
+}
+
+.aws-log {
+  margin: 0;
+  height: 220px;
+}
+
+.aws-log-time {
+  color: var(--text-muted);
+}
+
+.aws-log-error {
+  color: var(--danger);
+}
+
+.aws-result-head {
+  margin-bottom: 6px;
+}

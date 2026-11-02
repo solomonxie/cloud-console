@@ -22,7 +22,8 @@ function enabled(rule: Obj): string | undefined {
   return typeof rule.Enable === "boolean" ? (rule.Enable ? "ENABLED" : "DISABLED") : undefined;
 }
 
-async function busesAndRules(key: TencentKey, region: string): Promise<EventBridgeItem[]> {
+/** One region's buses and rules (for a per-region scan). */
+export async function listRegionItems(key: TencentKey, region: string): Promise<EventBridgeItem[]> {
   const items: EventBridgeItem[] = [];
   for (const bus of await busList(key, region)) {
     const id = str(bus.EventBusId);
@@ -47,7 +48,7 @@ export async function listItems(key: TencentKey): Promise<EventBridgeItem[]> {
   let firstError: unknown;
   for (const region of CEB_REGIONS) {
     try {
-      items.push(...(await busesAndRules(key, region)));
+      items.push(...(await listRegionItems(key, region)));
     } catch (error) {
       firstError = firstError ?? error;
     }

@@ -545,3 +545,84 @@ a.icon-btn {
     grid-template-columns: 1fr;
   }
 }
+
+/* --- Cloud Run ------------------------------------------------------------ */
+
+.gcp-run-condition {
+  margin: 0 12px;
+}
+
+.gcp-run-url {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.gcp-run-url code {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11.5px;
+}
+
+.gcp-run-env {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 3px;
+  padding-left: 20px;
+}
+
+.gcp-run-env-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+  word-break: break-all;
+}
+
+.gcp-run-env-row code {
+  font-size: 11px;
+}
+
+.gcp-run-env-row small {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.gcp-run-percent {
+  min-width: 34px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.gcp-pinned-paths {
+  margin-bottom: 10px;
+}
+
+.gcp-typed-path {
+  margin: -2px 12px 6px;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-family: ui-monospace, monospace;
+}
+
+.gcp-project-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.gcp-project-inline span {
+  white-space: nowrap;
+}
+
+.gcp-project-inline .combo {
+  flex: 1;
+  min-width: 0;
+}

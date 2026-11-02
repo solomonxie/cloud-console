@@ -4,6 +4,7 @@
 import { availableVendors, resourceKinds, type ResourceKind, type ResourceKindId, type Vendor, type VendorId } from "@cloud-console/core/catalog";
 import { STORAGE_TYPE_VENDOR, type StorageConnection } from "@cloud-console/core/storage/connection";
 import type { StorageType } from "@cloud-console/core/storage/types";
+import { kindScreen } from "./kind-screens.ts";
 
 // Same accents as the mobile app (apps/mobile/src/theme.ts VENDOR_ACCENT).
 export const VENDOR_ACCENT: Record<VendorId, string> = {
@@ -47,7 +48,20 @@ export const KIND_ICON: Partial<Record<ResourceKindId, string>> = {
   gcs: "bucket",
   gceInstances: "server",
   gceInstanceGroups: "layers",
+  cloudRunServices: "package",
+  cloudRunJobs: "playCircle",
   gcpSecrets: "key",
+  billing: "creditCard",
+  ec2: "server",
+  lambda: "zap",
+  iamUsers: "user",
+  iamRoles: "users",
+  eventBridge: "gitBranch",
+  parameterStore: "sliders",
+  camUsers: "user",
+  camRoles: "users",
+  cvm: "server",
+  tencentEventBridge: "gitBranch",
 };
 
 // Vendors with at least one implemented Chrome resource kind, in chooser order.
@@ -57,8 +71,10 @@ export function chromeVendors(): Vendor[] {
 
 // The kinds a storage connection can show: its vendor's implemented Chrome
 // kinds that a storage connection renders (today: the bucket list).
+// Plus every other kind of that vendor whose screen is registered
+// (app/kind-screens.ts) — EC2, Lambda, CVM, …
 export function storageKinds(type: StorageType): ResourceKind[] {
-  return resourceKinds(STORAGE_TYPE_VENDOR[type], "chrome").filter((k) => k.id === STORAGE_KIND[type]);
+  return resourceKinds(STORAGE_TYPE_VENDOR[type], "chrome").filter((k) => k.id === STORAGE_KIND[type] || !!kindScreen(STORAGE_TYPE_VENDOR[type], k.id));
 }
 
 // The ones this connection has selected (absent `resources` = all).

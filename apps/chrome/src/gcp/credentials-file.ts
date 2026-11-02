@@ -26,6 +26,11 @@ declare global {
 import { h, icon } from "./dom.ts";
 
 export const ADC_PATH = "~/.config/gcloud/application_default_credentials.json";
+// Chrome's picker blocks ~/.config as a system folder. A hard link in ~ is
+// the same file (gcloud rewrites it in place, keeping the inode), so linking
+// that is as good as linking the original.
+export const ADC_LINK_NAME = ".gcloud-adc.json";
+export const ADC_LINK_COMMAND = `ln -f ${ADC_PATH} ~/${ADC_LINK_NAME}`;
 
 const DB = "gcpCredentialFiles";
 const STORE = "handles";
@@ -64,9 +69,8 @@ export async function deleteHandle(accountId: string): Promise<void> {
   await tx("readwrite", (s) => s.delete(accountId));
 }
 
-// Opens the picker (needs a click). macOS hides ~/.config; ⌘⇧G in the
-// picker takes a typed path. `id` makes Chrome reopen the same folder next
-// time.
+// Opens the picker (needs a click). `id` makes Chrome reopen the same
+// folder next time.
 export async function pickCredentialsFile(): Promise<FileSystemFileHandle | null> {
   if (!window.showOpenFilePicker) throw new Error("This version of Chrome can't link files — load the file's contents instead.");
   try {
@@ -118,11 +122,31 @@ export async function readLinkedFile(accountId: string): Promise<LinkedRead> {
   };
 }
 
+// Chrome only shows its permission prompt during a user gesture, and the
+// gesture's activation survives a few seconds of async work. So the click
+// that opens a linked account asks right away — the user sees Chrome's own
+// prompt instead of an extra "Allow" step in the panel. credentialsFor waits
+// for that answer before deciding whether to show its fallback button.
+const priming = new Map<string, Promise<void>>();
+
+export function primeLinkedFile(account: { id: string; credentialsFile?: string }): void {
+  if (!account.credentialsFile || priming.has(account.id)) return;
+  const run = (async () => {
+    const handle = await getHandle(account.id);
+    if (!handle || (await handle.queryPermission({ mode: "read" })) === "granted") return;
+    await handle.requestPermission({ mode: "read" });
+  })()
+    .catch(() => undefined) // no activation left, or denied: the fallback button covers it
+    .finally(() => priming.delete(account.id));
+  priming.set(account.id, run);
+}
+
 // The account's credentials JSON: the pasted copy, or the linked file read
 // fresh. When Chrome needs the user's OK first, an "Allow" button is shown
 // in `slot` and the promise waits for that click.
 export async function credentialsFor(account: { id: string; credentialsJson: string; credentialsFile?: string }, slot: HTMLElement): Promise<string> {
   if (!account.credentialsFile) return account.credentialsJson;
+  await priming.get(account.id);
   const first = await readLinkedFile(account.id);
   if (first.kind === "ok") return first.json;
   if (first.kind === "missing") throw new Error("The linked credentials file isn't set up on this browser — edit the account and link it again.");
@@ -146,7 +170,7 @@ export async function credentialsFor(account: { id: string; credentialsJson: str
         { class: "empty-state gcp-file-permission" },
         icon("key"),
         h("div", { class: "primary" }, "Read the latest credentials?"),
-        h("div", {}, `This account uses ${ADC_PATH.endsWith(first.fileName) ? ADC_PATH : first.fileName}, read fresh each time. Choose “Allow on every visit” in Chrome's prompt to stop being asked.`),
+        h("div", {}, `This account uses ${first.fileName === ADC_LINK_NAME ? `~/${ADC_LINK_NAME}` : ADC_PATH.endsWith(first.fileName) ? ADC_PATH : first.fileName}, read fresh each time. Choose “Allow on every visit” in Chrome's prompt to stop being asked.`),
         allow
       )
     );

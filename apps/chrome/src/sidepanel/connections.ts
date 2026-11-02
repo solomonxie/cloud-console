@@ -1,21 +1,30 @@
-// Storage connections: the add/edit form (per-type fields), delete, and
-// export/import of all of them. Home (app/home.ts) lists them; saving or
-// deleting one goes back there so it re-renders.
+// Storage connections: the add/edit form (one vendor's key fields plus its
+// Resources section), delete, and export/import of all of them. A
+// connection is vendor-level — a key, no bucket: its buckets are listed from
+// the account, unless the Resources section limits it to one bucket/prefix.
+// Home (app/home.ts) lists them; saving or deleting one goes back there so
+// it re-renders.
 import { credentialsProblem } from "@cloud-console/core/gcp/auth";
 import { buildConnectionString, parseConnectionString } from "@cloud-console/core/storage/azure";
+import { listBuckets } from "@cloud-console/core/storage/buckets";
 import { createClient } from "@cloud-console/core/storage/client";
 import {
+  bucketConnection,
+  connectionLabel,
   exportConnections,
   normalizeEndpoint,
-  normalizePrefix,
   parseImport,
   regionForEndpoint,
+  STORAGE_TYPE_VENDOR,
   type StorageConnection,
 } from "@cloud-console/core/storage/connection";
 import { detectBucketRegion } from "@cloud-console/core/storage/s3";
 import type { StorageType } from "@cloud-console/core/storage/types";
+import { validateKey as validateTencentKey } from "@cloud-console/core/tencent/sts";
 import { icon } from "../lib/icons.ts";
 import { nav } from "../app/nav.ts";
+import { resourcesField, type ResourcesField } from "../app/resources-field.ts";
+import { STORAGE_KIND, storageKinds, VENDOR_NAME } from "../app/vendors.ts";
 import { deleteConnection, getConnections, newConnectionId, upsertConnection } from "../lib/store.ts";
 import { confirmDialog } from "./dialogs.ts";
 import { els, errorMessage, setFormStatus } from "./dom.ts";
@@ -30,6 +39,7 @@ export function isStored(conn: StorageConnection): boolean {
 // --- Connection form ---------------------------------------------------------
 
 interface TypeMeta {
+  // Label/placeholder of the Resources section's optional "Limit to" bucket.
   bucketLabel: string;
   bucketPlaceholder: string;
   showAccessKey: boolean;
@@ -46,7 +56,7 @@ interface TypeMeta {
 }
 
 // Every type stores into the same underlying connection fields where the
-// shape matches (bucket/accessKeyId/secretAccessKey); Azure's single
+// shape matches (accessKeyId/secretAccessKey); Azure's single
 // connection string and GCS's credentials JSON get parsed down to those same
 // fields (or, for GCS, a dedicated serviceAccountJson field) in
 // saveConnectionFromForm — only the form labels and which fields apply
@@ -54,31 +64,35 @@ interface TypeMeta {
 const TYPE_META: Record<StorageType, TypeMeta> = {
   s3: {
     bucketLabel: "Bucket name",
-    bucketPlaceholder: "my-bucket",
+    bucketPlaceholder: "all buckets",
     showAccessKey: true,
     keyLabel: "Access key ID",
     showSecretKey: true,
     secretLabel: "Secret access key",
     showServiceAccountJson: false,
-    hint: "AWS S3. Region is auto-detected from the bucket.",
+    hint: "An IAM access key. Each bucket's region is detected automatically.",
     showRegion: true,
     showEndpoint: false,
   },
   "s3-compat": {
     bucketLabel: "Bucket name",
-    bucketPlaceholder: "my-bucket",
+    bucketPlaceholder: "all buckets",
     showAccessKey: true,
     keyLabel: "Access key ID",
     showSecretKey: true,
     secretLabel: "Secret access key",
     showServiceAccountJson: false,
-    hint: "Any S3-compatible service — Cloudflare R2, MinIO, etc.",
+    hint: "Any S3-compatible service — Cloudflare R2, MinIO, etc. Endpoint is the account's host, without a bucket.",
     showRegion: false,
     showEndpoint: true,
   },
+  // Only legacy imported/saved GCS connections land here — new Google Cloud
+  // connections use the account dialog (gcp/screens.ts), which lists
+  // buckets per project. A bare GCS key can't list buckets without a
+  // project, so this one needs its bucket.
   gcs: {
     bucketLabel: "Bucket name",
-    bucketPlaceholder: "my-bucket",
+    bucketPlaceholder: "my-bucket (required)",
     showAccessKey: false,
     showSecretKey: false,
     showServiceAccountJson: true,
@@ -88,7 +102,7 @@ const TYPE_META: Record<StorageType, TypeMeta> = {
   },
   azure: {
     bucketLabel: "Container name",
-    bucketPlaceholder: "my-container",
+    bucketPlaceholder: "all containers",
     showAccessKey: false,
     showSecretKey: true,
     secretLabel: "Connection string",
@@ -99,28 +113,27 @@ const TYPE_META: Record<StorageType, TypeMeta> = {
   },
   "tencent-cos": {
     bucketLabel: "Bucket name",
-    bucketPlaceholder: "my-bucket-1250000000",
+    bucketPlaceholder: "all buckets (e.g. my-bucket-1250000000)",
     showAccessKey: true,
     keyLabel: "SecretId",
     showSecretKey: true,
     secretLabel: "SecretKey",
     showServiceAccountJson: false,
-    hint: "Tencent Cloud COS, via its S3-compatible endpoint. Bucket name includes the APPID suffix shown in the console. Region is required.",
+    hint: "A CAM key (SecretId and SecretKey). COS buckets and CVM instances in every region are listed; the region is only needed for a bucket you limit to (looked up when left blank). Bucket names include the APPID suffix shown in the console.",
     showRegion: true,
-    regionRequired: true,
-    regionPlaceholder: "e.g. ap-guangzhou",
+    regionPlaceholder: "only for a limited-to bucket, e.g. ap-guangzhou",
     regionListId: "tencentCosRegions",
     showEndpoint: false,
   },
   "alibaba-oss": {
     bucketLabel: "Bucket name",
-    bucketPlaceholder: "my-bucket",
+    bucketPlaceholder: "all buckets",
     showAccessKey: true,
     keyLabel: "AccessKey ID",
     showSecretKey: true,
     secretLabel: "AccessKey secret",
     showServiceAccountJson: false,
-    hint: "Alibaba Cloud OSS, via its S3-compatible endpoint. Region is required.",
+    hint: "Alibaba Cloud OSS, via its S3-compatible endpoint. Buckets in every region are listed through this region's endpoint.",
     showRegion: true,
     regionRequired: true,
     regionPlaceholder: "e.g. cn-hangzhou",
@@ -129,10 +142,11 @@ const TYPE_META: Record<StorageType, TypeMeta> = {
   },
 };
 
+// The Resources section of the open form (rebuilt per open).
+let resources: ResourcesField | null = null;
+
 function applyTypeToForm(type: string): void {
   const meta = TYPE_META[type as StorageType] || TYPE_META.s3;
-  els.connBucketLabel.textContent = meta.bucketLabel;
-  els.connBucket.placeholder = meta.bucketPlaceholder;
 
   els.connAccessKeyField.hidden = !meta.showAccessKey;
   els.connAccessKey.required = meta.showAccessKey;
@@ -153,7 +167,7 @@ function applyTypeToForm(type: string): void {
   els.connRegionField.hidden = !meta.showRegion;
   els.connAdvanced.hidden = !meta.showRegion;
   els.connRegion.required = !!meta.regionRequired;
-  els.connRegion.placeholder = meta.regionPlaceholder || "auto-detected from bucket";
+  els.connRegion.placeholder = meta.regionPlaceholder || "auto-detected per bucket";
   if (meta.regionListId) els.connRegion.setAttribute("list", meta.regionListId);
   else els.connRegion.removeAttribute("list");
   // Region isn't optional for these two — don't bury it in a collapsed
@@ -161,12 +175,27 @@ function applyTypeToForm(type: string): void {
   els.connAdvanced.open = !!meta.regionRequired;
 }
 
-export function openConnectionModal(conn: StorageConnection | null): void {
-  els.connectionModalTitle.textContent = conn ? "Edit connection" : "Add connection";
+// Opens the form for a new connection of `type` (picked in Home's "+"
+// chooser), or to edit `conn`. The bucket screen passes its per-bucket
+// synthetic connection; the form edits the stored one with that id.
+export async function openConnectionModal(conn: StorageConnection | null, type: StorageType = "s3"): Promise<void> {
+  if (conn) conn = (await getConnections()).find((c) => c.id === conn?.id) ?? conn;
+  const connType = conn?.type || type;
+  const vendorName = VENDOR_NAME[STORAGE_TYPE_VENDOR[connType]];
+  els.connectionModalTitle.textContent = conn ? `Edit ${vendorName} connection` : `Add ${vendorName}`;
   els.connId.value = conn?.id || "";
-  els.connType.value = conn?.type || "s3";
-  applyTypeToForm(els.connType.value);
-  els.connBucket.value = conn?.bucket || "";
+  els.connType.value = connType;
+  applyTypeToForm(connType);
+  const meta = TYPE_META[connType];
+  resources = resourcesField({
+    kinds: storageKinds(connType),
+    selected: conn?.resources,
+    scopeKind: STORAGE_KIND[connType],
+    scope: conn?.storageScope ?? (conn?.bucket ? { bucket: conn.bucket, prefix: conn.prefix } : undefined),
+    bucketLabel: meta.bucketLabel,
+    bucketPlaceholder: meta.bucketPlaceholder,
+  });
+  els.connResources.replaceChildren(resources.el);
   els.connAccessKey.value = conn?.accessKeyId || "";
   els.connSecretKey.value =
     conn?.type === "azure" && conn.accessKeyId
@@ -175,8 +204,7 @@ export function openConnectionModal(conn: StorageConnection | null): void {
   els.connSecretKey.type = "password";
   els.toggleSecretBtn.innerHTML = icon("eye");
   els.connServiceAccountJson.value = conn?.serviceAccountJson || "";
-  els.connPrefix.value = conn?.prefix || "";
-  els.connName.value = conn?.name && conn.name !== conn.bucket ? conn.name : "";
+  els.connName.value = conn?.name || "";
   els.connRegion.value = conn?.region || "";
   els.connEndpoint.value = conn?.endpoint || "";
   els.connDeleteBtn.hidden = !conn;
@@ -186,14 +214,25 @@ export function openConnectionModal(conn: StorageConnection | null): void {
 
 async function saveConnectionFromForm(): Promise<boolean> {
   const type = els.connType.value as StorageType;
-  const bucket = els.connBucket.value.trim();
+  const picked = resources?.value() ?? { ok: true as const };
+  if (!picked.ok) {
+    setFormStatus(picked.error, { error: true });
+    return false;
+  }
+  const scope = picked.storageScope;
+  const bucket = scope?.bucket ?? "";
+  if (type === "gcs" && !bucket) {
+    setFormStatus("A Cloud Storage key needs a bucket here — add a Google Cloud account to list buckets per project.", { error: true });
+    return false;
+  }
   const conn: StorageConnection = {
     id: els.connId.value || newConnectionId(),
     type,
-    bucket,
-    name: els.connName.value.trim() || bucket,
-    prefix: normalizePrefix(els.connPrefix.value.trim()),
+    name: els.connName.value.trim(),
+    ...(picked.resources ? { resources: picked.resources } : {}),
+    ...(scope ? { storageScope: scope } : {}),
   };
+  conn.name = connectionLabel(conn);
 
   els.connSaveBtn.disabled = true;
   try {
@@ -238,10 +277,27 @@ async function saveConnectionFromForm(): Promise<boolean> {
         setFormStatus(errorMessage(err), { error: true });
         return false;
       }
-    } else if (type === "tencent-cos" || type === "alibaba-oss") {
+    } else if (type === "tencent-cos") {
+      // Buckets and CVM are listed account-wide, so the region only names
+      // a limited-to bucket's host; left blank, it's looked up from the
+      // bucket list (each COS bucket reports its own region).
+      conn.accessKeyId = els.connAccessKey.value.trim();
+      conn.secretAccessKey = els.connSecretKey.value.trim();
+      let region = els.connRegion.value.trim();
+      if (!region && bucket) {
+        setFormStatus("Looking up the bucket's region…", { loading: true });
+        region = (await listBuckets(conn).catch(() => [])).find((b) => b.name === bucket)?.region ?? "";
+        if (!region) {
+          setFormStatus("Couldn't find that bucket's region — enter it under Advanced.", { error: true });
+          return false;
+        }
+      }
+      if (region) conn.region = region;
+    } else if (type === "alibaba-oss") {
       // Same S3 dialect as "s3"/"s3-compat" (S3Client picks the right host
-      // for the type), but neither COS nor OSS exposes AWS's region-sniffing
-      // global endpoint, so the region has to be typed, not detected.
+      // for the type), but OSS doesn't expose AWS's region-sniffing
+      // global endpoint, so the region has to be typed, not detected. Bucket
+      // listing still covers every region (each bucket reports its own).
       conn.accessKeyId = els.connAccessKey.value.trim();
       conn.secretAccessKey = els.connSecretKey.value.trim();
       const region = els.connRegion.value.trim();
@@ -253,20 +309,44 @@ async function saveConnectionFromForm(): Promise<boolean> {
     } else {
       conn.accessKeyId = els.connAccessKey.value.trim();
       conn.secretAccessKey = els.connSecretKey.value.trim();
+      // Unscoped, each listed bucket carries its own region (see
+      // listBuckets); a limited-to bucket needs one stored here.
       let region = els.connRegion.value.trim();
-      if (!region) {
+      if (!region && bucket) {
         setFormStatus("Detecting region…", { loading: true });
-        region = (await detectBucketRegion(bucket)) || "us-east-1";
+        region = (await detectBucketRegion(bucket)) || "";
       }
-      conn.region = region;
+      conn.region = region || "us-east-1";
     }
 
-    setFormStatus("Checking bucket access…", { loading: true });
-    try {
-      await createClient(conn).listObjects(conn.bucket, conn.prefix ?? "", undefined);
-    } catch (err) {
-      setFormStatus(`Couldn't access that bucket: ${errorMessage(err)}`, { error: true });
-      return false;
+    // Validate with the key itself: list that one bucket under its prefix
+    // (also works for keys without ListBuckets), or list the buckets.
+    if (bucket) {
+      setFormStatus("Checking bucket access…", { loading: true });
+      try {
+        await createClient(bucketConnection(conn, bucket)).listObjects(bucket, scope?.prefix ?? "", undefined);
+      } catch (err) {
+        setFormStatus(`Couldn't access that bucket: ${errorMessage(err)}`, { error: true });
+        return false;
+      }
+    } else if (type === "tencent-cos" && picked.resources && !picked.resources.includes("cos")) {
+      // No COS row: the key may have no COS permission at all — just check
+      // the key itself (GetCallerIdentity needs no resource permission).
+      setFormStatus("Checking the key…", { loading: true });
+      try {
+        await validateTencentKey({ secretId: conn.accessKeyId ?? "", secretKey: conn.secretAccessKey ?? "" });
+      } catch (err) {
+        setFormStatus(`Couldn't verify this key: ${errorMessage(err)}`, { error: true });
+        return false;
+      }
+    } else {
+      setFormStatus("Listing buckets…", { loading: true });
+      try {
+        await listBuckets(conn);
+      } catch (err) {
+        setFormStatus(`Couldn't list buckets with this key: ${errorMessage(err)} — if it can only reach one bucket, enter it under Limit to.`, { error: true });
+        return false;
+      }
     }
 
     await upsertConnection(conn);
@@ -316,7 +396,6 @@ function downloadTextFile(filename: string, text: string): void {
 
 // The connection modal is static markup: wire it once, at boot.
 export function wireConnections(): void {
-  els.connType.addEventListener("change", () => applyTypeToForm(els.connType.value));
   // An extension can't read ~/.config itself — the file picker is how the
   // user grants access to one file, once. Its contents land in the textarea
   // and are stored like a pasted key; the file isn't re-read later, so a
@@ -326,19 +405,6 @@ export function wireConnections(): void {
     const file = els.connCredentialsFile.files?.[0];
     els.connCredentialsFile.value = "";
     if (file) els.connServiceAccountJson.value = (await file.text()).trim();
-  });
-
-  // Bucket names don't encode a region, but the field is still enough to look
-  // one up (see detectBucketRegion) — do it as soon as the user leaves the
-  // field so Advanced/Region is already filled in if they open it. Only AWS S3
-  // has a region to detect.
-  els.connBucket.addEventListener("blur", async () => {
-    if (els.connType.value !== "s3") return;
-    const bucket = els.connBucket.value.trim();
-    if (!bucket || els.connRegion.value.trim()) return;
-    els.connRegion.placeholder = "detecting…";
-    els.connRegion.value = (await detectBucketRegion(bucket)) || "";
-    els.connRegion.placeholder = "auto-detected from bucket";
   });
 
   els.connCancelBtn.addEventListener("click", () => els.connectionModal.close());

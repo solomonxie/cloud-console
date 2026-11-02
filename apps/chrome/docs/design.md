@@ -81,12 +81,23 @@ access token
 `authorized_user`) holds an OAuth client id/secret and a refresh token;
 exchanging the refresh token at Google's token endpoint gives the same kind
 of access token. The consent screen already happened in gcloud, so the
-extension still runs no OAuth flow itself. An extension can't read `~/.config`
-on its own, so the form's "Load from file…" picker is the permission: the
-user picks the file once, its contents are stored like a pasted key, and a
-later `gcloud` re-login means loading it again. Trade-off: no private key,
-so no V4 signed URLs — previews of media fetch the object into a blob URL
-instead, and the Share dialog hides the signed link.
+extension still runs no OAuth flow itself. An account can link the file
+instead of holding a copy: the picked file's handle sits in IndexedDB and the
+file is re-read on each use, so a `gcloud` re-login just works. Chrome's
+picker refuses anything under `~/.config` ("contains system files"), so the
+dialog puts `ln -f ~/.config/gcloud/application_default_credentials.json
+~/.gcloud-adc.json` on the clipboard: a hard link is the same file, and
+gcloud rewrites it in place, so the link stays current. Trade-off: no private
+key, so no V4 signed URLs — previews of media fetch the object into a blob
+URL instead, and the Share dialog hides the signed link.
+
+**GCP: service account impersonation.** An account can name a service
+account to act as, like `--impersonate-service-account`, and gcloud's own
+`impersonated_service_account` ADC type is read too. Tokens come from IAM
+Credentials `generateAccessToken`, called with the source credentials'
+token, so the source needs Service Account Token Creator on the target —
+the target's own IAM grants decide everything else, nothing is escalated.
+Signed URLs are signed through IAM Credentials `signBlob`.
 
 **Where credentials live.** `chrome.storage.local` (not `sync`) so keys never
 leave the machine via Chrome sync. Export/import is an explicit user action,
@@ -236,7 +247,8 @@ JSON responses instead of the XML the other three clients parse.
 `oauth2.googleapis.com` (GCS token exchange), `*.blob.core.windows.net`,
 `*.myqcloud.com` (Tencent COS), `*.aliyuncs.com` (Alibaba OSS), plus
 `compute.googleapis.com`, `secretmanager.googleapis.com`,
-`cloudresourcemanager.googleapis.com` and `monitoring.googleapis.com` (VM
+`cloudresourcemanager.googleapis.com`, `run.googleapis.com`,
+`iamcredentials.googleapis.com` (impersonation) and `monitoring.googleapis.com` (VM
 usage charts) for the Google Cloud screens. A custom
 S3-compatible endpoint (MinIO, self-hosted) is the one case requested at
 runtime via `chrome.permissions.request` when the connection is saved —
@@ -257,6 +269,58 @@ screen shows Google's error verbatim when a permission is missing:
                       with storage.buckets.list
  Secrets              roles/secretmanager.viewer; reveal needs
                       roles/secretmanager.secretAccessor
+ Cloud Run            roles/run.viewer (services, revisions, jobs,
+                      executions; the Cloud Run Admin API must be enabled);
+                      Run now needs run.jobs.run (roles/run.developer)
+```
+
+An AWS connection's other resource kinds (src/aws/*) call AWS directly
+with the same access key — all under `*.amazonaws.com`, so no new host
+permission (Cost Explorer is `ce.us-east-1.amazonaws.com`). Each screen
+shows AWS's error verbatim when an action is denied. Regional kinds call
+`ec2:DescribeRegions` first; without it they scan the default 17 regions.
+Read-only listings are cached in `chrome.storage.session` (cleared when the
+browser quits); parameter values and policy documents never are.
+
+```
+ Billing          ce:GetCostAndUsage (Cost Explorer must be enabled;
+                  per-resource drill-down needs resource-level data on)
+ EC2              ec2:DescribeInstances, ec2:DescribeInstanceStatus;
+                  health charts cloudwatch:GetMetricData (memory/disk
+                  need the CloudWatch agent)
+ Lambda           lambda:ListFunctions; Run lambda:InvokeFunction; the
+                  run's live log logs:FilterLogEvents on /aws/lambda/<fn>
+ IAM users/roles  iam:ListUsers / iam:ListRoles; policies
+                  iam:ListAttached{User,Role}Policies,
+                  iam:List{User,Role}Policies, iam:GetPolicy +
+                  iam:GetPolicyVersion, iam:Get{User,Role}Policy
+ EventBridge      events:ListEventBuses, events:ListRules,
+                  events:DescribeRule, events:ListTargetsByRule,
+                  events:DescribeEventBus; scheduler:ListSchedules,
+                  scheduler:GetSchedule
+ Parameter Store  ssm:DescribeParameters; value ssm:GetParameter
+                  (SecureString also kms:Decrypt on its key)
+```
+
+A Tencent Cloud connection's other resource kinds (src/tencent/*) call
+Tencent's API 3.0 (TC3-signed POST/JSON) with the same SecretId/SecretKey,
+all under `*.tencentcloudapi.com` (host permission added for them). The
+connection's region is optional: it only names a limited-to COS bucket's
+host. CVM scans every region `cvm:DescribeRegions` returns; EventBridge
+scans its five CEB regions. Same caching as AWS (`chrome.storage.session`);
+policy documents are never cached.
+
+```
+ Billing          billing:DescribeBillSummaryByProduct,
+                  billing:DescribeAccountBalance (balance row; optional),
+                  drill-down billing:DescribeBillDetail
+ CVM              cvm:DescribeRegions, cvm:DescribeInstances
+ CAM users/roles  cam:ListUsers / cam:DescribeRoleList; policies
+                  cam:ListAttachedUserPolicies,
+                  cam:ListAttachedRolePolicies, cam:GetPolicy
+ EventBridge      eb:ListEventBuses, eb:ListRules; detail eb:GetRule,
+                  eb:ListTargets
+ Key check        sts:GetCallerIdentity (when COS isn't selected)
 ```
 
 ## Key flows

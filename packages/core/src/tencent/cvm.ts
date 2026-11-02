@@ -20,6 +20,23 @@ export async function listInstances(key: TencentKey, region = "ap-guangzhou"): P
   }));
 }
 
+interface RegionsResponse {
+  RegionSet?: { Region: string; RegionName?: string; RegionState?: string }[];
+}
+
+/** DescribeRegions' AVAILABLE regions, in Tencent's order. */
+export function parseRegions(r: RegionsResponse): string[] {
+  return (r.RegionSet ?? []).filter((x) => !x.RegionState || x.RegionState === "AVAILABLE").map((x) => x.Region);
+}
+
+/** Every region CVM is offered in (for a per-region instance scan). */
+export async function listRegions(key: TencentKey): Promise<string[]> {
+  const r = await tencentRequest<RegionsResponse>(key, {
+    host: "cvm.tencentcloudapi.com", service: "cvm", action: "DescribeRegions", version: "2017-03-12", region: "ap-guangzhou",
+  });
+  return parseRegions(r);
+}
+
 export function cvmDetailFields(i: CVMInstance): DetailField[] {
   return [
     { label: "Instance ID", value: i.instanceId },

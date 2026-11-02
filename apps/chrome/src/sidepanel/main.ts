@@ -3,6 +3,9 @@
 import { homeScreen } from "../app/home.ts";
 import { startNavigator } from "../app/navigator.ts";
 import { initBucketBrowser } from "./bucket-screen.ts";
+// Vendor modules register their resource screens on import.
+import "../aws/index.ts";
+import "../tencent/index.ts";
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 

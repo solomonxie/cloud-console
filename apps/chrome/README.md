@@ -26,16 +26,16 @@ with the mobile app through `packages/core` and bundled with esbuild. See
 
 ## Features
 
-- Home: one card per connection — storage buckets and Google Cloud
-  accounts side by side — each listing its resources; tap a row to push
-  that screen, back to return. A filter box appears once there are many
-  connections. **+** asks what to add: a storage bucket or a Google Cloud
-  account.
-- Multiple named storage connections, each scoped to one bucket/container. Adding one only strictly needs a
-  bucket/container name and a credential — region (where applicable) is
-  auto-detected, name defaults to the bucket name, and a starting key
-  prefix is optional.
-- Six connection types: **Amazon S3**, **S3-compatible** (Cloudflare R2,
+- Home: one card per connection — any cloud vendor, side by side — each
+  listing the resources picked for it; tap a row to push that screen, back
+  to return. A filter box appears once there are many connections. **+**
+  lists the cloud vendors (Amazon Web Services, Google Cloud, Microsoft
+  Azure, Alibaba Cloud, Tencent Cloud and S3-compatible).
+- A connection is a vendor + one key, no bucket: its buckets are listed
+  from the account (AWS shows each bucket's region). The form's Resources
+  section picks which resource kinds the connection shows, and can
+  optionally limit storage to one bucket and a starting prefix.
+- Six storage types: **Amazon S3**, **S3-compatible** (Cloudflare R2,
   MinIO, etc — endpoint + key pair, nothing else to configure), **Azure Blob
   Storage** (storage account connection string), **Google Cloud Storage**
   (service account JSON key, or gcloud's

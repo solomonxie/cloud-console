@@ -1,0 +1,243 @@
+/* Resource-kind screens shared across vendors (billing, region groups,
+   detail documents) — build on sidepanel.css and gcp.css. */
+
+/* --- Billing ---------------------------------------------------------- */
+
+.bill-total {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px 0 6px;
+}
+
+.bill-total-amount {
+  font-size: 28px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bill-total small,
+.bill-footer {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.bill-footer {
+  padding: 6px 0;
+  white-space: pre-line;
+}
+
+.bill-list {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.bill-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 10px;
+  border: none;
+  border-top: 1px solid var(--border);
+  background: none;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+}
+
+.bill-list > :first-child,
+.bill-list > :first-child > .bill-row,
+.gcp-detail-section > .bill-row {
+  border-top: none;
+}
+
+.gcp-detail-section > .bill-row {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+button.bill-row,
+summary.bill-row {
+  cursor: pointer;
+}
+
+button.bill-row:hover,
+summary.bill-row:hover {
+  background: var(--bg-subtle);
+}
+
+button.bill-row:active:not(:disabled) {
+  transform: none;
+}
+
+summary.bill-row {
+  list-style: none;
+}
+
+summary.bill-row::-webkit-details-marker {
+  display: none;
+}
+
+.bill-group[open] > summary .gcp-chevron {
+  transform: rotate(90deg);
+}
+
+.bill-group + .bill-group > summary.bill-row,
+.bill-list > .bill-group:not(:first-child) > summary.bill-row {
+  border-top: 1px solid var(--border);
+}
+
+.bill-group-body {
+  background: var(--bg-subtle);
+  border-top: 1px solid var(--border);
+}
+
+.bill-group-body .bill-row {
+  padding-left: 30px;
+}
+
+.bill-group-body > .bill-row:first-child {
+  border-top: none;
+}
+
+.bill-row.small {
+  font-size: 12px;
+}
+
+.bill-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bill-amount {
+  flex-shrink: 0;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.bill-row.negative .bill-amount {
+  color: var(--danger);
+}
+
+.bill-muted {
+  padding: 6px 0;
+}
+
+.bill-group-body .bill-muted {
+  padding: 6px 10px 6px 30px;
+}
+
+/* --- Region groups (regional lists) -------------------------------------- */
+
+.region-groups {
+  padding: 0 8px;
+}
+
+.region-groups > .status,
+.region-groups > .empty-state {
+  margin: 0 -8px;
+}
+
+.region-group {
+  margin-bottom: 10px;
+}
+
+.region-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 6px 4px;
+  border: none;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+}
+
+.region-head:active:not(:disabled) {
+  transform: none;
+}
+
+.region-name {
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.region-count {
+  padding: 0 7px;
+  border-radius: 999px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.region-group.open > .region-head .gcp-chevron {
+  transform: rotate(90deg);
+}
+
+.region-group .gcp-list {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.region-group .gcp-list .row:last-child {
+  border-bottom: none;
+}
+
+.region-failures {
+  margin: 0 8px 8px;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.region-failures-head {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+  color: var(--danger);
+}
+
+.region-failures-head .icon {
+  width: 12px;
+  height: 12px;
+}
+
+.region-failure {
+  margin-top: 3px;
+  word-break: break-word;
+}
+
+/* --- Detail documents and policies --------------------------------------- */
+
+.detail-doc {
+  max-height: none;
+}
+
+.bill-group-body.policy-doc {
+  padding: 6px 8px;
+}
+
+.policy-doc .detail-doc {
+  margin: 0;
+  max-height: 320px;
+}
+
+.policy-doc .status {
+  border-bottom: none;
+}

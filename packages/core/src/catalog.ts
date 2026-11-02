@@ -51,6 +51,8 @@ export type ResourceKindId =
   | "gcs"
   | "gceInstances"
   | "gceInstanceGroups"
+  | "cloudRunServices"
+  | "cloudRunJobs"
   | "gcpSecrets";
 
 export interface ResourceKind {
@@ -64,25 +66,25 @@ export interface ResourceKind {
 const both: Platform[] = ["mobile", "chrome"];
 
 export const RESOURCE_KINDS: ResourceKind[] = [
-  { id: "billing", vendor: "aws", title: "Billing", isImplemented: true, platforms: ["mobile"] },
+  { id: "billing", vendor: "aws", title: "Billing", isImplemented: true, platforms: both },
   { id: "s3", vendor: "aws", title: "S3 Buckets", isImplemented: true, platforms: both },
-  { id: "iamUsers", vendor: "aws", title: "IAM Users", isImplemented: true, platforms: ["mobile"] },
-  { id: "iamRoles", vendor: "aws", title: "IAM Roles", isImplemented: true, platforms: ["mobile"] },
-  { id: "ec2", vendor: "aws", title: "EC2 Instances", isImplemented: true, platforms: ["mobile"] },
-  { id: "lambda", vendor: "aws", title: "Lambda Functions", isImplemented: true, platforms: ["mobile"] },
+  { id: "iamUsers", vendor: "aws", title: "IAM Users", isImplemented: true, platforms: both },
+  { id: "iamRoles", vendor: "aws", title: "IAM Roles", isImplemented: true, platforms: both },
+  { id: "ec2", vendor: "aws", title: "EC2 Instances", isImplemented: true, platforms: both },
+  { id: "lambda", vendor: "aws", title: "Lambda Functions", isImplemented: true, platforms: both },
   { id: "rds", vendor: "aws", title: "Databases", isImplemented: false, platforms: both },
-  { id: "eventBridge", vendor: "aws", title: "EventBridge", isImplemented: true, platforms: ["mobile"] },
-  { id: "parameterStore", vendor: "aws", title: "Parameter Store", isImplemented: true, platforms: ["mobile"] },
+  { id: "eventBridge", vendor: "aws", title: "EventBridge", isImplemented: true, platforms: both },
+  { id: "parameterStore", vendor: "aws", title: "Parameter Store", isImplemented: true, platforms: both },
   { id: "cloudWatchAlarms", vendor: "aws", title: "CloudWatch Alarms", isImplemented: false, platforms: both },
 
-  { id: "billing", vendor: "tencent", title: "Billing", isImplemented: true, platforms: ["mobile"] },
+  { id: "billing", vendor: "tencent", title: "Billing", isImplemented: true, platforms: both },
   { id: "cos", vendor: "tencent", title: "COS Buckets", isImplemented: true, platforms: both },
-  { id: "camUsers", vendor: "tencent", title: "CAM Users", isImplemented: true, platforms: ["mobile"] },
-  { id: "camRoles", vendor: "tencent", title: "CAM Roles", isImplemented: true, platforms: ["mobile"] },
-  { id: "cvm", vendor: "tencent", title: "CVM Instances", isImplemented: true, platforms: ["mobile"] },
+  { id: "camUsers", vendor: "tencent", title: "CAM Users", isImplemented: true, platforms: both },
+  { id: "camRoles", vendor: "tencent", title: "CAM Roles", isImplemented: true, platforms: both },
+  { id: "cvm", vendor: "tencent", title: "CVM Instances", isImplemented: true, platforms: both },
   { id: "scf", vendor: "tencent", title: "Cloud Functions", isImplemented: false, platforms: ["mobile"] },
   { id: "cdb", vendor: "tencent", title: "CDB Databases", isImplemented: false, platforms: ["mobile"] },
-  { id: "tencentEventBridge", vendor: "tencent", title: "EventBridge (CEB)", isImplemented: true, platforms: ["mobile"] },
+  { id: "tencentEventBridge", vendor: "tencent", title: "EventBridge (CEB)", isImplemented: true, platforms: both },
   { id: "monitorAlarms", vendor: "tencent", title: "Cloud Monitor Alarms", isImplemented: false, platforms: ["mobile"] },
 
   { id: "azureBlob", vendor: "azure", title: "Blob Containers", isImplemented: true, platforms: ["chrome"] },
@@ -93,6 +95,8 @@ export const RESOURCE_KINDS: ResourceKind[] = [
   { id: "gcs", vendor: "gcp", title: "Cloud Storage", isImplemented: true, platforms: ["chrome"] },
   { id: "gceInstances", vendor: "gcp", title: "VM Instances", isImplemented: true, platforms: ["chrome"] },
   { id: "gceInstanceGroups", vendor: "gcp", title: "Instance Groups", isImplemented: true, platforms: ["chrome"] },
+  { id: "cloudRunServices", vendor: "gcp", title: "Cloud Run Services", isImplemented: true, platforms: ["chrome"] },
+  { id: "cloudRunJobs", vendor: "gcp", title: "Cloud Run Jobs", isImplemented: true, platforms: ["chrome"] },
   { id: "gcpSecrets", vendor: "gcp", title: "Secrets", isImplemented: true, platforms: ["chrome"] },
 ];
 

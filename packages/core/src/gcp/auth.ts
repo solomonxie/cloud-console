@@ -4,6 +4,11 @@
 // - "authorized_user": gcloud's application default credentials
 //   (~/.config/gcloud/application_default_credentials.json, written by
 //   `gcloud auth application-default login`) — a user refresh token.
+// - "impersonated_service_account": either of the above acting as a service
+//   account, like `--impersonate-service-account` (gcloud writes this type
+//   for `application-default login --impersonate-service-account`). Tokens
+//   and signatures come from the IAM Credentials API, so the source only
+//   needs roles/iam.serviceAccountTokenCreator on the target.
 //
 // API calls authenticate with a short-lived OAuth2 access token. A service
 // account gets one via the JWT Bearer Token flow (RFC 7523): sign a JWT with
@@ -16,7 +21,7 @@
 
 import { PKCS1_SHA256 } from "micro-rsa-dsa-dh/rsa.js";
 import { bytesToHex, canonicalQuery, encodePath, sha256Hex, toBytes } from "../crypto/hash.ts";
-import { base64ToBytes, bytesToBase64Url } from "./base64.ts";
+import { base64ToBytes, bytesToBase64, bytesToBase64Url } from "./base64.ts";
 
 export const SCOPE_CLOUD_PLATFORM = "https://www.googleapis.com/auth/cloud-platform";
 
@@ -39,15 +44,58 @@ export interface AuthorizedUser {
   token_uri?: string;
 }
 
-export type GoogleCredentials = ServiceAccountKey | AuthorizedUser;
+export interface ImpersonatedServiceAccount {
+  type: "impersonated_service_account";
+  // https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/<email>:generateAccessToken
+  service_account_impersonation_url: string;
+  source_credentials: ServiceAccountKey | AuthorizedUser;
+  delegates?: string[];
+}
 
-const CREDENTIAL_TYPES = ["service_account", "authorized_user"];
+export type GoogleCredentials = ServiceAccountKey | AuthorizedUser | ImpersonatedServiceAccount;
+
+const CREDENTIAL_TYPES = ["service_account", "authorized_user", "impersonated_service_account"];
+const IAM_CREDENTIALS = "https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts";
+const SERVICE_ACCOUNT_EMAIL = /^[^@\s]+@[^@\s]+\.iam\.gserviceaccount\.com$/;
+
+// Wraps `source` to act as `email`, the way `--impersonate-service-account`
+// does. `source` may itself be impersonated (an ADC file from gcloud); the
+// chain is flattened into its delegates, as gcloud does for a chain of
+// accounts.
+export function impersonate(source: GoogleCredentials, email: string): ImpersonatedServiceAccount {
+  const target = email.trim();
+  if (!SERVICE_ACCOUNT_EMAIL.test(target)) {
+    throw new Error(`"${target}" isn't a service account email (name@project.iam.gserviceaccount.com).`);
+  }
+  const base = source.type === "impersonated_service_account" ? source.source_credentials : source;
+  const delegates = source.type === "impersonated_service_account" ? [...(source.delegates ?? []), impersonatedEmail(source)] : [];
+  return {
+    type: "impersonated_service_account",
+    service_account_impersonation_url: `${IAM_CREDENTIALS}/${target}:generateAccessToken`,
+    source_credentials: base,
+    ...(delegates.length ? { delegates } : {}),
+  };
+}
+
+export function impersonatedEmail(creds: ImpersonatedServiceAccount): string {
+  const m = /serviceAccounts\/([^/:]+):generateAccessToken/.exec(creds.service_account_impersonation_url);
+  if (!m) throw new Error("Impersonated credentials have an unexpected service_account_impersonation_url.");
+  return decodeURIComponent(m[1]!);
+}
 
 // Returns an error message for a parsed credentials file this module can't
 // use, or null when it's fine.
 export function credentialsProblem(creds: unknown): string | null {
   if (!creds || typeof creds !== "object") return "Credentials must be a JSON object.";
   const c = creds as Record<string, unknown>;
+  if (c.type === "impersonated_service_account") {
+    if (typeof c.service_account_impersonation_url !== "string" || !/serviceAccounts\/[^/:]+:generateAccessToken/.test(c.service_account_impersonation_url)) {
+      return "Impersonated credentials are missing service_account_impersonation_url.";
+    }
+    const source = c.source_credentials as Record<string, unknown> | undefined;
+    if (source?.type === "impersonated_service_account") return "Impersonated credentials can't nest another impersonation.";
+    return credentialsProblem(source);
+  }
   if (c.type === "authorized_user") {
     if (!c.client_id || !c.client_secret || !c.refresh_token) {
       return "Credentials file is missing client_id, client_secret or refresh_token.";
@@ -63,7 +111,9 @@ export function credentialsProblem(creds: unknown): string | null {
   return null;
 }
 
-export function canSign(creds: GoogleCredentials): creds is ServiceAccountKey {
+// A service account key signs locally; an impersonated account signs
+// through IAM Credentials' signBlob. Plain user credentials can't sign.
+export function canSign(creds: GoogleCredentials): creds is ServiceAccountKey | ImpersonatedServiceAccount {
   return creds.type !== "authorized_user";
 }
 
@@ -240,6 +290,48 @@ async function fetchServiceAccountAccessToken(sa: ServiceAccountKey, scope: stri
   return postTokenRequest(sa.token_uri || TOKEN_URI, body.toString());
 }
 
+// IAM Credentials calls run as the source credentials (cloud-platform
+// scope); errors carry Google's message, e.g. the missing
+// iam.serviceAccounts.getAccessToken permission.
+async function iamCredentialsCall<T>(creds: ImpersonatedServiceAccount, url: string, body: unknown): Promise<T> {
+  const resp = await fetch(url, {
+    method: "POST",
+    headers: { ...(await authHeaders(creds.source_credentials)), "content-type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!resp.ok) {
+    const text = await resp.text().catch(() => "");
+    let detail = text;
+    try {
+      detail = (JSON.parse(text) as { error?: { message?: string } }).error?.message || text;
+    } catch {
+      // not JSON — keep raw text
+    }
+    throw new Error(`Impersonating ${impersonatedEmail(creds)} failed: ${resp.status} ${detail}`.trim());
+  }
+  return (await resp.json()) as T;
+}
+
+async function fetchImpersonatedAccessToken(creds: ImpersonatedServiceAccount, scope: string): Promise<CachedToken> {
+  const data = await iamCredentialsCall<{ accessToken: string; expireTime: string }>(creds, creds.service_account_impersonation_url, {
+    scope: [scope],
+    lifetime: "3600s",
+    ...(creds.delegates?.length ? { delegates: creds.delegates.map((d) => `projects/-/serviceAccounts/${d}`) } : {}),
+  });
+  return { accessToken: data.accessToken, expiresAt: Date.parse(data.expireTime) - 60_000 };
+}
+
+// Signs bytes as the impersonated service account (IAM Credentials signBlob,
+// RSA-SHA256 — the same signature a local key would make).
+async function signBlob(creds: ImpersonatedServiceAccount, data: string): Promise<Uint8Array> {
+  const email = impersonatedEmail(creds);
+  const res = await iamCredentialsCall<{ signedBlob: string }>(creds, `${IAM_CREDENTIALS}/${email}:signBlob`, {
+    payload: bytesToBase64(toBytes(data)),
+    ...(creds.delegates?.length ? { delegates: creds.delegates.map((d) => `projects/-/serviceAccounts/${d}`) } : {}),
+  });
+  return base64ToBytes(res.signedBlob);
+}
+
 // One cached token per (credential, scope), refreshed a minute before it
 // actually expires. In-flight requests are shared so parallel callers don't
 // each run a token exchange. Refresh-token scopes are fixed at gcloud login,
@@ -248,6 +340,10 @@ const tokenCache = new Map<string, CachedToken>();
 const inflight = new Map<string, Promise<CachedToken>>();
 
 function cacheKey(creds: GoogleCredentials, scope: string): string {
+  if (creds.type === "impersonated_service_account") {
+    const chain = [...(creds.delegates ?? []), impersonatedEmail(creds)].join(">");
+    return `imp:${chain}:${scope}:${cacheKey(creds.source_credentials, SCOPE_CLOUD_PLATFORM)}`;
+  }
   return creds.type === "authorized_user"
     ? `user:${creds.client_id}:${creds.refresh_token}`
     : `sa:${creds.client_email}:${scope}`;
@@ -270,7 +366,9 @@ export async function getAccessToken(
     pending =
       creds.type === "authorized_user"
         ? fetchUserAccessToken(creds)
-        : fetchServiceAccountAccessToken(creds, scope);
+        : creds.type === "impersonated_service_account"
+          ? fetchImpersonatedAccessToken(creds, scope)
+          : fetchServiceAccountAccessToken(creds, scope);
     inflight.set(key, pending);
   }
   try {
@@ -305,7 +403,7 @@ export async function authHeaders(
 // key and scoped to the pseudo-region "auto".
 
 export async function signedUrlV4(opts: {
-  serviceAccount: ServiceAccountKey;
+  serviceAccount: ServiceAccountKey | ImpersonatedServiceAccount;
   bucket: string;
   object: string;
   method?: string;
@@ -321,7 +419,8 @@ export async function signedUrlV4(opts: {
   const canonicalUri = encodePath(`/${bucket}/${object}`) || "/";
   const url = new URL(`https://${host}${canonicalUri}`);
   url.searchParams.set("X-Goog-Algorithm", "GOOG4-RSA-SHA256");
-  url.searchParams.set("X-Goog-Credential", `${serviceAccount.client_email}/${credentialScope}`);
+  const email = serviceAccount.type === "impersonated_service_account" ? impersonatedEmail(serviceAccount) : serviceAccount.client_email;
+  url.searchParams.set("X-Goog-Credential", `${email}/${credentialScope}`);
   url.searchParams.set("X-Goog-Date", googDate);
   url.searchParams.set("X-Goog-Expires", String(expiresIn));
   url.searchParams.set("X-Goog-SignedHeaders", "host");
@@ -336,7 +435,11 @@ export async function signedUrlV4(opts: {
   ].join("\n");
 
   const stringToSign = ["GOOG4-RSA-SHA256", googDate, credentialScope, sha256Hex(canonicalRequest)].join("\n");
-  const signature = bytesToHex(await rsaSha256Sign(serviceAccount.private_key, stringToSign));
+  const signature = bytesToHex(
+    serviceAccount.type === "impersonated_service_account"
+      ? await signBlob(serviceAccount, stringToSign)
+      : await rsaSha256Sign(serviceAccount.private_key, stringToSign)
+  );
   url.searchParams.set("X-Goog-Signature", signature);
   return url.toString();
 }

@@ -22,6 +22,7 @@ interface Crumb {
 }
 
 export function renderBreadcrumb(): void {
+  state.onPrefixChange?.(state.prefix);
   els.breadcrumb.innerHTML = "";
   const conn = state.conn;
   const crumbs: Crumb[] = [];

@@ -155,6 +155,7 @@ function resetState(conn: StorageConnection): void {
   state.filter = "";
   state.selectMode = false;
   state.selected = new Map();
+  state.onPrefixChange = null;
 }
 
 function updateToolbar(): void {
@@ -165,7 +166,12 @@ function updateToolbar(): void {
   updateClipboardUI();
 }
 
-export function bucketScreen(conn: StorageConnection, opts?: { title?: string; subtitle?: string }): Screen {
+// `actions(prefix)` builds extra header buttons for the folder being shown
+// (e.g. a star pinning that bucket/folder); rebuilt on every folder change.
+export function bucketScreen(
+  conn: StorageConnection,
+  opts?: { title?: string; subtitle?: string; actions?: (prefix: string) => Promise<HTMLElement[]> }
+): Screen {
   return {
     title: opts?.title ?? conn.name ?? conn.bucket,
     subtitle: opts?.subtitle ?? (conn.name && conn.name !== conn.bucket ? conn.bucket : undefined),
@@ -177,6 +183,11 @@ export function bucketScreen(conn: StorageConnection, opts?: { title?: string; s
       fillScreenIcons();
       wireScreen();
 
+      const extra = document.createElement("span");
+      extra.className = "screen-actions";
+      header.actions.append(extra);
+      let shown: string | null = null;
+      const buildActions = opts?.actions;
       if (isStored(conn)) {
         const edit = document.createElement("button");
         edit.type = "button";
@@ -189,6 +200,15 @@ export function bucketScreen(conn: StorageConnection, opts?: { title?: string; s
       }
 
       resetState(conn);
+      if (buildActions) {
+        state.onPrefixChange = (prefix) => {
+          if (prefix === shown) return;
+          shown = prefix;
+          void buildActions(prefix).then((btns) => {
+            if (shown === prefix) extra.replaceChildren(...btns);
+          });
+        };
+      }
       try {
         state.client = createClient(conn);
       } catch (err) {
@@ -205,6 +225,7 @@ export function bucketScreen(conn: StorageConnection, opts?: { title?: string; s
       if (els.shareModal.open) els.shareModal.close();
       state.client = null;
       state.conn = null;
+      state.onPrefixChange = null;
     },
   };
 }
