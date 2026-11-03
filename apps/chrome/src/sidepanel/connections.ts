@@ -22,6 +22,7 @@ import { detectBucketRegion } from "@cloud-console/core/storage/s3";
 import type { StorageType } from "@cloud-console/core/storage/types";
 import { validateKey as validateTencentKey } from "@cloud-console/core/tencent/sts";
 import { icon } from "../lib/icons.ts";
+import { saveBlob } from "../lib/save-file.ts";
 import { nav } from "../app/nav.ts";
 import { resourcesField, type ResourcesField } from "../app/resources-field.ts";
 import { STORAGE_KIND, storageKinds, VENDOR_NAME } from "../app/vendors.ts";
@@ -385,11 +386,7 @@ export async function importConnectionsFile(file: File): Promise<number> {
 }
 
 function downloadTextFile(filename: string, text: string): void {
-  const blob = new Blob([text], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  void chrome.downloads.download({ url, filename }).then(() => {
-    setTimeout(() => URL.revokeObjectURL(url), 60_000);
-  });
+  saveBlob(new Blob([text], { type: "application/json" }), filename);
 }
 
 // --- Wiring ------------------------------------------------------------------

@@ -5,6 +5,7 @@ import { formatSize } from "@cloud-console/core/storage/format";
 import type { ListPage } from "@cloud-console/core/storage/types";
 import { favoriteButton, loadFavorites, pinFavorites } from "../lib/favorites.ts";
 import { icon, iconForFileName } from "../lib/icons.ts";
+import { saveBlob } from "../lib/save-file.ts";
 import { applyFilter } from "../ui/search.ts";
 import { setClipboard } from "./clipboard.ts";
 import { isStored, openConnectionModal } from "./connections.ts";
@@ -458,9 +459,7 @@ export async function downloadObject(key: string, name: string): Promise<void> {
   try {
     const { client, bucket } = open();
     const blob = await withStatus(client.getObjectBlob(bucket, key), `Downloading ${name}…`);
-    const url = URL.createObjectURL(blob);
-    await chrome.downloads.download({ url, filename: name });
-    setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    saveBlob(blob, name);
   } catch {
     // withStatus already surfaced the error
   }

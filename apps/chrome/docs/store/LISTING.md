@@ -133,12 +133,6 @@ Stores the list of connections the user creates — bucket name, endpoint or reg
 The entire user interface is a side panel. This permission is what lets the extension open its file browser beside the current tab instead of in a popup that closes on every click.
 ```
 
-`downloads`
-
-```
-Used by the Download action to save an object from a bucket to the user's computer, and to save the JSON file produced by the "export connections" feature. It is only ever called in direct response to a click.
-```
-
 **Host permission justification**
 
 ```
