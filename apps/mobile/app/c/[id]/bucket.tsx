@@ -139,12 +139,19 @@ export default function BucketObjects() {
       },
     ]);
 
-  /** Presigned links: local signing only, no network or queue. */
+  /** Presigned links: signed locally (GCS impersonation signs through IAM). */
   const batchShare = async () => {
     if (!session) return;
     const keys = [...selected].filter((k) => result?.objects.some((o) => o.key === k)).sort();
     if (keys.length === 0) return;
-    await Clipboard.setStringAsync(keys.map((k) => cloud.presignedUrl(session, service, bucket, region, k)).join("\n"));
+    let links: string[];
+    try {
+      links = await Promise.all(keys.map((k) => cloud.presignedUrl(session, service, bucket, region, k)));
+    } catch (e) {
+      Alert.alert("Couldn't make links", errorMessage(e));
+      return;
+    }
+    await Clipboard.setStringAsync(links.join("\n"));
     Alert.alert("Links Copied", `${plural(keys.length, "link")} copied to the clipboard. Each is valid for 1 hour.`);
     setSelected(new Set());
     setSelecting(false);

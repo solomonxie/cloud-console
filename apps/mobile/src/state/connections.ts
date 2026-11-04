@@ -12,6 +12,8 @@ export interface Connection {
   vendor: VendorId;
   name: string;
   addedAt: string; // ISO 8601
+  /** Google Cloud: the project its screens show. */
+  project?: string;
 }
 
 /** Swift's CloudVendor raw values, used in stored/demo JSON. */
@@ -23,8 +25,8 @@ const listKey = () => (isDemo() ? "demo.connections.list" : "connections.list");
 
 export const connections = createStore<Connection[]>([]);
 
-function normalize(raw: { id: string; vendor: string; name: string; addedAt: string }): Connection {
-  return { id: raw.id, vendor: RAW_TO_ID[raw.vendor] ?? (raw.vendor as VendorId), name: raw.name, addedAt: raw.addedAt };
+function normalize(raw: { id: string; vendor: string; name: string; addedAt: string; project?: string }): Connection {
+  return { id: raw.id, vendor: RAW_TO_ID[raw.vendor] ?? (raw.vendor as VendorId), name: raw.name, addedAt: raw.addedAt, project: raw.project };
 }
 
 export async function loadConnections(): Promise<void> {
@@ -51,10 +53,14 @@ export function newId(): string {
   return demo.newId();
 }
 
-export async function addConnection(vendor: VendorId, name: string, credential: StoredCredential): Promise<void> {
-  const connection: Connection = { id: newId(), vendor, name, addedAt: new Date().toISOString() };
+export async function addConnection(vendor: VendorId, name: string, credential: StoredCredential, project?: string): Promise<void> {
+  const connection: Connection = { id: newId(), vendor, name, addedAt: new Date().toISOString(), ...(project ? { project } : {}) };
   if (!isDemo()) await saveCredential(connection.id, credential);
   await persist([...connections.get(), connection]);
+}
+
+export async function setProject(connectionID: string, project: string): Promise<void> {
+  await persist(connections.get().map((c) => (c.id === connectionID ? { ...c, project } : c)));
 }
 
 export async function removeConnection(connection: Connection): Promise<void> {

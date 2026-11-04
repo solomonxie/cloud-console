@@ -16,6 +16,9 @@ export const nav = {
   principal: (id: string, kind: "user" | "role", item: unknown) => router.push({ pathname: "/c/[id]/principal", params: { id, kind, item: json(item) } }),
   event: (id: string, item: unknown) => router.push({ pathname: "/c/[id]/event", params: { id, item: json(item) } }),
   parameter: (id: string, parameter: unknown) => router.push({ pathname: "/c/[id]/parameter", params: { id, parameter: json(parameter) } }),
+  gce: (id: string, instance: unknown) => router.push({ pathname: "/c/[id]/gce", params: { id, instance: json(instance) } }),
+  runJob: (id: string, job: unknown) => router.push({ pathname: "/c/[id]/run-job", params: { id, job: json(job) } }),
+  secret: (id: string, secret: unknown) => router.push({ pathname: "/c/[id]/secret", params: { id, secret: json(secret) } }),
   detail: (id: string, title: string, fields: unknown) => router.push({ pathname: "/c/[id]/detail", params: { id, title, fields: json(fields) } }),
   billingDetail: (id: string, service: unknown, bill: unknown) =>
     router.push({ pathname: "/c/[id]/billing-detail", params: { id, service: json(service), bill: json(bill) } }),

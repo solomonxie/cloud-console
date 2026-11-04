@@ -11,6 +11,13 @@ import { cvmDetailFields } from "@cloud-console/core/tencent/cvm";
 import type { SSMParameter } from "@cloud-console/core/aws/parameter-store";
 import { isSecure } from "@cloud-console/core/aws/parameter-store";
 import { eventBridgeItemId, type EventBridgeItem } from "@cloud-console/core/events";
+import type { InstanceSummary } from "@cloud-console/core/gcp/compute";
+import type { RunJobSummary, RunServiceSummary } from "@cloud-console/core/gcp/run";
+import type { SecretSummary } from "@cloud-console/core/gcp/secrets";
+import { fields } from "@cloud-console/core/detail";
+import { formatDateTime } from "@cloud-console/core/format";
+import { ProjectPicker } from "../../../src/components/ProjectPicker";
+import { gceStatus, READY } from "../../../src/gcpLabels";
 import * as cloud from "../../../src/services/cloud";
 import { useLoad, useSession } from "../../../src/components/hooks";
 import { ResourceRow } from "../../../src/components/ui";
@@ -37,7 +44,16 @@ export default function KindScreen() {
       return <BillingScreen session={session} />;
     case "s3":
     case "cos":
-      return <BucketList session={session} title={meta.title} icon={icon} color={color} service={meta.id === "s3" ? "s3" : "cos"} id={id} />;
+    case "gcs":
+      return <BucketList session={session} title={meta.title} icon={icon} color={color} service={meta.id} id={id} />;
+    case "gceInstances":
+      return <GCEList session={session} title={meta.title} icon={icon} color={color} id={id} />;
+    case "cloudRunServices":
+      return <RunServiceList session={session} title={meta.title} icon={icon} color={color} id={id} />;
+    case "cloudRunJobs":
+      return <RunJobList session={session} title={meta.title} icon={icon} color={color} id={id} />;
+    case "gcpSecrets":
+      return <SecretList session={session} title={meta.title} icon={icon} color={color} id={id} />;
     case "iamUsers":
     case "camUsers":
       return <UserList session={session} title={meta.title} icon={icon} color={color} id={id} />;
@@ -113,10 +129,11 @@ export default function KindScreen() {
 
 type ListProps = { session?: cloud.Session; title: string; icon: string; color: string; id: string };
 
-function BucketList({ service, ...p }: ListProps & { service: "s3" | "cos" }) {
+function BucketList({ service, ...p }: ListProps & { service: "s3" | "cos" | "gcs" }) {
   const data = useLoad<Bucket[]>(p.session, (s, force) => cloud.listBuckets(s, service, force));
   return (
     <ResourceList
+      header={service === "gcs" ? <ProjectPicker session={p.session} connectionID={p.id} /> : undefined}
       title={p.title}
       icon={p.icon}
       data={data}
@@ -184,6 +201,89 @@ function TencentEvents(p: ListProps) {
       data={data}
       keyOf={eventBridgeItemId}
       renderItem={(item) => <EventRow item={item} color={p.color} showRegion onPress={() => nav.event(p.id, item)} />}
+    />
+  );
+}
+
+function GCEList(p: ListProps) {
+  const data = useLoad<InstanceSummary[]>(p.session, cloud.listGCE);
+  return (
+    <ResourceList
+      header={<ProjectPicker session={p.session} connectionID={p.id} />}
+      title={p.title}
+      icon={p.icon}
+      data={data}
+      keyOf={(i) => `${i.zoneName}/${i.name}`}
+      renderItem={(i) => (
+        <ResourceRow icon="server.rack" color={p.color} title={i.name} subtitle={`${i.machineTypeName} · ${gceStatus(i.status)} · ${i.zoneName}`} onPress={() => nav.gce(p.id, i)} />
+      )}
+    />
+  );
+}
+
+function RunServiceList(p: ListProps) {
+  const data = useLoad<RunServiceSummary[]>(p.session, cloud.listRunServices);
+  return (
+    <ResourceList
+      header={<ProjectPicker session={p.session} connectionID={p.id} />}
+      title={p.title}
+      icon={p.icon}
+      data={data}
+      keyOf={(x) => x.name}
+      renderItem={(x) => (
+        <ResourceRow
+          icon="shippingbox.fill"
+          color={p.color}
+          title={x.serviceId}
+          subtitle={`${READY[x.ready]} · ${x.region}`}
+          onPress={() =>
+            nav.detail(
+              p.id,
+              x.serviceId,
+              fields([
+                ["URL", x.uri],
+                ["Status", READY[x.ready]],
+                ["Region", x.region],
+                ["Ingress", x.ingress?.replace(/^INGRESS_TRAFFIC_/, "").replace(/_/g, " ").toLowerCase()],
+                ["Revision", x.latestReadyRevision?.split("/").pop()],
+                ["Image", x.template?.containers?.[0]?.image],
+                ["Updated", x.updateTime ? formatDateTime(x.updateTime) : undefined],
+                ["Updated by", x.lastModifier],
+              ])
+            )
+          }
+        />
+      )}
+    />
+  );
+}
+
+function RunJobList(p: ListProps) {
+  const data = useLoad<RunJobSummary[]>(p.session, cloud.listRunJobs);
+  return (
+    <ResourceList
+      header={<ProjectPicker session={p.session} connectionID={p.id} />}
+      title={p.title}
+      icon={p.icon}
+      data={data}
+      keyOf={(x) => x.name}
+      renderItem={(x) => <ResourceRow icon="play.rectangle.fill" color={p.color} title={x.jobId} subtitle={`${READY[x.ready]} · ${x.region}`} onPress={() => nav.runJob(p.id, x)} />}
+    />
+  );
+}
+
+function SecretList(p: ListProps) {
+  const data = useLoad<SecretSummary[]>(p.session, cloud.listSecrets);
+  return (
+    <ResourceList
+      header={<ProjectPicker session={p.session} connectionID={p.id} />}
+      title={p.title}
+      icon={p.icon}
+      data={data}
+      keyOf={(x) => x.name}
+      renderItem={(x) => (
+        <ResourceRow icon="key.fill" color={p.color} title={x.secretId} subtitle={x.createTime ? `Created ${formatDateTime(x.createTime)}` : undefined} onPress={() => nav.secret(p.id, x)} />
+      )}
     />
   );
 }

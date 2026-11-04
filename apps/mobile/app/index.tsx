@@ -75,7 +75,7 @@ function ConnectionCard({ connection }: { connection: Connection }) {
             {connection.name}
           </Text>
           <Text style={{ color: theme.secondary, fontSize: 12 }}>
-            {vendor.name} · added {formatMonthDay(connection.addedAt)}
+            {connection.vendor === "gcp" && connection.project ? `${vendor.name} · ${connection.project}` : `${vendor.name} · added ${formatMonthDay(connection.addedAt)}`}
           </Text>
         </View>
         <Pressable accessibilityLabel="Connection options" hitSlop={10} onPress={menu}>

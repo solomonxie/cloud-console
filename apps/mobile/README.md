@@ -45,9 +45,10 @@ The same commands work as `npm run start | ios | typecheck | export:ios | doctor
 app/                     expo-router screens
   _layout.tsx            boot: settings → lock → connections → queue; lock on background
   index.tsx              Home: connection cards + Settings card
-  add/                   provider picker, access-key form (test via STS, save to Keychain)
+  add/                   provider picker, access-key form (test via STS, save to Keychain); Google Cloud → src/screens/AddGoogle.tsx
   c/[id]/[kind].tsx      a connection's resource list for one kind
   c/[id]/{bucket,object,destination,ec2,lambda,principal,event,parameter,detail,billing-detail}.tsx
+  c/[id]/{gce,run-job,secret}.tsx   Google Cloud VM, Cloud Run job, secret
   operations.tsx         Process Queue
   passcode-setup.tsx
 src/services/            cloud.ts (demo-aware API layer), keychain, settings, applock, queue, cache, demo
@@ -77,6 +78,7 @@ Done (code and typechecks only; not yet run on a device):
 - [x] EventBridge (AWS, regional: rules, buses, Scheduler schedules) and Tencent CEB (5 regions): list and detail with documents
 - [x] Parameter Store: regional list; values fetched on the detail page and never cached; SecureString shown only after tapping Reveal
 - [x] Tencent CVM: list and key/value detail
+- [x] Google Cloud (beyond the Swift app): credentials JSON from Files or clipboard, optional impersonation, per-connection project picker; Cloud Storage in the shared bucket browser; VMs with start/stop/reset; Cloud Run services and jobs (run now); Secret Manager reveal; demo fixture
 
 Not yet at parity:
 

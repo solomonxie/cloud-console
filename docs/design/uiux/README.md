@@ -30,7 +30,7 @@ Text mockups for the direct-connect console design (no backend, no IaC
 |---|---|---|
 | `components.md` | connection row, resource row, credential field | drawn |
 | Home | connection list, empty state, add sheet | implemented |
-| Add connection | provider picker, single access-key form | implemented |
+| Add connection | provider picker, single access-key form; Google Cloud: credentials JSON (file / clipboard) + optional act-as service account | implemented |
 | Connection detail | resource kind picker (S3 live, rest "coming soon") | implemented |
 | Buckets | bucket list w/ region, folder/object browser | implemented |
 

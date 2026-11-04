@@ -1,6 +1,6 @@
 # Google Cloud access
 
-The Google Cloud section talks straight to Google's APIs with one credential
+On the iPhone and in Chrome. The Google Cloud section talks straight to Google's APIs with one credential
 you supply. It can only do what that credential's own IAM roles allow — there
 is no backend and no way for the app to grant itself more. This page lists
 which roles each view needs and how to get a credential.
@@ -14,8 +14,18 @@ Two kinds of JSON file are accepted, pasted or loaded with "Load from file…":
 | `service_account` | A service account JSON key (IAM & Admin → Service Accounts → Keys → Add key → JSON). | The app signs a JWT with the key and exchanges it for a token (scope `https://www.googleapis.com/auth/cloud-platform`). |
 | `authorized_user` | gcloud's application default credentials (ADC) for your own Google account. | Uses the refresh token gcloud stored. Acts as you, with your IAM roles. |
 
-The credentials are stored only in `chrome.storage.local` on this device and
-are sent only to `oauth2.googleapis.com` to get access tokens.
+The credentials are stored only in `chrome.storage.local` (Chrome) or the
+Keychain (iPhone) and are sent only to Google to get access tokens.
+
+### On the iPhone
+
+Add connection → Google Cloud → **Choose file…** (AirDrop / iCloud Drive) or
+**Paste from clipboard** (copy on a Mac, Universal Clipboard). Easiest: a
+service account key (see the example below).
+
+Optional **Act as service account** = gcloud's
+`--impersonate-service-account`. The starting project is the key's
+`project_id` (or ADC's quota project); switch with the **Project** bar atop any GCP list.
 
 ### Producing ADC
 
@@ -64,6 +74,11 @@ roles are listed; a custom role with just the listed permissions works too.
 | Instance groups — list, members | `roles/compute.viewer` | `compute.instanceGroups.list`, `compute.instanceGroupManagers.list`, `compute.instanceGroups.get` |
 | Secrets — list secrets and versions | `roles/secretmanager.viewer` | `secretmanager.secrets.list`, `secretmanager.versions.list` |
 | Secrets — Reveal / copy a value | `roles/secretmanager.secretAccessor` | `secretmanager.versions.access` |
+| Cloud Storage — bucket list | `roles/storage.bucketViewer` | `storage.buckets.list` |
+| Cloud Storage — browse, preview | `roles/storage.objectViewer` | `storage.objects.list`, `.get` |
+| Cloud Storage — upload, rename, delete | `roles/storage.objectAdmin` | `storage.objects.create`, `.delete` |
+| Cloud Run — services, jobs | `roles/run.viewer` | `run.services.list`, `run.jobs.list` |
+| Cloud Run — run a job | `roles/run.invoker` | `run.jobs.run` |
 
 Notes:
 

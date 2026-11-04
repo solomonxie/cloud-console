@@ -20,6 +20,14 @@ import * as cvm from "@cloud-console/core/tencent/cvm";
 import * as ceb from "@cloud-console/core/tencent/eventbridge";
 import * as tcSts from "@cloud-console/core/tencent/sts";
 import { COSObjectStore } from "@cloud-console/core/tencent/cos";
+import { getAccessToken, type GoogleCredentials } from "@cloud-console/core/gcp/auth";
+import { accountCredentials, defaultProject } from "@cloud-console/core/gcp/credentials";
+import { GcsObjectStore } from "@cloud-console/core/gcp/gcs-objects";
+import { listBuckets as listGcsBuckets } from "@cloud-console/core/gcp/buckets";
+import { listProjects, type GcpProject } from "@cloud-console/core/gcp/projects";
+import * as gce from "@cloud-console/core/gcp/compute";
+import * as run from "@cloud-console/core/gcp/run";
+import * as secrets from "@cloud-console/core/gcp/secrets";
 import { DemoUnavailableError, demoFixtureName } from "@cloud-console/core/demo/cloud";
 import type { ObjectStore, StorageService } from "@cloud-console/core/object-store";
 import type { ListPage } from "@cloud-console/core/storage/types";
@@ -40,20 +48,31 @@ export interface Session {
   id: string;
   aws: AwsKey;
   tencent: TencentKey;
+  google?: GoogleCredentials;
+  /** Google Cloud project the screens show ("" when none is known yet). */
+  project: string;
 }
+
+const DEMO_GCP_PROJECT = "fernhill-prod";
 
 export async function openSession(connection: Connection): Promise<Session> {
   if (isDemo()) {
     const id = demoFixtureName(connection.vendor);
-    return { connection, id, aws: { accessKeyId: id, secretAccessKey: "demo" }, tencent: { secretId: id, secretKey: "demo" } };
+    return { connection, id, aws: { accessKeyId: id, secretAccessKey: "demo" }, tencent: { secretId: id, secretKey: "demo" }, project: connection.project ?? DEMO_GCP_PROJECT };
   }
   const stored = await loadCredential(connection.id);
+  if (stored && "google" in stored) {
+    const google = accountCredentials(stored.google.json, stored.google.impersonate);
+    // Cache keys need a stable per-connection id; Google creds have no short key id.
+    return { connection, id: connection.id, aws: { accessKeyId: "", secretAccessKey: "" }, tencent: { secretId: "", secretKey: "" }, google, project: connection.project ?? defaultProject(google) ?? "" };
+  }
   const pair = stored && "keyPair" in stored ? stored.keyPair : { id: "", secret: "" };
   return {
     connection,
     id: pair.id,
     aws: { accessKeyId: pair.id, secretAccessKey: pair.secret },
     tencent: { secretId: pair.id, secretKey: pair.secret },
+    project: "",
   };
 }
 
@@ -82,6 +101,22 @@ export async function validateKey(vendor: VendorId, id: string, secret: string):
   else if (vendor === "tencent") await tcSts.validateKey({ secretId: id, secretKey: secret });
 }
 
+/**
+ * Google credentials (pasted/loaded JSON, optional service account to act as)
+ * checked by minting a token, and the project to start in: the one the
+ * credentials name, else the first one they can list.
+ */
+export async function validateGoogle(json: string, impersonate?: string): Promise<{ creds: GoogleCredentials; project: string }> {
+  const creds = accountCredentials(json, impersonate || undefined);
+  if (isDemo()) return { creds, project: defaultProject(creds) ?? DEMO_GCP_PROJECT };
+  await getAccessToken(creds);
+  const named = defaultProject(creds);
+  if (named) return { creds, project: named };
+  const listed = await listProjects(creds).catch(() => []);
+  if (!listed[0]) throw new Error("These credentials don't name a project and can't list any. Grant roles/browser on a project, or set a quota project.");
+  return { creds, project: listed[0].projectId };
+}
+
 // Regions (cached a day)
 
 export async function awsRegions(s: Session, force = false): Promise<string[]> {
@@ -97,11 +132,18 @@ export async function awsRegions(s: Session, force = false): Promise<string[]> {
 // Storage
 
 export function objectStore(s: Session, service: StorageService): ObjectStore {
+  if (service === "gcs") return new GcsObjectStore(google(s));
   return service === "s3" ? new S3ObjectStore(s.aws) : new COSObjectStore(s.tencent);
 }
 
 export function listBuckets(s: Session, service: StorageService, force: boolean): Promise<Bucket[]> {
   if (service === "s3") return cached(`s3-buckets:${s.id}`, () => listBucketsWithRegions(s.aws), { force });
+  if (service === "gcs")
+    return cached(
+      `gcs-buckets:${s.id}:${s.project}`,
+      async () => (await listGcsBuckets(google(s), s.project)).map((b) => ({ name: b.name, region: b.location?.toLowerCase(), creationDate: b.timeCreated })),
+      { force }
+    );
   return cached(`cos-buckets:${s.id}`, () => new COSObjectStore(s.tencent).listBuckets(), { force });
 }
 
@@ -116,7 +158,7 @@ export async function downloadObject(s: Session, service: StorageService, bucket
   return objectStore(s, service).download(bucket, region, key);
 }
 
-export function presignedUrl(s: Session, service: StorageService, bucket: string, region: string, key: string): string {
+export async function presignedUrl(s: Session, service: StorageService, bucket: string, region: string, key: string): Promise<string> {
   return objectStore(s, service).presignedUrl(bucket, region, key, 3600);
 }
 
@@ -251,4 +293,53 @@ export async function eventDetail(s: Session, item: EventBridgeItem): Promise<Re
 export async function parameterValue(s: Session, p: ssm.SSMParameter): Promise<string> {
   if (isDemo()) return demo.parameterValue(s.id, p.name);
   return ssm.parameterValue(s.aws, p, ssm.isSecure(p));
+}
+
+// Google Cloud
+
+function google(s: Session): GoogleCredentials {
+  if (!s.google) throw new Error("This connection has no Google credentials.");
+  return s.google;
+}
+
+function inProject<T>(s: Session, kind: string, fetch: (creds: GoogleCredentials, project: string) => Promise<T>, force: boolean): Promise<T> {
+  if (!s.project && !isDemo()) return Promise.reject(new Error("No project selected — pick one above."));
+  return cached(`${kind}:${s.id}:${s.project}`, () => fetch(google(s), s.project), { force });
+}
+
+/** Falls back to the session's own project when the credential can't list any. */
+export async function gcpProjects(s: Session, force: boolean): Promise<GcpProject[]> {
+  const listed = await cached(`gcp-projects:${s.id}`, () => listProjects(google(s)), { force }).catch((e: unknown) => {
+    if (!s.project) throw e;
+    return [] as GcpProject[];
+  });
+  if (s.project && !listed.some((p) => p.projectId === s.project)) return [{ projectId: s.project, projectNumber: "" }, ...listed];
+  return listed;
+}
+
+export const listGCE = (s: Session, force: boolean) => inProject(s, "gce-instances", gce.listInstances, force);
+export const listRunServices = (s: Session, force: boolean) => inProject(s, "run-services", run.listServices, force);
+export const listRunJobs = (s: Session, force: boolean) => inProject(s, "run-jobs", run.listJobs, force);
+export const listSecrets = (s: Session, force: boolean) => inProject(s, "gcp-secrets", secrets.listSecrets, force);
+
+export async function gceAction(s: Session, i: gce.InstanceSummary, action: gce.InstanceAction): Promise<void> {
+  if (isDemo()) throw new DemoUnavailableError();
+  await gce.instanceAction(google(s), s.project, i.zoneName, i.name, action);
+}
+
+export async function gceInstance(s: Session, i: gce.InstanceSummary): Promise<gce.InstanceSummary> {
+  if (isDemo()) return i;
+  return gce.getInstance(google(s), s.project, i.zoneName, i.name);
+}
+
+export async function runJob(s: Session, job: run.RunJobSummary): Promise<void> {
+  if (isDemo()) throw new DemoUnavailableError();
+  await run.runJob(google(s), job.name);
+}
+
+/** Never cached. Text, or a note when the value is binary. */
+export async function secretValue(s: Session, secretId: string): Promise<string> {
+  if (isDemo()) return demo.value<string>(`gcp-secret-value@${secretId}:gcp`);
+  const payload = await secrets.accessSecretVersion(google(s), s.project, secretId);
+  return payload.text ?? `(binary, ${payload.bytes.length} bytes)`;
 }

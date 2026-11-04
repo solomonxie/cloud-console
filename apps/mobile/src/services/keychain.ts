@@ -3,7 +3,11 @@
 import * as SecureStore from "expo-secure-store";
 
 /** Same JSON shape the Swift app stored (`StoredCredential`). */
-export type StoredCredential = { keyPair: { id: string; secret: string } } | { single: { _0: string } };
+export type StoredCredential =
+  | { keyPair: { id: string; secret: string } }
+  | { single: { _0: string } }
+  /** Google credentials JSON, optionally acting as a service account. */
+  | { google: { json: string; impersonate?: string } };
 
 const options: SecureStore.SecureStoreOptions = {
   keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY,

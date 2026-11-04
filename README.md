@@ -67,8 +67,11 @@ show in the UI — the single list is `packages/core/src/catalog.ts`
 |---|---|---|---|---|---|---|---|
 | AWS | Cost Explorer | S3 (browse, preview, share, upload, copy/move/rename/delete) | IAM + policies | EC2 + status checks, metrics | Lambda: list, run, live logs | EventBridge rules, buses, schedules | SSM Parameter Store (SecureString revealed on tap) |
 | Tencent Cloud | bill summary, balance | COS | CAM + policies | CVM | — | EventBridge (CEB) | — |
+| Google Cloud | — | Cloud Storage (same browser as S3) | — | VM instances: start/stop/reset | Cloud Run services; jobs: run now | — | Secret Manager (reveal on tap) |
 
-Not yet: RDS, alarms, Tencent SCF/CDB; Azure, Google Cloud, Alibaba.
+Google Cloud connects with a service account key, gcloud ADC, or either acting
+as a service account; loaded from Files or the clipboard. Each GCP list has a
+project picker on top (as in Chrome). Not yet: RDS, alarms, Tencent SCF/CDB, GCP billing; Azure, Alibaba.
 
 ### Chrome
 

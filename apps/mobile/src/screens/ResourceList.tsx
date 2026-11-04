@@ -7,7 +7,7 @@ import type { Loadable } from "../components/hooks";
 
 const PAGE = 20;
 
-export function ResourceList<T>({ title, icon, data, renderItem, keyOf }: { title: string; icon: string; data: Loadable<T[]>; renderItem: (item: T) => ReactNode; keyOf: (item: T) => string }) {
+export function ResourceList<T>({ title, icon, data, renderItem, keyOf, header }: { title: string; icon: string; data: Loadable<T[]>; renderItem: (item: T) => ReactNode; keyOf: (item: T) => string; header?: ReactNode }) {
   const [visible, setVisible] = useState(PAGE);
   const items = data.value ?? [];
   let body: ReactNode;
@@ -46,6 +46,7 @@ export function ResourceList<T>({ title, icon, data, renderItem, keyOf }: { titl
   return (
     <>
       <Stack.Screen options={{ title }} />
+      {header}
       {body}
     </>
   );

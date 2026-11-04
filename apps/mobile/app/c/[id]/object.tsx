@@ -67,9 +67,14 @@ export default function ObjectDetail() {
     }
   };
 
-  const shareLink = () => {
+  const shareLink = async () => {
     if (!session) return;
-    void Share.share({ url: cloud.presignedUrl(session, service, bucket, region, object.key), message: Platform.OS === "ios" ? undefined : cloud.presignedUrl(session, service, bucket, region, object.key) });
+    try {
+      const url = await cloud.presignedUrl(session, service, bucket, region, object.key);
+      await Share.share({ url, message: Platform.OS === "ios" ? undefined : url });
+    } catch (e) {
+      Alert.alert("Couldn't make a link", errorMessage(e));
+    }
   };
 
   const transfer = (kind: "copy" | "move") => {
@@ -83,7 +88,7 @@ export default function ObjectDetail() {
   const menu = () => {
     const options = ["Share Link", "Rename", "Duplicate", "Copy to…", "Move to…", "Delete", "Cancel"];
     const run = (i: number) => {
-      if (i === 0) shareLink();
+      if (i === 0) void shareLink();
       else if (i === 1)
         Alert.prompt("Rename", undefined, [
           { text: "Cancel", style: "cancel" },

@@ -20,7 +20,7 @@ export function useSession(): { connection?: Connection; session?: Session } {
     return () => {
       live = false;
     };
-  }, [connection?.id, demoOn]);
+  }, [connection?.id, connection?.project, demoOn]);
   return { connection, session };
 }
 

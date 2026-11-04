@@ -3,5 +3,6 @@ import { DemoCloud } from "@cloud-console/core/demo/cloud";
 import connections from "../../../../packages/demo/connections.json";
 import aws from "../../../../packages/demo/aws.json";
 import tencent from "../../../../packages/demo/tencent.json";
+import gcp from "../../../../packages/demo/gcp.json";
 
-export const demo = new DemoCloud({ connections, aws, tencent });
+export const demo = new DemoCloud({ connections, aws, tencent, gcp });

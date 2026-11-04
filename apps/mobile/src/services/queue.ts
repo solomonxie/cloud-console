@@ -34,7 +34,7 @@ export const queue = new OperationQueue({
       const stored = await loadCredential(connectionID);
       if (!stored) return undefined;
     }
-    const session = await openSession(connection ?? { id: connectionID, vendor: service === "cos" ? "tencent" : "aws", name: "", addedAt: "" });
+    const session = await openSession(connection ?? { id: connectionID, vendor: service === "cos" ? "tencent" : service === "gcs" ? "gcp" : "aws", name: "", addedAt: "" });
     if (!session.id) return undefined;
     return objectStore(session, service);
   },

@@ -66,20 +66,48 @@ Secret access key
 ┌─────────────────────────────┐
 │ ••••••••••                  │
 └─────────────────────────────┘
+📄 Choose file…                  key .txt / console accessKeys.csv
 
 Stored only in this device's Keychain. This app only ever does
 what this key's own permissions allow.
 ```
 
+- "Learn how to create a key" is small grey text at the very bottom of
+  the page, away from the action buttons.
+- "Choose file…" fills both fields from a Files document (same parser
+  as paste, plus the console's CSV); the cached copy is deleted.
 - One key pair per connection, always. No dual-key, no CI/device
   split — this app has no CI to split against.
 - Footer states the security property in plain language every time;
   the (i) next to "Access key" carries the rest (where to find one,
   what to scope it to).
-- "Test & add" runs STS `GetCallerIdentity` before saving — proves the
+- "Add Connection" runs STS `GetCallerIdentity` before saving — proves the
   key is live without assuming S3 access (a key scoped to only
   EC2/Lambda should still pass). Failure keeps the sheet open, fields
   intact, error shown inline — never silently discards what was typed.
+
+## Credentials JSON field (Add Google Cloud)
+
+```
+CREDENTIALS JSON                              (i)
+╭──────────────────────────────────╮
+│ 📄 Choose file…                  │   AirDrop / iCloud Drive
+│ 📋 Paste from clipboard          │   Universal Clipboard from a Mac
+╰──────────────────────────────────╯
+        ── after loading ──
+│ Type       Service account key   │
+│ Identity   phone@proj.iam…       │
+│ ↩ Use a different file           │
+
+ACT AS SERVICE ACCOUNT
+│ name@project.iam.gserviceaccount.com │   optional
+```
+
+- Never shows the JSON itself — only type and identity. The picked
+  file's cached copy is deleted right after reading.
+- "Add Connection" mints a token, then picks the starting project (key's
+  `project_id`, ADC quota project, else first listed). Home shows it
+  under the connection name; the Project bar atop every GCP list switches it.
 
 ## Bucket row (region-tagged)
 

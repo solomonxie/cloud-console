@@ -48,7 +48,7 @@ No capabilities needed (no iCloud, no push, no App Groups). Face ID needs only `
 
 - [ ] `make device` → Release build on the connected iPhone (`STORE=us`).
 - [ ] Smoke test, real account (a read-only IAM key is enough for most of it):
-  - Add connection → AWS → paste key → Test & add succeeds; a wrong secret shows an error. Same for Tencent Cloud.
+  - Add connection → AWS → paste key → Add Connection succeeds; a wrong secret shows an error. Same for Tencent Cloud.
   - "Learn how to create →" opens the help page (after it's pushed).
   - Billing: month-to-date and monthly history.
   - S3: open a bucket, a folder, preview an object, share it; upload a photo, rename/move/delete a test file, check Process Queue.
