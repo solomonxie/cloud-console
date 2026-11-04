@@ -143,13 +143,13 @@ export default function ObjectDetail() {
         options={{
           title: name,
           headerLeft: () => (
-            <Pressable onPress={() => router.back()} hitSlop={8}>
-              <Text style={{ color: theme.tint, fontSize: 17 }}>Close</Text>
+            <Pressable accessibilityLabel="Close" onPress={() => router.back()} hitSlop={10} style={{ padding: 6 }}>
+              <Icon name="xmark" color={theme.text} size={17} />
             </Pressable>
           ),
           headerRight: () => (
-            <Pressable accessibilityLabel="Actions" onPress={menu} hitSlop={8}>
-              <Icon name="ellipsis.circle" color={theme.tint} size={20} />
+            <Pressable accessibilityLabel="Actions" onPress={menu} hitSlop={10} style={{ padding: 6 }}>
+              <Icon name="ellipsis" color={theme.text} size={17} />
             </Pressable>
           ),
         }}

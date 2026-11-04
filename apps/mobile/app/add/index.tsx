@@ -3,7 +3,7 @@ import React from "react";
 import { Pressable } from "react-native";
 import { router, Stack } from "expo-router";
 import { availableVendors } from "@cloud-console/core/catalog";
-import { Badge, Row, Screen, Section, Title } from "../../src/components/ui";
+import { Badge, Icon, Row, Screen, Section, Title } from "../../src/components/ui";
 import { VENDOR_ICON } from "../../src/vendors";
 import { useTheme, VENDOR_ACCENT } from "../../src/theme";
 import { Text } from "react-native";
@@ -15,8 +15,8 @@ export default function AddCloud() {
       <Stack.Screen
         options={{
           headerLeft: () => (
-            <Pressable onPress={() => router.back()} hitSlop={10}>
-              <Text style={{ color: theme.tint, fontSize: 17 }}>Cancel</Text>
+            <Pressable accessibilityLabel="Cancel" onPress={() => router.back()} hitSlop={10} style={{ padding: 6 }}>
+              <Icon name="xmark" color={theme.text} size={17} />
             </Pressable>
           ),
         }}

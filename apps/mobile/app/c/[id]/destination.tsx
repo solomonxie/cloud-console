@@ -52,8 +52,8 @@ export default function DestinationPicker() {
       <Stack.Screen
         options={{
           headerLeft: () => (
-            <Pressable onPress={() => router.back()} hitSlop={8}>
-              <Text style={{ color: theme.tint, fontSize: 17 }}>Cancel</Text>
+            <Pressable accessibilityLabel="Cancel" onPress={() => router.back()} hitSlop={10} style={{ padding: 6 }}>
+              <Icon name="xmark" color={theme.text} size={17} />
             </Pressable>
           ),
           headerRight: () =>
