@@ -68,7 +68,7 @@ Done (code and typechecks only; not yet run on a device):
 - [x] Resource cache: 5-minute TTL (1 h for cost drill-downs), stale value shown while refreshing, same cache keys as Swift
 - [x] Billing (AWS Cost Explorer, Tencent Billing): month-to-date, balance (Tencent), by service, 12-month history, service drill-down by usage and by resource, 14-day window note
 - [x] S3 and COS buckets: list (S3 bucket regions via HEAD), folder browse, stats bar, load more
-- [x] Objects: preview (download to cache, then system Quick Look, plus inline text for text files), details, share presigned link (1 h)
+- [x] Objects: preview (download to cache; inline text and images, Quick Look opens itself for video/audio/PDF/Office), details, share presigned link (1 h)
 - [x] Writes through the queue: delete, batch delete, rename, duplicate, copy to / move to (including to another bucket), upload from Photos / Files with MD5-ETag skip, select mode, batch share (links copied)
 - [x] Process Queue: progress, failure message, retry, clear finished; saved to disk and resumed on launch and on return to foreground
 - [x] EC2: scans regions one at a time (us-east-1, us-west-1, Canada, then the rest), grouped and foldable by region with counts, failed-regions alert
@@ -83,7 +83,7 @@ Done (code and typechecks only; not yet run on a device):
 Not yet at parity:
 
 - [ ] **Background transfers.** iOS used a background `URLSession`, so queue requests kept running while the app was suspended. In JS, requests stop when the app is suspended; unfinished items stay `pending` and resume on the next foreground or launch. True background execution needs `expo-background-task` or a native module.
-- [ ] **Quick Look in place.** The Swift sheet embedded `QLPreviewController`. This app shows a details page with an "Open Preview" button (`File.preview`, which opens Quick Look full-screen) and inline text for text files.
+- [ ] **Quick Look in place.** The Swift sheet embedded `QLPreviewController`. This app shows text and images inline and opens Quick Look full-screen (`File.preview`) on its own for video, audio, PDF and Office files; "Open Preview" reopens it.
 - [ ] **Swipe actions on rows.** Swift had trailing Delete/Rename swipes plus a context menu. This app has a long-press action sheet with all the same actions, but no swipe.
 - [ ] **Rename on Android.** It uses `Alert.prompt`, which only exists on iOS. Android isn't a target yet.
 - [ ] **Charts.** Health tiles use a small View-based sparkline instead of Swift Charts. There's no y-axis, same as Swift.

@@ -1,7 +1,8 @@
-// Tapping a file: downloads it to cache, previews it with the system Quick
-// Look viewer, and offers the single-file actions.
+// Tapping a file: downloads it to cache; text and images show inline, video,
+// audio, PDF and Office files open in Quick Look right away. Plus the
+// single-file actions.
 import React, { useCallback, useEffect, useState } from "react";
-import { ActionSheetIOS, Alert, Platform, Pressable, Share, Text, View } from "react-native";
+import { ActionSheetIOS, Alert, Image, Platform, Pressable, Share, Text, View } from "react-native";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import { Directory, File, Paths } from "expo-file-system";
 import { byteCount, formatDateTime } from "@cloud-console/core/format";
@@ -18,7 +19,33 @@ import { Button, CodeBlock, DetailRow, Icon, Loading, Screen, Section, Unavailab
 import { nav } from "../../../src/nav";
 import { useTheme } from "../../../src/theme";
 
-const TEXT_EXT = /\.(txt|md|json|csv|log|xml|html?|css|js|ts|ya?ml|ini|conf|sh|py|sql|env|toml)$/i;
+type Kind = "text" | "image" | "quicklook" | "other";
+
+const KINDS: [Kind, RegExp][] = [
+  ["image", /\.(jpe?g|png|gif|webp|heic|heif|bmp|tiff?|ico)$/i],
+  ["quicklook", /\.(pdf|mp4|mov|m4v|mp3|m4a|wav|aac|docx?|xlsx?|pptx?|rtf|pages|numbers|key|usdz)$/i],
+  ["text", /\.(txt|md|markdown|json|jsonl|ndjson|csv|tsv|log|xml|html?|css|s?js|mjs|cjs|tsx?|jsx|ya?ml|ini|conf|cfg|sh|bash|zsh|py|rb|go|rs|java|kt|swift|c|h|cpp|hpp|cs|php|sql|env|toml|tf|hcl|lock|gitignore|dockerfile|properties|srt|vtt)$/i],
+];
+const TEXT_LIMIT = 2_000_000;
+const QUICKLOOK_ICON: Record<string, string> = { pdf: "doc.richtext", mp4: "film", mov: "film", m4v: "film", mp3: "waveform", m4a: "waveform", wav: "waveform", aac: "waveform", xls: "tablecells", xlsx: "tablecells", numbers: "tablecells" };
+
+function kindOf(name: string): Kind {
+  return KINDS.find(([, re]) => re.test(name))?.[0] ?? "other";
+}
+
+// Unknown extension: treat as text if the first 4 KB has no NUL byte.
+function looksLikeText(bytes: Uint8Array): boolean {
+  return !bytes.includes(0);
+}
+
+function head(f: File): Uint8Array {
+  const handle = f.open();
+  try {
+    return handle.readBytesSync(4096);
+  } finally {
+    handle.close();
+  }
+}
 
 export default function ObjectDetail() {
   const theme = useTheme();
@@ -27,23 +54,25 @@ export default function ObjectDetail() {
   const { session } = useSession();
   const [file, setFile] = useState<File>();
   const [text, setText] = useState<string>();
+  const [aspect, setAspect] = useState(1);
   const [error, setError] = useState<string>();
   const [loading, setLoading] = useState(true);
   const name = object ? displayName(object.key) : "";
+  const kind = kindOf(name);
 
   const download = useCallback(async () => {
     if (!session || !object) return;
     setLoading(true);
     setError(undefined);
     try {
-      const data = await cloud.downloadObject(session, service, bucket, region, object.key);
       const dir = new Directory(Paths.cache, "previews", newId());
       dir.create({ intermediates: true, idempotent: true });
       const f = new File(dir, name || "file");
-      f.create({ overwrite: true });
-      await f.write(typeof data === "string" ? data : new Uint8Array(data));
+      await cloud.downloadToFile(session, service, bucket, region, object.key, f);
       setFile(f);
-      if (typeof data === "string" || TEXT_EXT.test(name)) setText(typeof data === "string" ? data : await f.text());
+      const small = (f.size ?? 0) <= TEXT_LIMIT;
+      if (small && (kind === "text" || (kind === "other" && looksLikeText(head(f))))) setText(await f.text());
+      else if (kind === "quicklook") void openQuickLook(f);
     } catch (e) {
       setError(errorMessage(e));
     }
@@ -54,18 +83,19 @@ export default function ObjectDetail() {
     void download();
   }, [download]);
 
-  if (!object) return null;
-  const target = { connectionID: id, service, bucket, region, key: object.key, isFolder: false };
-
-  const quickLook = async () => {
-    if (!file) return;
+  const openQuickLook = async (f: File) => {
     try {
-      if (await File.canPreview(file)) await File.preview(file, { title: name });
+      if (await File.canPreview(f)) await File.preview(f, { title: name });
       else Alert.alert("No preview", "This file type can't be previewed on this device.");
     } catch (e) {
       Alert.alert("No preview", errorMessage(e));
     }
   };
+
+  if (!object) return null;
+  const target = { connectionID: id, service, bucket, region, key: object.key, isFolder: false };
+
+  const quickLook = () => file && void openQuickLook(file);
 
   const shareLink = async () => {
     if (!session) return;
@@ -132,10 +162,21 @@ export default function ObjectDetail() {
         </Screen>
       ) : (
         <Screen>
-          <View style={{ alignItems: "center", gap: 12, paddingVertical: 16 }}>
-            <Icon name="doc.text.magnifyingglass" color={theme.secondary} size={44} />
-            <Button label="Open Preview" icon="eye" prominent onPress={() => void quickLook()} />
-          </View>
+          {kind === "image" && file ? (
+            <Pressable onPress={quickLook} style={{ marginHorizontal: 16, marginBottom: 24 }}>
+              <Image
+                source={{ uri: file.uri }}
+                resizeMode="contain"
+                onLoad={(e) => e.nativeEvent.source.width && setAspect(e.nativeEvent.source.width / e.nativeEvent.source.height)}
+                style={{ width: "100%", aspectRatio: aspect, maxHeight: 520, borderRadius: 10, backgroundColor: theme.card }}
+              />
+            </Pressable>
+          ) : text === undefined ? (
+            <View style={{ alignItems: "center", gap: 12, paddingVertical: 16 }}>
+              <Icon name={QUICKLOOK_ICON[name.split(".").pop()?.toLowerCase() ?? ""] ?? "doc.text.magnifyingglass"} color={theme.secondary} size={44} />
+              <Button label="Open Preview" icon="eye" prominent onPress={quickLook} />
+            </View>
+          ) : null}
           {text !== undefined ? (
             <Section title="Contents">
               <CodeBlock text={text.length > 20000 ? `${text.slice(0, 20000)}\n…` : text} scroll={false} />

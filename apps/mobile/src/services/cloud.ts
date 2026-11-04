@@ -38,6 +38,7 @@ import type { VendorId } from "@cloud-console/core/catalog";
 import { DEFAULT_RESOURCE_TTL } from "@cloud-console/core/cache";
 import { isDemo } from "./settings";
 import { demo } from "./demo";
+import { File } from "expo-file-system";
 import { resourceCache } from "./cache";
 import { loadCredential } from "./keychain";
 import type { Connection } from "../state/connections";
@@ -153,9 +154,16 @@ export function listObjects(s: Session, service: StorageService, bucket: string,
   return objectStore(s, service).listObjects(bucket, region, prefix);
 }
 
-export async function downloadObject(s: Session, service: StorageService, bucket: string, region: string, key: string): Promise<ArrayBuffer | string> {
-  if (isDemo()) return demo.download(key);
-  return objectStore(s, service).download(bucket, region, key);
+/** Saves an object to `dest` natively via a signed URL (no JS-side buffer, so large and binary files work). */
+export async function downloadToFile(s: Session, service: StorageService, bucket: string, region: string, key: string, dest: File): Promise<void> {
+  if (isDemo()) {
+    const data = await demo.download(key);
+    dest.create({ overwrite: true });
+    dest.write(typeof data === "string" ? data : new Uint8Array(data));
+    return;
+  }
+  const url = await presignedUrl(s, service, bucket, region, key);
+  await File.downloadFileAsync(url, dest, { idempotent: true });
 }
 
 export async function presignedUrl(s: Session, service: StorageService, bucket: string, region: string, key: string): Promise<string> {
