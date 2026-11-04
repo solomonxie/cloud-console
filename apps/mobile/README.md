@@ -20,6 +20,7 @@ npm install
 cd apps/mobile
 make start       # expo start (dev server; needs a dev build, not Expo Go, for SecureStore/Face ID config)
 make ios         # expo run:ios — prebuilds ios/ and builds into the simulator/device
+make device      # Release build onto the paired iPhone (team from ../../Config/Local.xcconfig)
 make typecheck   # tsc --noEmit
 make export      # expo export --platform ios → /tmp/cloud-console-mobile-export (Hermes bundle check)
 make doctor      # npx expo-doctor

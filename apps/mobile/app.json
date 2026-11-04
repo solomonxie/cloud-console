@@ -10,7 +10,13 @@
     "ios": {
       "bundleIdentifier": "com.solomonxie.cloudconsole.rn",
       "supportsTablet": true,
-      "config": { "usesNonExemptEncryption": false }
+      "config": {
+        "usesNonExemptEncryption": false
+      },
+      "infoPlist": {
+        "UIFileSharingEnabled": true,
+        "LSSupportsOpeningDocumentsInPlace": true
+      }
     },
     "android": {
       "package": "com.solomonxie.cloudconsole.rn"
@@ -19,12 +25,16 @@
       "expo-router",
       [
         "expo-local-authentication",
-        { "faceIDPermission": "Unlock Cloud Console with Face ID." }
+        {
+          "faceIDPermission": "Unlock Cloud Console with Face ID."
+        }
       ],
       "expo-secure-store",
       [
         "expo-image-picker",
-        { "photosPermission": "Choose photos and videos to upload to your bucket." }
+        {
+          "photosPermission": "Choose photos and videos to upload to your bucket."
+        }
       ]
     ],
     "experiments": {
