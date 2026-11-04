@@ -1,0 +1,41 @@
+{
+  "gcp-projects": [
+    { "projectId": "fernhill-prod", "projectNumber": "418203557190", "name": "Fernhill Production", "lifecycleState": "ACTIVE", "createTime": "@today-520 11:02" },
+    { "projectId": "fernhill-staging", "projectNumber": "418203557191", "name": "Fernhill Staging", "lifecycleState": "ACTIVE", "createTime": "@today-380 16:40" }
+  ],
+  "gcs-buckets": [
+    { "name": "fernhill-media", "region": "us-central1", "creationDate": "@today-498 10:20" },
+    { "name": "fernhill-backups", "region": "us", "creationDate": "@today-301 08:05" }
+  ],
+  "objects": {
+    "fernhill-media": {
+      "": { "folders": ["covers/", "episodes/"], "objects": [{ "key": "feed.xml", "size": 48210, "lastModified": "@today-1 07:30" }] },
+      "covers/": { "folders": [], "objects": [{ "key": "covers/season-2.jpg", "size": 312044, "lastModified": "@today-40 13:12" }, { "key": "covers/season-3.jpg", "size": 298731, "lastModified": "@today-6 09:48" }] },
+      "episodes/": { "folders": [], "objects": [{ "key": "episodes/s03e04.mp3", "size": 48230112, "lastModified": "@today-6 10:02" }, { "key": "episodes/s03e05.mp3", "size": 51022090, "lastModified": "@today-1 07:28" }] }
+    },
+    "fernhill-backups": {
+      "": { "folders": ["postgres/"], "objects": [] },
+      "postgres/": { "folders": [], "objects": [{ "key": "postgres/daily-1.sql.gz", "size": 182330112, "lastModified": "@today-1 03:00" }, { "key": "postgres/daily-2.sql.gz", "size": 181902231, "lastModified": "@today-2 03:00" }] }
+    }
+  },
+  "gce-instances": [
+    { "id": "7120931882210044121", "name": "api-1", "zone": "projects/fernhill-prod/zones/us-central1-a", "zoneName": "us-central1-a", "machineType": "e2-standard-2", "machineTypeName": "e2-standard-2", "status": "RUNNING", "creationTimestamp": "@today-210 14:22", "lastStartTimestamp": "@today-12 09:01", "internalIp": "10.128.0.4", "externalIp": "34.71.20.118", "selfLink": "" },
+    { "id": "7120931882210044188", "name": "worker-1", "zone": "projects/fernhill-prod/zones/us-central1-b", "zoneName": "us-central1-b", "machineType": "e2-medium", "machineTypeName": "e2-medium", "status": "RUNNING", "creationTimestamp": "@today-150 10:10", "lastStartTimestamp": "@today-3 22:15", "internalIp": "10.128.0.9", "selfLink": "" },
+    { "id": "7120931882210044390", "name": "bastion", "zone": "projects/fernhill-prod/zones/us-central1-a", "zoneName": "us-central1-a", "machineType": "e2-micro", "machineTypeName": "e2-micro", "status": "TERMINATED", "creationTimestamp": "@today-400 12:00", "lastStopTimestamp": "@today-30 18:44", "internalIp": "10.128.0.2", "selfLink": "" }
+  ],
+  "run-services": [
+    { "name": "projects/fernhill-prod/locations/us-central1/services/web", "serviceId": "web", "region": "us-central1", "ready": "ready", "uri": "https://web-5x2kq7rmfa-uc.a.run.app", "updateTime": "@today-1 16:20", "lastModifier": "deploy@fernhill-prod.iam.gserviceaccount.com", "ingress": "INGRESS_TRAFFIC_ALL", "latestReadyRevision": "projects/fernhill-prod/locations/us-central1/services/web/revisions/web-00042-kab" },
+    { "name": "projects/fernhill-prod/locations/europe-west1/services/transcoder", "serviceId": "transcoder", "region": "europe-west1", "ready": "ready", "uri": "https://transcoder-5x2kq7rmfa-ew.a.run.app", "updateTime": "@today-9 11:05", "ingress": "INGRESS_TRAFFIC_INTERNAL_ONLY", "latestReadyRevision": "projects/fernhill-prod/locations/europe-west1/services/transcoder/revisions/transcoder-00007-zul" }
+  ],
+  "run-jobs": [
+    { "name": "projects/fernhill-prod/locations/us-central1/jobs/nightly-digest", "jobId": "nightly-digest", "region": "us-central1", "ready": "ready", "executionCount": 212, "updateTime": "@today-20 08:00", "latestCreatedExecution": { "name": "projects/fernhill-prod/locations/us-central1/jobs/nightly-digest/executions/nightly-digest-q8v2m", "createTime": "@today-0 02:00", "completionTime": "@today-0 02:04", "completionStatus": "EXECUTION_SUCCEEDED" } }
+  ],
+  "gcp-secrets": [
+    { "name": "projects/418203557190/secrets/stripe-api-key", "secretId": "stripe-api-key", "createTime": "@today-300 10:00" },
+    { "name": "projects/418203557190/secrets/smtp-password", "secretId": "smtp-password", "createTime": "@today-120 15:30" }
+  ],
+  "gcp-secret-value": {
+    "stripe-api-key": "sk_test_demo_4eC39HqLyjWDarjtT1zdp7dc",
+    "smtp-password": "demo-only-not-a-real-password"
+  }
+}

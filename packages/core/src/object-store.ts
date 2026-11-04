@@ -1,10 +1,11 @@
 // The object-storage surface the mobile Buckets screens and the operation
-// queue need, implemented for S3 (SigV4) and Tencent COS (COS v5 signing).
+// queue need, implemented for S3 (SigV4), Tencent COS (COS v5 signing) and
+// GCS (OAuth; links signed with the service account key).
 // Wider than storage/types.ts StorageClient: adds batch delete, HEAD ETag
 // (skip identical uploads) and per-bucket regions.
 import type { ListPage } from "./storage/types.ts";
 
-export type StorageService = "s3" | "cos";
+export type StorageService = "s3" | "cos" | "gcs";
 
 export type PutBody = ArrayBuffer | Uint8Array | string | Blob;
 
@@ -14,7 +15,8 @@ export interface ObjectStore {
   listAllKeys(bucket: string, region: string, prefix: string): Promise<string[]>;
   /** Object body as text-or-bytes for preview. */
   download(bucket: string, region: string, key: string): Promise<ArrayBuffer>;
-  presignedUrl(bucket: string, region: string, key: string, expiresIn?: number): string;
+  /** GCS signs async, and only with a service account (not gcloud user credentials). */
+  presignedUrl(bucket: string, region: string, key: string, expiresIn?: number): string | Promise<string>;
   deleteObject(bucket: string, region: string, key: string): Promise<void>;
   batchDelete(bucket: string, region: string, keys: string[]): Promise<void>;
   copyObject(opts: { sourceBucket: string; sourceRegion: string; sourceKey: string; destBucket: string; destRegion: string; destKey: string }): Promise<void>;

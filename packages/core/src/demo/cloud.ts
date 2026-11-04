@@ -15,6 +15,7 @@ export interface DemoFixtures {
   connections: unknown;
   aws: unknown;
   tencent: unknown;
+  gcp?: unknown;
 }
 
 export interface DemoConnection {
@@ -37,7 +38,8 @@ const asObj = (v: unknown): Obj => (v && typeof v === "object" && !Array.isArray
 const asArr = (v: unknown): unknown[] => (Array.isArray(v) ? v : []);
 
 /** A demo connection's "access key id" is its fixture name. */
-export function demoFixtureName(vendor: string): "aws" | "tencent" {
+export function demoFixtureName(vendor: string): "aws" | "tencent" | "gcp" {
+  if (vendor === "Google Cloud" || vendor === "gcp") return "gcp";
   return vendor === "Tencent Cloud" || vendor === "tencent" ? "tencent" : "aws";
 }
 
@@ -59,7 +61,7 @@ export class DemoCloud {
 
   /** Resolved fresh on each call so "@today" tracks the clock, like Swift's load(). */
   private raw(name: string): unknown {
-    const source = name === "connections" ? this.fixtures.connections : name === "tencent" ? this.fixtures.tencent : name === "aws" ? this.fixtures.aws : undefined;
+    const source = name === "connections" ? this.fixtures.connections : name === "tencent" ? this.fixtures.tencent : name === "aws" ? this.fixtures.aws : name === "gcp" ? this.fixtures.gcp : undefined;
     return resolveDemo(source, this.clock());
   }
 
@@ -92,12 +94,12 @@ export class DemoCloud {
 
   buckets(fixtureName: string): Bucket[] {
     const f = this.fixture(fixtureName);
-    const list = jsonifyDates(asArr(f["s3-buckets"] ?? f["cos-buckets"])) as Bucket[];
+    const list = jsonifyDates(asArr(f["s3-buckets"] ?? f["cos-buckets"] ?? f["gcs-buckets"])) as Bucket[];
     return list.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
   }
 
   region(bucket: string): string {
-    for (const name of ["aws", "tencent"]) {
+    for (const name of ["aws", "tencent", "gcp"]) {
       const match = this.buckets(name).find((b) => b.name === bucket);
       if (match) return match.region ?? "us-east-1";
     }

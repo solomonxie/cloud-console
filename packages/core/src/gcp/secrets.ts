@@ -101,11 +101,20 @@ export async function listSecretVersions(
 
 // Decodes a payload, treating it as text only if it is valid UTF-8 without
 // control characters other than tab/newline/CR.
+// Throws on invalid UTF-8. Hermes may lack TextDecoder; decodeURIComponent
+// is strict about malformed sequences too.
+function strictUtf8(bytes: Uint8Array): string {
+  if (typeof TextDecoder !== "undefined") return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+  let escaped = "";
+  for (const b of bytes) escaped += "%" + (b < 16 ? "0" : "") + b.toString(16);
+  return decodeURIComponent(escaped);
+}
+
 export function decodeSecretPayload(name: string, base64Data: string): SecretPayload {
   const bytes = base64ToBytes(base64Data);
   let text: string | null = null;
   try {
-    const decoded = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+    const decoded = strictUtf8(bytes);
     // eslint-disable-next-line no-control-regex
     if (!/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/.test(decoded)) text = decoded;
   } catch {

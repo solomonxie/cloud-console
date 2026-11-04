@@ -56,7 +56,7 @@ const demo = new DemoCloud(
 
 test("demo connections come from connections.json with resolved dates", () => {
   const connections = demo.connections();
-  expect(connections.map((c) => c.vendor)).toEqual(["AWS", "Tencent Cloud"]);
+  expect(connections.map((c) => c.vendor)).toEqual(["AWS", "Tencent Cloud", "Google Cloud"]);
   expect(connections[0]!.addedAt).toBe(new Date(2026, 9, 30 - 142, 10, 24).toISOString());
 });
 

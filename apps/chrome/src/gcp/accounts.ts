@@ -3,7 +3,7 @@
 // never synced, only ever sent to Google's own token endpoint.
 
 import type { ResourceKindId } from "@cloud-console/core/catalog";
-import { credentialsProblem, impersonate, impersonatedEmail, type GoogleCredentials } from "@cloud-console/core/gcp/auth";
+export { accountCredentials, credentialsLabel, parseCredentials } from "@cloud-console/core/gcp/credentials";
 
 const ACCOUNTS_KEY = "gcpAccounts";
 const LAST_ACCOUNT_KEY = "gcpLastAccountId";
@@ -63,32 +63,6 @@ export async function getLastAccountId(): Promise<string | undefined> {
 
 export async function setLastAccountId(id: string): Promise<void> {
   await chrome.storage.local.set({ [LAST_ACCOUNT_KEY]: id });
-}
-
-// Parses + validates pasted/loaded credentials JSON. Throws a user-facing
-// message on problems.
-export function parseCredentials(json: string): GoogleCredentials {
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(json);
-  } catch {
-    throw new Error("Credentials aren't valid JSON.");
-  }
-  const problem = credentialsProblem(parsed);
-  if (problem) throw new Error(problem);
-  return parsed as GoogleCredentials;
-}
-
-// The credentials the account's calls run as: the parsed JSON, wrapped to
-// impersonate when the account names a service account.
-export function accountCredentials(json: string, impersonateEmail?: string): GoogleCredentials {
-  const creds = parseCredentials(json);
-  return impersonateEmail ? impersonate(creds, impersonateEmail) : creds;
-}
-
-export function credentialsLabel(creds: GoogleCredentials): string {
-  if (creds.type === "impersonated_service_account") return impersonatedEmail(creds);
-  return creds.type === "authorized_user" ? "gcloud user credentials" : creds.client_email;
 }
 
 export function newAccountId(): string {

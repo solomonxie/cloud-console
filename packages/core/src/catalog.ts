@@ -18,7 +18,7 @@ export interface Vendor {
 export const VENDORS: Vendor[] = [
   { id: "aws", name: "AWS", platforms: ["mobile", "chrome"] },
   { id: "azure", name: "Azure", platforms: ["chrome"] },
-  { id: "gcp", name: "Google Cloud", platforms: ["chrome"] },
+  { id: "gcp", name: "Google Cloud", platforms: ["mobile", "chrome"] },
   // Chrome: COS storage only this version (its other kinds are mobile-only).
   { id: "tencent", name: "Tencent Cloud", platforms: ["mobile", "chrome"] },
   { id: "alibaba", name: "Alibaba Cloud", platforms: ["chrome"] },
@@ -92,12 +92,12 @@ export const RESOURCE_KINDS: ResourceKind[] = [
   { id: "s3compatBuckets", vendor: "s3compat", title: "Buckets", isImplemented: true, platforms: ["chrome"] },
 
   { id: "gcpProjects", vendor: "gcp", title: "Projects", isImplemented: true, platforms: ["chrome"] },
-  { id: "gcs", vendor: "gcp", title: "Cloud Storage", isImplemented: true, platforms: ["chrome"] },
-  { id: "gceInstances", vendor: "gcp", title: "VM Instances", isImplemented: true, platforms: ["chrome"] },
+  { id: "gcs", vendor: "gcp", title: "Cloud Storage", isImplemented: true, platforms: both },
+  { id: "gceInstances", vendor: "gcp", title: "VM Instances", isImplemented: true, platforms: both },
   { id: "gceInstanceGroups", vendor: "gcp", title: "Instance Groups", isImplemented: true, platforms: ["chrome"] },
-  { id: "cloudRunServices", vendor: "gcp", title: "Cloud Run Services", isImplemented: true, platforms: ["chrome"] },
-  { id: "cloudRunJobs", vendor: "gcp", title: "Cloud Run Jobs", isImplemented: true, platforms: ["chrome"] },
-  { id: "gcpSecrets", vendor: "gcp", title: "Secrets", isImplemented: true, platforms: ["chrome"] },
+  { id: "cloudRunServices", vendor: "gcp", title: "Cloud Run Services", isImplemented: true, platforms: both },
+  { id: "cloudRunJobs", vendor: "gcp", title: "Cloud Run Jobs", isImplemented: true, platforms: both },
+  { id: "gcpSecrets", vendor: "gcp", title: "Secrets", isImplemented: true, platforms: both },
 ];
 
 export function resourceKinds(vendor: VendorId, platform: Platform): ResourceKind[] {

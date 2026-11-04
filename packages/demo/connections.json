@@ -10,5 +10,11 @@
   "vendor": "Tencent Cloud",
   "name": "Lanting Studio (Shanghai)",
   "addedAt": "@today-63 18:05"
+ },
+ {
+  "id": "9B3E4CA0-5D6F-4071-9C32-4D5E6F708192",
+  "vendor": "Google Cloud",
+  "name": "Fernhill Labs",
+  "addedAt": "@today-21 09:12"
  }
 ]
